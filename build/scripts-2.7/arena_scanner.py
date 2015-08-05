@@ -1,0 +1,290 @@
+__author__ = 'nickdg'
+
+from ratcave.devices.optitrack import Optitrack
+from ratcave.graphics import *
+import pyglet
+import numpy as np
+import time
+import pickle
+import sys
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn.neighbors import NearestNeighbors
+from sklearn.decomposition import PCA
+from scipy import stats
+import pdb
+np.set_printoptions(precision=3, suppress=True)
+from graphics import *
+from psychopy import event, core
+
+
+
+def scan(file_name, arena_name='Arena', optitrack_ip="10.153.170.85"):
+    """Project a series of points onto the arena, collect their 3d position, and save them and the associated
+    rigid body data into a pickled file."""
+
+    with open(file_name, 'wb') as myfile:
+
+        # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
+        tracker = Optitrack(client_ip=optitrack_ip)
+        wavefront_reader = Wavefront('resources/multipleprimitives.obj')
+        circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.007)
+        circle.material.diffuse.rgb = 1, 1, 1  # Make white
+
+        scene = Scene(circle)
+        scene.camera.ortho_mode = True
+
+        window = PsychWindow(scene, screen=1, fullscr=True)
+
+        # Schedule loop and start app.
+        clock = core.CountdownTimer(5 * 60)
+        while ('escape' not in event.getKeys()) and clock.getTime() > 0:
+
+            circle.visible = False if circle.visible == True else True  # Switch visible to True and False alternately.
+            circle.xy = np.random.uniform(-1.2, 1.2), np.random.uniform(-.85, .85)  # Change circle position to a random one.
+
+            # Try to get Arena rigid body and a single unidentified marker
+            new_position = tracker.get_unidentified_positions(1)
+            body = tracker.get_rigid_body('Arena')
+
+            # If successful, add the new position to the list.
+            feedback = bool(new_position and body)
+            if feedback:
+                pickle.dump({'markerPos': new_position[0], 'bodyPos': body.position, 'bodyRot': body.rotation, 'screenPos': circle.xy}, myfile)
+
+            window.draw()
+            window.flip()
+            time.sleep(1./40)
+
+
+
+############### Turn the Points into a graphics.mesh.Mesh object! #####################
+def meshify(load_file_name, save_file_name):
+
+    ## IMPORT DATA ##
+    # Load data into numpy arrays from .point file
+    data, body_positions, body_rotations = [], [], []
+    with open(load_file_name, 'r') as data_file:
+        try:
+            while True:
+                data_dict = pickle.load(data_file)
+                data.append(data_dict['markerPos'])  # TODO: Figure out the [0]!!!
+                body_positions.append(data_dict['bodyPos'])
+                body_rotations.append(data_dict['bodyRot'])
+        except EOFError:
+            pass
+        except KeyError:
+            raise KeyERROR("correct data types not found.  Are you sure {0} is the right file name?".format(load_file_name))
+    data = np.array(data)
+
+    body_positions = np.array(body_positions)
+    body_rotations = np.array(body_rotations)
+
+    # Assume normally-ish distributed position and rotation data, and get mean body data after removing outliers.
+    body_pos = np.mean(body_positions, axis=0)
+    body_rot = np.mean(body_rotations, axis=0)
+    # TODO:  Get rid of outliers before taking mean.
+    fig = plt.figure()
+    plt.hist(body_positions - body_pos, bins=40)
+
+
+
+    # Plot raw marker data as 3D Scatterplot
+    fig = plt.figure()
+    ax = fig.add_subplot(221, projection='3d')
+    lims = utils.plot3_square(ax, data)
+
+
+    ## REMOVE OUTLIERS ##
+    # Remove Obviously Bad Points according to Height
+    data = data[(-.02 < data[:, 1]) * (data[:, 1] < .52), :]  # 1.2
+
+    def normal_nearest_neighbors(data, n_neighbors=40, min_dist_filter=.04):
+
+        # K-Nearest neighbors on whole dataset
+        nbrs = NearestNeighbors(n_neighbors).fit(data)
+        distances, indices = nbrs.kneighbors(data)
+
+
+        # PCA on each cluster of k-nearest neighbors
+        latent_all, normal_all = [], []
+        for dist_array, idx_array in zip(distances, indices):
+
+            # Filter out huge distances for outliers:
+            if np.min(dist_array) > min_dist_filter:
+                continue
+
+            pp = PCA(n_components=3).fit(data[idx_array, :]) # Perform PCA
+
+             # Get the percent variance of each component
+            latent_all.append(pp.explained_variance_ratio_)
+
+            # Get the normal of the plane along the third component (flip if pointing in -y direction)
+            normal = pp.components_[2] if pp.components_[2][1] > 0 else -pp.components_[2]
+            normal_all.append(normal)
+
+        # Convert to NumPy Array and return
+        return np.array(normal_all), np.array(latent_all)
+
+    # Filter out data that's not within a clear plane (mainly corners and outliers)
+    planarity_threshold = .005  # 1 is 100%.  Let's take all below 0.5% (super planar)
+    normals, explained_variances = normal_nearest_neighbors(data)
+    data =       data[explained_variances[:, 2] < planarity_threshold, :]
+    normals = normals[explained_variances[:, 2] < planarity_threshold, :]
+
+    ## CLUSTER INTO SEPERATE WALL PLANES ##
+    # Label Markers by Clustering of their normals
+    radius = .3
+    distance = lambda dd, cent: np.sqrt(np.sum((dd-cent)**2, axis=1))
+    data_clustered = []  # List of clustered data
+    for wall in range(5):
+        # Cluster from a random point
+        print(normals.shape)
+        center = normals[np.random.randint(0, len(normals)), :]
+        mask = distance(normals, center) < radius
+        data_clustered.append(data[mask, :])  # Position, normal
+
+        # Remove already-clustered data from the list to be clustered
+        normals = normals[mask == False, :]  # Normals
+        data = data[mask == False, :]  # Positional coordinates
+
+    # Plot Box with labeled Sides
+    ax = fig.add_subplot(222, projection='3d')
+    for data, color in zip(data_clustered, 'rgybm'):
+        utils.plot3_square(ax, data, color, lims=lims)
+
+    ## CALCULATE WALL NORMAL AND CENTER ##
+    normals, offsets = [], []
+    ax = fig.add_subplot(223, projection='3d')
+    for data in data_clustered:
+        # First, Remove outliers in plane to get more robust fit
+        rotate = lambda dd: PCA(n_components=3).fit(dd).transform(dd)
+        rotated_data = rotate(data)
+        rd = rotated_data[:,2]
+        mean, std, threshold = np.mean(rd), np.std(rd), 1.5
+        mask = (mean - (threshold * std) < rd) * (rd < (mean + (threshold *std)))
+        data = data[mask, :]
+
+        # Plot residual map
+        cmhot = plt.cm.get_cmap("bwr")
+        ax.scatter(data[:,0], data[:,1], data[:,2], zdir='y', c=rotate(data)[:,2], cmap=cmhot, vmin=-.002, vmax=.002)
+
+        # Repeat PCA on remaining data, get normal from coeffs and offset from mean.
+        nn = PCA(n_components=3).fit(data).components_[2]
+        nn = nn if nn[1] > 0 else -nn
+        normals.append(nn)
+        offsets.append(np.mean(data, axis=0))
+
+    normals, offsets = np.array(normals), np.array(offsets)
+
+    ## CALCULATE PLANE INTERSECTIONS TO GET VERTICES ##
+    # Want equation in form ax + by + cz = d.  So, get d from norm and offsets
+    d = np.sum(normals * offsets, axis=1)
+
+    # Find floor plane
+    floor_mask = normals[:,1] == normals[:,1].max()
+    floor_normal, floor_dd = normals[floor_mask, :], d[floor_mask]
+    wall_mask = floor_mask == False
+    wall_normals, wall_dd = normals[wall_mask, :], d[wall_mask]
+
+    ceiling_norm, ceiling_dd = np.array([0., 1., 0.]), .6  # TODO: Have it auto-find highest point.
+
+    #
+    num_walls = 4
+    floor_verts, ceiling_verts = np.zeros((num_walls, 3)), np.zeros((num_walls, 3))
+    floor_vertnorms = np.zeros((num_walls, 3))
+    ceil_vertnorms = np.zeros((num_walls, 3))
+    idx = 0
+    wn, wd = wall_normals[0], wall_dd[0]
+    while idx < 4:
+        # Find nearest wall to the left by finding two nearest wall normals (distance), and the positive y cross product
+        distance = lambda x, xx: np.sqrt(np.sum((x-xx)**2, axis=1))
+        yy = distance(wn, wall_normals)
+        mask = (stats.rankdata(yy) > 1) * (stats.rankdata(yy) < 4)
+        cross_prod = np.cross(wn, wall_normals[mask])
+        adj_wall_idx = np.where(mask)[0][np.where(cross_prod[:,1]>0)[0]]  # Complicated, but works.  Fix later.
+        adj_wall_norm, adj_wall_dd = wall_normals[adj_wall_idx], wall_dd[adj_wall_idx]
+
+        # Calculate intersection of this wall with adjacent wall and floor.
+        def find_intersection((wn1, wn2, wn3), (d1, d2, d3)):
+            """Solve system of 3 Equations to get intersection point between three planes."""
+            abc_mat, d_mat = np.vstack((wn1, wn2, wn3)), np.vstack((d1, d2, d3))
+            return np.linalg.solve(abc_mat, d_mat).transpose()
+
+        print (wn, adj_wall_norm, floor_normal)
+        floor_intersection = find_intersection((wn, adj_wall_norm, floor_normal), (wd, adj_wall_dd, floor_dd))
+
+        ceil_intersection = find_intersection((wn, adj_wall_norm, ceiling_norm), (wd, adj_wall_dd, ceiling_dd))
+
+        floor_verts[idx, :] = floor_intersection
+        ceiling_verts[idx, :] = ceil_intersection
+
+        # Find average direction of the intersecting planes for the vertex (essential for a short normal list)
+        normalize = lambda x: x/ np.sqrt(np.sum(x**2))
+        fvn = normalize(wn + adj_wall_norm + floor_normal)
+        cvn = normalize(wn + adj_wall_norm)
+        floor_vertnorms[idx, :] = fvn
+        ceil_vertnorms[idx, :] = cvn
+
+        wn, wd = adj_wall_norm, adj_wall_dd
+        idx +=1
+
+    ## BUILD VERTEX, NORMAL, AND FACE INDICES FROM VERTEX DATA ##
+
+    # Build quad face index list
+    quad_faces = []
+    quad_faces.append([0, 1, 2, 3])  # Add the floor first, to match normals order!
+    for idx in range(len(floor_verts)):  # Add all the walls
+        idx2 = idx+1 if idx<len(floor_verts)-1 else 0
+        quad_faces.append([idx, idx2, len(floor_verts)+idx2, len(floor_verts)+idx])
+
+
+    # Make new vertex and normals lists, so they match the face_indices order (will be unncecessaryily long
+    vertices = np.vstack((floor_verts, ceiling_verts)) - np.mean(body_positions, axis=0)
+    normals = np.vstack((floor_normal, wall_normals))
+
+    ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
+    with open(args[3],'wb') as wavfile:
+
+        header = "# Blender v2.69 (sub 5) OBJ File: ''\n" + "# www.blender.org\n" + "o Arena\n"
+        wavfile.write(header)
+
+        for vert in vertices:
+            vertline = "v {0} {1} {2} \n".format(*vert)
+            wavfile.write(vertline)
+
+        for norm in normals:
+            normline = "vn {0} {1} {2}\n".format(norm[0], norm[1], norm[2])
+            wavfile.write(normline)
+
+        for idx, face in enumerate(quad_faces):
+            faceline = 'f'
+            for f in face:
+                faceline += r" {f}//{n}".format(f=f+1, n=idx+1)
+            faceline += '\n'
+            wavfile.write(faceline)
+
+
+    # Make final plot with drawing of reconstructed object.
+    ax = fig.add_subplot(224, projection='3d')
+    for face_inds, color in zip(quad_faces, 'rgybm'):
+        data = np.vstack((vertices[face_inds, :], vertices[face_inds[0], :]))
+        utils.plot3_square(ax, data, color+':', lims=lims)
+
+
+    plt.show()
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    # Run the specified function from the command line. Format: arena_scanner function_name file_name
+    args = sys.argv  # Get command line arguments.
+    locals()[args[1]](*args[2:])  # function_name(file_name)
+
+
+
+
