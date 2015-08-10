@@ -76,7 +76,7 @@
         <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/opti_projector_calibration.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.31384614" vertical-offset="136" max-vertical-offset="3808">
-              <caret line="37" column="78" selection-start-line="37" selection-start-column="73" selection-end-line="37" selection-end-column="78" />
+              <caret line="37" column="107" selection-start-line="37" selection-start-column="107" selection-end-line="37" selection-end-column="107" />
               <folding />
             </state>
           </provider>
@@ -90,28 +90,6 @@
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="__mesh.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mesh.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-20.8" vertical-offset="991" max-vertical-offset="3213">
-              <caret line="95" column="21" selection-start-line="95" selection-start-column="12" selection-end-line="95" selection-end-column="21" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="combShader.frag" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ratcave/graphics/shaders/combShader.frag">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="17" max-vertical-offset="1445">
-              <caret line="21" column="23" selection-start-line="21" selection-start-column="23" selection-end-line="21" selection-end-column="23" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -485,7 +463,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-4" y="-4" width="1928" height="1176" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24973656" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -496,7 +474,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32540438" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32540438" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -785,16 +763,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__scene.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-13.866667" vertical-offset="3953" max-vertical-offset="4811">
-          <caret line="257" column="48" selection-start-line="257" selection-start-column="48" selection-end-line="257" selection-end-column="48" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mesh.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-20.8" vertical-offset="991" max-vertical-offset="3213">
@@ -813,10 +781,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__scene.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-13.866667" vertical-offset="3953" max-vertical-offset="4811">
+          <caret line="257" column="48" selection-start-line="257" selection-start-column="48" selection-end-line="257" selection-end-column="48" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/opti_projector_calibration.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.31384614" vertical-offset="136" max-vertical-offset="3808">
-          <caret line="37" column="78" selection-start-line="37" selection-start-column="73" selection-end-line="37" selection-end-column="78" />
+          <caret line="37" column="107" selection-start-line="37" selection-start-column="107" selection-end-line="37" selection-end-column="107" />
           <folding />
         </state>
       </provider>

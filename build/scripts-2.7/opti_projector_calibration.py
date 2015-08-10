@@ -35,7 +35,7 @@ def scan(start_delay=5, trial_duration=6, optitrack_ip="127.0.0.1"):
 
     # Setup graphics
     wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=True, position=[0, 0, -1], scale=.1)#.006)
+    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.1)#.006)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
     scene = Scene(circle)
