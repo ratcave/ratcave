@@ -1,6 +1,7 @@
 __author__ = 'nickdg'
 
 import os
+import time
 import ratcave
 from ratcave.devices.optitrack import Optitrack
 from ratcave.graphics import *
@@ -16,6 +17,7 @@ import pdb
 from psychopy import event, core
 
 
+
 np.set_printoptions(precision=3, suppress=True)
 
 def scan(optitrack_ip="127.0.0.1"):
@@ -25,7 +27,8 @@ def scan(optitrack_ip="127.0.0.1"):
 
     # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
     tracker = Optitrack(client_ip=optitrack_ip)
-    wavefront_reader = WavefrontReader('resources/multipleprimitives.obj')
+    assert "Arena" in tracker.rigid_bodies, "Must Add Arena Rigid Body in Motive!"
+    wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
     circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.007)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
@@ -45,18 +48,25 @@ def scan(optitrack_ip="127.0.0.1"):
         window.draw()
         window.flip()
 
-        # Try to get Arena rigid body and a single unidentified marker
+        time.sleep(.032)
+
         new_position = tracker.get_unidentified_positions(1)
-        body = tracker.get_rigid_body('Arena')
+        if new_position:
 
-        # If successful, add the new position to the list.
-        feedback = bool(new_position and body)
-        if feedback:
-            data['markerPos'].append(new_position[0])
-            data['bodyPos'].append(body.position)
-            data['bodyRot'].append(body.rotation)
-            data['screenPos'].append(circle.xy)
+            # Try to get Arena rigid body and a single unidentified marker
+            body = tracker.get_rigid_body('Arena')
 
+            # If successful, add the new position to the list.
+            feedback = bool(new_position and body)
+            if feedback:
+                data['markerPos'].append(new_position[0])
+                data['bodyPos'].append(body.position)
+                data['bodyRot'].append(body.rotation)
+                data['screenPos'].append(circle.xy)
+        else:
+            print("No point detected.")
+
+    window.close()
     return data
 
 
@@ -262,6 +272,7 @@ if __name__ == '__main__':
     # Run the specified function from the command line. Format: arena_scanner function_name file_name
     print("Starting the Scan Process...")
     data = scan()
+    pdb.set_trace()
     print("Analyzing and Saving to {0}".format(ratcave.data_dir))
     meshify(data, filename=os.path.join(ratcave.data_dir, 'arena_unprocessed.obj'))
     print("Save done.  Please import file into blender and export as arena.obj before using in experiments!")

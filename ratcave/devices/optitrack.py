@@ -31,7 +31,7 @@ UNDEFINED					= 999999.9999
 MAX_PACKETSIZE				= 100000
 MAX_NAMELENGTH				= 256
 
-CLIENT_ADDRESS = socket.gethostbyname(socket.gethostname())
+CLIENT_ADDRESS =            "127.0.0.1" #socket.gethostbyname(socket.gethostname())  #Default is now local address.
 MULTICAST_ADDRESS			= "239.255.42.99"
 PORT_COMMAND				= 1510
 PORT_DATA					= 1511
