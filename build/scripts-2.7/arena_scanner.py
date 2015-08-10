@@ -66,6 +66,7 @@ def scan(optitrack_ip="127.0.0.1"):
         else:
             print("No point detected.")
 
+    window.close()
     return data
 
 

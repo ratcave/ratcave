@@ -1,7 +1,7 @@
 #version 330
 #extension GL_NV_shadow_samplers_cube : enable
 
-uniform int hasTexture, hasShadow, hasCubeMap;
+uniform int hasTexture, hasShadow, hasCubeMap, hasLighting;
 uniform float spec_weight, opacity;
 uniform vec3 camera_position, light_position;
 uniform vec3 diffuse, spec_color, ambient;
@@ -17,6 +17,12 @@ out vec4 final_color;
 
 void main()
 {
+
+    //If lighting is turned off, just use the diffuse color and return. (Flat lighting)
+    if (hasLighting < 1) {
+        final_color = vec4(diffuse, 1.0);
+        return;
+    }
 
     //Shade Cube Map and return, if needed
     if (hasCubeMap > 0) {

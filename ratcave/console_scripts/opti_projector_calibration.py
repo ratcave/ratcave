@@ -23,7 +23,7 @@ np.set_printoptions(precision=3, suppress=True)
 
 vert_dist = 0.66667
 
-def scan(start_delay=5, trial_duration=2, optitrack_ip="127.0.0.1"):
+def scan(start_delay=5, trial_duration=6, optitrack_ip="127.0.0.1"):
     """Start scan protocol for measuring projector position.  In this protocol, a single point if projected, and the
     experimenter must move a piece of paper along the path of the point while Optitrack (in visible light mode) records
     that point's position.  Periodically ('trial_duraction'), the point's position changes.  The data from this protocol
@@ -35,7 +35,7 @@ def scan(start_delay=5, trial_duration=2, optitrack_ip="127.0.0.1"):
 
     # Setup graphics
     wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.011)
+    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.1)#.006)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
     scene = Scene(circle)
@@ -48,8 +48,8 @@ def scan(start_delay=5, trial_duration=2, optitrack_ip="127.0.0.1"):
 
     time.sleep(float(start_delay))
 
-    x_list = [0, -.3, .3,    0,   0, -.6, .6,   0,  0, -.9, .9]
-    y_list = [0,    0,   0, -.45, .45,   0,  0, -.9, .9,     0,    0]
+    x_list = [0, -.3,  .3,   0,  0, -.6, .6,   0,  0, -.9, .9]
+    y_list = [0,   0,   0, -.3, .3,   0,  0, -.6, .6,   0,  0]
 
     # Main Loop
     data_list = []

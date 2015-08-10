@@ -60,23 +60,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="opti_projector_calibration.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/opti_projector_calibration.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.85" vertical-offset="663" max-vertical-offset="4097">
-              <caret line="73" column="26" selection-start-line="73" selection-start-column="26" selection-end-line="73" selection-end-column="26" />
-              <folding>
-                <element signature="e#23#39#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="__camera.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ratcave/graphics/__camera.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1683" max-vertical-offset="2720">
-              <caret line="128" column="0" selection-start-line="128" selection-start-column="0" selection-end-line="128" selection-end-column="0" />
+            <state vertical-scroll-proportion="-7.3" vertical-offset="1855" max-vertical-offset="2907">
+              <caret line="122" column="65" selection-start-line="122" selection-start-column="65" selection-end-line="122" selection-end-column="65" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -84,21 +72,45 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="propixx_utils.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ratcave/devices/propixx_utils.py">
+      <file leaf-file-name="opti_projector_calibration.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/opti_projector_calibration.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1377">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.31384614" vertical-offset="136" max-vertical-offset="3808">
+              <caret line="37" column="78" selection-start-line="37" selection-start-column="73" selection-end-line="37" selection-end-column="78" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="tracker.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ratcave/devices/tracker.py">
+      <file leaf-file-name="__scene.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ratcave/graphics/__scene.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1904">
-              <caret line="20" column="28" selection-start-line="20" selection-start-column="28" selection-end-line="20" selection-end-column="28" />
+            <state vertical-scroll-proportion="-13.866667" vertical-offset="3953" max-vertical-offset="4811">
+              <caret line="257" column="48" selection-start-line="257" selection-start-column="48" selection-end-line="257" selection-end-column="48" />
+              <folding>
+                <element signature="e#0#31#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__mesh.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mesh.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-20.8" vertical-offset="991" max-vertical-offset="3213">
+              <caret line="95" column="21" selection-start-line="95" selection-start-column="12" selection-end-line="95" selection-end-column="21" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="combShader.frag" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ratcave/graphics/shaders/combShader.frag">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="17" max-vertical-offset="1445">
+              <caret line="21" column="23" selection-start-line="21" selection-start-column="23" selection-end-line="21" selection-end-column="23" />
               <folding />
             </state>
           </provider>
@@ -136,9 +148,7 @@
         <option value="$PROJECT_DIR$/ratcave/graphics/_camera.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/_mesh.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/_scene.py" />
-        <option value="$PROJECT_DIR$/ratcave/graphics/__camera.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/__mesh.py" />
-        <option value="$PROJECT_DIR$/ratcave/graphics/__scene.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/__window.py" />
         <option value="$PROJECT_DIR$/console_scripts/arena_scanner.py" />
         <option value="$PROJECT_DIR$/build/lib/ratcave/devices/optitrack.py" />
@@ -165,6 +175,9 @@
         <option value="$PROJECT_DIR$/ratcave/graphics/__init__.py" />
         <option value="$PROJECT_DIR$/ratcave/devices/optitrack.py" />
         <option value="$PROJECT_DIR$/ratcave/console_scripts/arena_scanner.py" />
+        <option value="$PROJECT_DIR$/ratcave/graphics/__camera.py" />
+        <option value="$PROJECT_DIR$/ratcave/graphics/__scene.py" />
+        <option value="$PROJECT_DIR$/ratcave/graphics/shaders/combShader.frag" />
         <option value="$PROJECT_DIR$/ratcave/console_scripts/opti_projector_calibration.py" />
       </list>
     </option>
@@ -263,6 +276,28 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="graphics" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="shaders" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ratcave_pkg" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ratcave_pkg" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ratcave" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="devices" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -282,20 +317,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="console_scripts" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="ratcave_pkg" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="ratcave_pkg" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="dist" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -651,7 +672,7 @@
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2295">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#19#0" expanded="true" />
+            <element signature="e#0#19#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -671,17 +692,7 @@
         <state vertical-scroll-proportion="0.7901049" vertical-offset="0" max-vertical-offset="1377">
           <caret line="31" column="63" selection-start-line="31" selection-start-column="63" selection-end-line="31" selection-end-column="63" />
           <folding>
-            <element signature="e#24#50#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__camera.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1683" max-vertical-offset="2720">
-          <caret line="128" column="0" selection-start-line="128" selection-start-column="0" selection-end-line="128" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#24#50#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -724,16 +735,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ratcave/devices/optitrack.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="408" max-vertical-offset="9401">
-          <caret line="30" column="30" selection-start-line="30" selection-start-column="30" selection-end-line="30" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/arena_scanner.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.8292308" vertical-offset="702" max-vertical-offset="4845">
@@ -754,13 +755,69 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://C:/Python27/Lib/site-packages/ratcave-0.8-py2.7.egg/ratcave/graphics/__camera.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.475" vertical-offset="1734" max-vertical-offset="2737">
+          <caret line="121" column="59" selection-start-line="121" selection-start-column="59" selection-end-line="121" selection-end-column="59" />
+          <folding>
+            <element signature="e#0#18#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/devices/optitrack.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="408" max-vertical-offset="9401">
+          <caret line="30" column="30" selection-start-line="30" selection-start-column="30" selection-end-line="30" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__camera.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-7.3" vertical-offset="1855" max-vertical-offset="2907">
+          <caret line="122" column="65" selection-start-line="122" selection-start-column="65" selection-end-line="122" selection-end-column="65" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__scene.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-13.866667" vertical-offset="3953" max-vertical-offset="4811">
+          <caret line="257" column="48" selection-start-line="257" selection-start-column="48" selection-end-line="257" selection-end-column="48" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mesh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-20.8" vertical-offset="991" max-vertical-offset="3213">
+          <caret line="95" column="21" selection-start-line="95" selection-start-column="12" selection-end-line="95" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/shaders/combShader.frag">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="17" max-vertical-offset="1445">
+          <caret line="21" column="23" selection-start-line="21" selection-start-column="23" selection-end-line="21" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/opti_projector_calibration.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.85" vertical-offset="663" max-vertical-offset="4097">
-          <caret line="73" column="26" selection-start-line="73" selection-start-column="26" selection-end-line="73" selection-end-column="26" />
-          <folding>
-            <element signature="e#23#39#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.31384614" vertical-offset="136" max-vertical-offset="3808">
+          <caret line="37" column="78" selection-start-line="37" selection-start-column="73" selection-end-line="37" selection-end-column="78" />
+          <folding />
         </state>
       </provider>
     </entry>

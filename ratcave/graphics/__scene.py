@@ -255,6 +255,7 @@ class Scene:
                     shader.uniformf('spec_color', *mesh.material.spec_color.rgb)
                     shader.uniformf('spec_weight', mesh.material.spec_weight)
                     shader.uniformf('opacity', mesh.material.diffuse.a)
+                    shader.uniformi('hasLighting', mesh.lighting)
 
                     # Bind Cubemap if mesh is to be rendered with the cubemap.
                     shader.uniformi('hasCubeMap', int(bool(mesh.cubemap)))

@@ -33,13 +33,21 @@ class Camera(mixins.Physical):
 
 
         # Enable 2D Camera Mode.
-        self.ortho_mode = ortho_mode
+        self.__ortho_mode = ortho_mode
 
         # Save projection matrix
         self._projection_matrix = np.zeros(16)
         self._projection_view_matrix = np.zeros(16)
         self.update()
 
+    @property
+    def ortho_mode(self):
+        return self.__ortho_mode
+
+    @ortho_mode.setter
+    def ortho_mode(self, value):
+        self.__ortho_mode = value
+        self.update()
 
     @property
     def fov_y(self):
@@ -110,10 +118,12 @@ class Camera(mixins.Physical):
 
         if self.ortho_mode == True:  # Use orthographic projection if enabled, else use a perspective projection.
             # replace glOrtho (https://www.opengl.org/sdk/docs/man2/xhtml/glOrtho.xml)
-            persp_mat = np.array([[2./(self.aspect * 2.),      0.,         0., 0.], #  2/(right-left), x
-                                  [                   0., 2./(2.),         0., 0.], #  2/(top-bottom), y
+
+            persp_mat = np.array([[(2.)/(1),      0.,         0., 0.], #  2/(right-left), x
+                                  [                   0., 2./(1./self.aspect),         0., 0.], #  2/(top-bottom), y
                                   [                   0.,      0., -2/(zF-zN), 0.], # -2/(zFar-zNear), z
                                   [                   0.,      0.,         0., 1.]])
+
         else:
             # replace gluPerspective (https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml)
             ff = 1./np.tan(np.radians(self.fov_y / 2.)) # cotangent(fovy/2)
@@ -122,6 +132,7 @@ class Camera(mixins.Physical):
                                   [             0.,    0., (zF+zN)/(zN-zF), (2.*zF*zN)/(zN-zF)],
                                   [             0.,    0.,             -1.,                 0.]])
             persp_mat = np.dot(persp_mat, self._shift_matrix)  # Apply lens shift
+
 
         self._projection_matrix = persp_mat.transpose().flatten()
 
