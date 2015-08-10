@@ -1,11 +1,11 @@
 __author__ = 'nickdg'
 
+import os
+import ratcave
 from ratcave.devices.optitrack import Optitrack
 from ratcave.graphics import *
-import pyglet
+from ratcave.graphics import utils
 import numpy as np
-import time
-import pickle
 import sys
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -13,81 +13,91 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.decomposition import PCA
 from scipy import stats
 import pdb
-np.set_printoptions(precision=3, suppress=True)
-from graphics import *
 from psychopy import event, core
 
 
+np.set_printoptions(precision=3, suppress=True)
 
-def scan(file_name, arena_name='Arena', optitrack_ip="10.153.170.85"):
+def scan(optitrack_ip="127.0.0.1"):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
 
-    with open(file_name, 'wb') as myfile:
 
-        # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
-        tracker = Optitrack(client_ip=optitrack_ip)
-        wavefront_reader = Wavefront('resources/multipleprimitives.obj')
-        circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.007)
-        circle.material.diffuse.rgb = 1, 1, 1  # Make white
+    # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
+    tracker = Optitrack(client_ip=optitrack_ip)
+    wavefront_reader = WavefrontReader('resources/multipleprimitives.obj')
+    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.007)
+    circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
-        scene = Scene(circle)
-        scene.camera.ortho_mode = True
+    scene = Scene(circle)
+    scene.camera.ortho_mode = True
 
-        window = PsychWindow(scene, screen=1, fullscr=True)
+    window = Window(scene, screen=1, fullscr=True)
 
-        # Schedule loop and start app.
-        clock = core.CountdownTimer(5 * 60)
-        while ('escape' not in event.getKeys()) and clock.getTime() > 0:
+    #start drawing.
+    data = {'markerPos': [], 'bodyPos': [], 'bodyRot': [], 'screenPos': []}
+    clock = core.CountdownTimer(5 * 60)
+    while ('escape' not in event.getKeys()) and clock.getTime() > 0:
 
-            circle.visible = False if circle.visible == True else True  # Switch visible to True and False alternately.
-            circle.xy = np.random.uniform(-1.2, 1.2), np.random.uniform(-.85, .85)  # Change circle position to a random one.
+        # Draw Circle
+        circle.visible = False if circle.visible == True else True  # Switch visible to True and False alternately.
+        circle.xy = np.random.uniform(-1.2, 1.2), np.random.uniform(-.85, .85)  # Change circle position to a random one.
+        window.draw()
+        window.flip()
 
-            # Try to get Arena rigid body and a single unidentified marker
-            new_position = tracker.get_unidentified_positions(1)
-            body = tracker.get_rigid_body('Arena')
+        # Try to get Arena rigid body and a single unidentified marker
+        new_position = tracker.get_unidentified_positions(1)
+        body = tracker.get_rigid_body('Arena')
 
-            # If successful, add the new position to the list.
-            feedback = bool(new_position and body)
-            if feedback:
-                pickle.dump({'markerPos': new_position[0], 'bodyPos': body.position, 'bodyRot': body.rotation, 'screenPos': circle.xy}, myfile)
+        # If successful, add the new position to the list.
+        feedback = bool(new_position and body)
+        if feedback:
+            data['markerPos'].append(new_position[0])
+            data['bodyPos'].append(body.position)
+            data['bodyRot'].append(body.rotation)
+            data['screenPos'].append(circle.xy)
 
-            window.draw()
-            window.flip()
-            time.sleep(1./40)
+    return data
 
 
+def normal_nearest_neighbors(data, n_neighbors=40, min_dist_filter=.04):
+    """Find the normal direction of a hopefully-planar cluster of n_neighbors"""
 
-############### Turn the Points into a graphics.mesh.Mesh object! #####################
-def meshify(load_file_name, save_file_name):
+    # K-Nearest neighbors on whole dataset
+    nbrs = NearestNeighbors(n_neighbors).fit(data)
+    distances, indices = nbrs.kneighbors(data)
+
+    # PCA on each cluster of k-nearest neighbors
+    latent_all, normal_all = [], []
+    for dist_array, idx_array in zip(distances, indices):
+
+        # Filter out huge distances for outliers:
+        if np.min(dist_array) > min_dist_filter:
+            continue
+
+        pp = PCA(n_components=3).fit(data[idx_array, :]) # Perform PCA
+
+         # Get the percent variance of each component
+        latent_all.append(pp.explained_variance_ratio_)
+
+        # Get the normal of the plane along the third component (flip if pointing in -y direction)
+        normal = pp.components_[2] if pp.components_[2][1] > 0 else -pp.components_[2]
+        normal_all.append(normal)
+
+    # Convert to NumPy Array and return
+    return np.array(normal_all), np.array(latent_all)
+
+
+def meshify(data, filename):
 
     ## IMPORT DATA ##
-    # Load data into numpy arrays from .point file
-    data, body_positions, body_rotations = [], [], []
-    with open(load_file_name, 'r') as data_file:
-        try:
-            while True:
-                data_dict = pickle.load(data_file)
-                data.append(data_dict['markerPos'])  # TODO: Figure out the [0]!!!
-                body_positions.append(data_dict['bodyPos'])
-                body_rotations.append(data_dict['bodyRot'])
-        except EOFError:
-            pass
-        except KeyError:
-            raise KeyERROR("correct data types not found.  Are you sure {0} is the right file name?".format(load_file_name))
-    data = np.array(data)
-
-    body_positions = np.array(body_positions)
-    body_rotations = np.array(body_rotations)
+    # Put values of data dictionary into numpy arrays.
+    body_positions, body_rotations = np.array(data['bodyPos']), np.array(data['bodyRot'])
+    data = np.array(data['markerPos'])
 
     # Assume normally-ish distributed position and rotation data, and get mean body data after removing outliers.
-    body_pos = np.mean(body_positions, axis=0)
-    body_rot = np.mean(body_rotations, axis=0)
-    # TODO:  Get rid of outliers before taking mean.
     fig = plt.figure()
-    plt.hist(body_positions - body_pos, bins=40)
-
-
+    plt.hist(body_positions - np.mean(body_positions, axis=0), bins=40)
 
     # Plot raw marker data as 3D Scatterplot
     fig = plt.figure()
@@ -99,40 +109,14 @@ def meshify(load_file_name, save_file_name):
     # Remove Obviously Bad Points according to Height
     data = data[(-.02 < data[:, 1]) * (data[:, 1] < .52), :]  # 1.2
 
-    def normal_nearest_neighbors(data, n_neighbors=40, min_dist_filter=.04):
-
-        # K-Nearest neighbors on whole dataset
-        nbrs = NearestNeighbors(n_neighbors).fit(data)
-        distances, indices = nbrs.kneighbors(data)
-
-
-        # PCA on each cluster of k-nearest neighbors
-        latent_all, normal_all = [], []
-        for dist_array, idx_array in zip(distances, indices):
-
-            # Filter out huge distances for outliers:
-            if np.min(dist_array) > min_dist_filter:
-                continue
-
-            pp = PCA(n_components=3).fit(data[idx_array, :]) # Perform PCA
-
-             # Get the percent variance of each component
-            latent_all.append(pp.explained_variance_ratio_)
-
-            # Get the normal of the plane along the third component (flip if pointing in -y direction)
-            normal = pp.components_[2] if pp.components_[2][1] > 0 else -pp.components_[2]
-            normal_all.append(normal)
-
-        # Convert to NumPy Array and return
-        return np.array(normal_all), np.array(latent_all)
-
     # Filter out data that's not within a clear plane (mainly corners and outliers)
     planarity_threshold = .005  # 1 is 100%.  Let's take all below 0.5% (super planar)
     normals, explained_variances = normal_nearest_neighbors(data)
     data =       data[explained_variances[:, 2] < planarity_threshold, :]
     normals = normals[explained_variances[:, 2] < planarity_threshold, :]
 
-    ## CLUSTER INTO SEPERATE WALL PLANES ##
+
+    ## CLUSTER INTO SEPARATE WALL PLANES ##
     # Label Markers by Clustering of their normals
     radius = .3
     distance = lambda dd, cent: np.sqrt(np.sum((dd-cent)**2, axis=1))
@@ -244,7 +228,7 @@ def meshify(load_file_name, save_file_name):
     normals = np.vstack((floor_normal, wall_normals))
 
     ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
-    with open(args[3],'wb') as wavfile:
+    with open(filename, 'wb') as wavfile:
 
         header = "# Blender v2.69 (sub 5) OBJ File: ''\n" + "# www.blender.org\n" + "o Arena\n"
         wavfile.write(header)
@@ -271,20 +255,14 @@ def meshify(load_file_name, save_file_name):
         data = np.vstack((vertices[face_inds, :], vertices[face_inds[0], :]))
         utils.plot3_square(ax, data, color+':', lims=lims)
 
-
     plt.show()
-
-
-
-
-
 
 
 if __name__ == '__main__':
     # Run the specified function from the command line. Format: arena_scanner function_name file_name
-    args = sys.argv  # Get command line arguments.
-    locals()[args[1]](*args[2:])  # function_name(file_name)
-
-
-
+    print("Starting the Scan Process...")
+    data = scan()
+    print("Analyzing and Saving to {0}".format(ratcave.data_dir))
+    meshify(data, filename=os.path.join(ratcave.data_dir, 'arena_unprocessed.obj'))
+    print("Save done.  Please import file into blender and export as arena.obj before using in experiments!")
 

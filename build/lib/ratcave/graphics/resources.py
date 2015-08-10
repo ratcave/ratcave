@@ -1,6 +1,7 @@
 __author__ = 'ratcave'
 
 from os import path as __path
+from appdirs import user_data_dir as __data_dir
 
 # This is an easy way to get the filepaths of some oft-used resources for displaying simple scenes.
 
@@ -12,3 +13,6 @@ img_colorgrid = __path.join(resource_path, 'colorgrid.png')
 
 # Meshes
 obj_primitives = __path.join(resource_path, 'primitives.obj')
+
+# Arena .obj file
+obj_arena = __path.join(__data_dir("ratCAVE"), 'arena.obj')

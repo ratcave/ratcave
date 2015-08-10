@@ -1,3 +1,4 @@
 pyglet
 numpy
 psychopy
+appdirs

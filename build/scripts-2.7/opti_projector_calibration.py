@@ -2,18 +2,18 @@ __author__ = 'nickdg'
 
 import itertools
 from psychopy import event, core
-from devices.optitrack import Optitrack
-from devices import propixx
-from graphics import *
-import pyglet
+import ratcave
+from ratcave.devices import Optitrack, propixx_utils
+from ratcave.graphics import utils
+from ratcave.graphics import *
 import numpy as np
-from matplotlib import mlab
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import pdb
 import time
+import os
 import pickle
-from graphics import utils
+
 import sys
 from statsmodels.formula.api import ols
 from os import path
@@ -23,7 +23,7 @@ np.set_printoptions(precision=3, suppress=True)
 
 vert_dist = 0.66667
 
-def scan(file_name, start_delay=5, trial_duration=12, optitrack_ip="10.153.170.85"):
+def scan(start_delay=5, trial_duration=12, optitrack_ip="127.0.0.1"):
     """Start scan protocol for measuring projector position.  In this protocol, a single point if projected, and the
     experimenter must move a piece of paper along the path of the point while Optitrack (in visible light mode) records
     that point's position.  Periodically ('trial_duraction'), the point's position changes.  The data from this protocol
@@ -34,14 +34,14 @@ def scan(file_name, start_delay=5, trial_duration=12, optitrack_ip="10.153.170.8
     tracker = Optitrack(client_ip=optitrack_ip)
 
     # Setup graphics
-    wavefront_reader = Wavefront('resources/multipleprimitives.obj')
+    wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
     circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.011)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
     scene = Scene(circle)
     scene.camera.ortho_mode = True
 
-    window = PsychWindow(scene, screen=1, fullscr=True)
+    window = Window(scene, screen=1, fullscr=True)
 
     # Set positions
     circle.last_position = [0., 0., 0.]
@@ -74,22 +74,13 @@ def scan(file_name, start_delay=5, trial_duration=12, optitrack_ip="10.153.170.8
                 sys.exit()
 
     # After program ends, save data_list to file.
-    if path.isfile(file_name):
-        file_name = file_name.split('.')[0] + 'c.' + file_name.split('.')[1]
-
-    with open(file_name, 'wb') as my_file:
-        pickle.dump(data_list, my_file)
+    return data_list
 
 
-def analyze(file_name):
+def analyze(data):
 
     # Get data
-    with open(file_name, 'rb') as my_file:
-        # Unpack lists
-        x_2d, y_2d, points = zip(*pickle.load(my_file))
-
-        skip = 1
-        x_2d, y_2d, points = np.array(x_2d[::skip]), np.array(y_2d[::skip]), np.array(points[::skip])
+    x_2d, y_2d, points = np.array(zip(*data))
 
     # Separate data into lists by unique x_2d and y_2d combinations (each should be a single line)
     unique_vals = np.unique(np.vstack((x_2d, y_2d)))
@@ -113,12 +104,11 @@ def analyze(file_name):
 
     # Remove beginning and end of each line
     for idx, data in enumerate(points_sep):
-        points_sep[idx] = data[40:-40,:]
+        points_sep[idx] = data[40:-40, :]
 
     ax = fig.add_subplot(222, projection='3d')
     for point, color in zip(points_sep, 'rgbmcykrgbmcyk'):
         utils.plot3_square(ax, point, color=color)
-
 
 
     # Remove outliers using simes-hochberg regression.
@@ -168,9 +158,9 @@ def analyze(file_name):
             point_estimates.append(midpoint.flatten())
 
     point_estimates = np.array(point_estimates)  # Put back into matrix
-    mean_estimate = np.mean(point_estimates, axis=0)
+    mean_position = np.mean(point_estimates, axis=0)
     std_estimate = np.std(point_estimates, axis=0)
-    print("Mean Position: {0}\n STD Position: {1}".format(mean_estimate, std_estimate))
+    print("Mean Position: {0}\n STD Position: {1}".format(mean_position, std_estimate))
 
 
 
@@ -179,7 +169,7 @@ def analyze(file_name):
     for data, color in zip(points_sep, 'rgbmcykrgbmcyk'):
         utils.plot3_square(ax, data, color=color)
 
-    #utils.plot3_square(ax, mean_estimate.reshape((1,3)), color='k')
+    #utils.plot3_square(ax, mean_position.reshape((1,3)), color='k')
     plt.show()
 
     ## ESTIMATE PROJECTOR'S FOCAL WIDTH ##
@@ -206,13 +196,35 @@ def analyze(file_name):
     throw = 1. / (2. * np.tan(angle_mean * 16. / 9. / 2.))
     print("Horizontal Throw: {0}".format(throw))
 
+    return tuple(mean_position), tuple(angle_mean), float(throw)
+
+
 if __name__ == '__main__':
     # Run the specified function from the command line. Format: arena_scanner function_name file_name
 
-    propixx.start_frame_sync_signal()
+    propixx_utils.start_frame_sync_signal()
 
-    args = sys.argv  # Get command line arguments.
-    locals()[args[1]](*args[2:])  # function_name(file_name)
+    print("Beginning Scan--Please Enter the Recording Chamber!")
+    data = scan()
+
+    print("Analyzing Data...")
+    position, rotation, fov_y = analyze(data)
+
+    print("Should this be data be saved as the projector values? (y/n)")
+    input_registered = False
+    while not input_registered:
+        response = raw_input("Save? (Y/N): ")
+        if 'y' in response.lower():
+            input_registered = True
+            projector_data = {'position': position, 'rotation': rotation, 'fov_y': fov_y}
+            pickle.dump(projector_data, open(os.path.join(ratcave.data_dir), 'projector_data.pickle'), "wb")
+            print("Response: Y. Data saved to file projector_data.pickle")
+        elif 'n' in response.lower():
+            input_registered = True
+            print("Response: N. Data not saved.")
+        else:
+            print("Response not recognized.  Looking for y or n.")
+
 
 
 
