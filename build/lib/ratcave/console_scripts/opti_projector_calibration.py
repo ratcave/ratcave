@@ -23,7 +23,7 @@ np.set_printoptions(precision=3, suppress=True)
 
 vert_dist = 0.66667
 
-def scan(start_delay=5, trial_duration=6, optitrack_ip="127.0.0.1"):
+def scan(start_delay=5, trial_duration=10, optitrack_ip="127.0.0.1"):
     """Start scan protocol for measuring projector position.  In this protocol, a single point if projected, and the
     experimenter must move a piece of paper along the path of the point while Optitrack (in visible light mode) records
     that point's position.  Periodically ('trial_duraction'), the point's position changes.  The data from this protocol
@@ -35,7 +35,7 @@ def scan(start_delay=5, trial_duration=6, optitrack_ip="127.0.0.1"):
 
     # Setup graphics
     wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.1)#.006)
+    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.006)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
     scene = Scene(circle)
@@ -49,14 +49,22 @@ def scan(start_delay=5, trial_duration=6, optitrack_ip="127.0.0.1"):
     time.sleep(float(start_delay))
 
     x_list = [0, -.3,  .3,   0,  0, -.6, .6,   0,  0, -.9, .9]
-    y_list = [0,   0,   0, -.3, .3,   0,  0, -.6, .6,   0,  0]
+    y_list = [0,   0,   0, -.25, .25,   0,  0, -.5, .5,   0,  0]
 
     # Main Loop
     data_list = []
     for x, y in zip(x_list, y_list):
 
+        # Give a short pause between points, to keep from mixing the data between screen positions
+        circle.visible = False
+        window.draw()
+        window.flip()
+        time.sleep(.1)
+
+
         # Set mesh position
-        circle.xy = x/2, y/2
+        circle.xy = x, y
+        circle.visible = True
 
         clock = core.CountdownTimer(trial_duration)
         while clock.getTime() > 0:
@@ -73,14 +81,19 @@ def scan(start_delay=5, trial_duration=6, optitrack_ip="127.0.0.1"):
                 window.close()
                 sys.exit()
 
-    # After program ends, save data_list to file.
+
+    # After program ends, return the collected data
+    window.close()
     return data_list
 
 
 def analyze(data):
 
     # Get data
-    x_2d, y_2d, points = np.array(zip(*data))
+    x_2d, y_2d, points = zip(*data)
+    x_2d = np.array(x_2d)
+    y_2d = np.array(y_2d)
+    points = np.array(points)
 
     # Separate data into lists by unique x_2d and y_2d combinations (each should be a single line)
     unique_vals = np.unique(np.vstack((x_2d, y_2d)))
@@ -104,7 +117,7 @@ def analyze(data):
 
     # Remove beginning and end of each line
     for idx, data in enumerate(points_sep):
-        points_sep[idx] = data[40:-40, :]
+        points_sep[idx] = data[10:-10, :]
 
     ax = fig.add_subplot(222, projection='3d')
     for point, color in zip(points_sep, 'rgbmcykrgbmcyk'):
@@ -196,7 +209,7 @@ def analyze(data):
     throw = 1. / (2. * np.tan(angle_mean * 16. / 9. / 2.))
     print("Horizontal Throw: {0}".format(throw))
 
-    return tuple(mean_position), tuple(angle_mean), float(throw)
+    return tuple(mean_position), float(np.degrees(angle_mean)), float(throw)
 
 
 if __name__ == '__main__':
@@ -217,8 +230,8 @@ if __name__ == '__main__':
         response = raw_input("Save? (Y/N): ")
         if 'y' in response.lower():
             input_registered = True
-            projector_data = {'position': position, 'rotation': rotation, 'fov_y': fov_y}
-            pickle.dump(projector_data, open(os.path.join(ratcave.data_dir), 'projector_data.pickle'), "wb")
+            projector_data = {'position': position, 'rotation': (-90 + rotation, -90, 0), 'fov_y': fov_y}
+            pickle.dump(projector_data, open(os.path.join(ratcave.data_dir), 'projector_data.pickle', "wb"))
             print("Response: Y. Data saved to file projector_data.pickle")
         elif 'n' in response.lower():
             input_registered = True
