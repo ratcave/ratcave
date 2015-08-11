@@ -91,14 +91,10 @@ class RigidBody(PositionMixin):
         # Convert from radians to degrees and return new rotation list
 
         x, y, z = [math.degrees(angle) for angle in [x, y, z]]
-        #x += 180
-        #y *= -1
-        #z -= 180
-        #z *= -1
-
-        #print "qx: %0.4f, qy: %0.4f, qz: %0.4f, qw: %0.4f ... x: %3.1f, y: %3.1f, z: %3.1f" % (o_x, o_y, o_z, o_w, x, y, z)
 
         return x, y, z
+
+
 
 
 
