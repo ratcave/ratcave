@@ -209,7 +209,7 @@ def analyze(data):
     throw = 1. / (2. * np.tan(angle_mean * 16. / 9. / 2.))
     print("Horizontal Throw: {0}".format(throw))
 
-    return tuple(mean_position), float(np.degrees(angle_mean)), float(throw)
+    return tuple(mean_position), float(np.degrees(angle_mean))
 
 
 if __name__ == '__main__':
@@ -219,10 +219,9 @@ if __name__ == '__main__':
 
     print("Beginning Scan--Please Enter the Recording Chamber!")
     data = scan()
-    pdb.set_trace()
 
     print("Analyzing Data...")
-    position, rotation, fov_y = analyze(data)
+    position, fov_y = analyze(data)
 
     print("Should this be data be saved as the projector values? (y/n)")
     input_registered = False
@@ -230,8 +229,8 @@ if __name__ == '__main__':
         response = raw_input("Save? (Y/N): ")
         if 'y' in response.lower():
             input_registered = True
-            projector_data = {'position': position, 'rotation': (-90 + rotation, -90, 0), 'fov_y': fov_y}
-            pickle.dump(projector_data, open(os.path.join(ratcave.data_dir), 'projector_data.pickle', "wb"))
+            projector_data = {'position': position, 'rotation': (-90, -90, 0), 'fov_y': 41.2 / 1.47}
+            pickle.dump(projector_data, open(os.path.join(ratcave.data_dir, 'projector_data.pickle'), "wb"))
             print("Response: Y. Data saved to file projector_data.pickle")
         elif 'n' in response.lower():
             input_registered = True

@@ -2,8 +2,12 @@ __author__ = 'ratcave'
 
 from psychopy import event
 import ratcave
-from graphics import *
+from ratcave.graphics import *
 import pdb
+import appdirs
+import pickle
+import copy
+from os import path
 
 def display(optitrack_ip="127.0.0.1"):
 
@@ -15,13 +19,13 @@ def display(optitrack_ip="127.0.0.1"):
     arena = reader.get_mesh('Arena', lighting=True)
     arena.load_texture(ratcave.graphics.resources.img_colorgrid)
 
-    reader = Wavefront(ratcave.graphics.resources.obj_primitives)
+    reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
     cube = reader.get_mesh('Sphere', lighting=True, scale=.02, centered=True)
 
     # Create Scene and Window
     scene = Scene(arena, cube)
     scene.camera = projector
-    scene.camera.position = projector_position
+    #scene.camera.rot_y = -89.5
 
     window = Window(scene, screen=1, fullscr=True)
 
@@ -32,6 +36,10 @@ def display(optitrack_ip="127.0.0.1"):
         arena.rotation = tracker.rigid_bodies['Arena'].rotation
         cube.position = tracker.rigid_bodies['CalibWand'].position
         scene.light.position = scene.camera.position
+
+        # Re-Draw Everything
+        window.draw()
+        window.flip()
 
         # Check if keyboard pressed, and update camera parameters according to key pressed.
         keylist = event.getKeys()
@@ -68,9 +76,23 @@ def display(optitrack_ip="127.0.0.1"):
                 window.close()
                 break
 
+
+            # Print the Following every time a key is detected:
             print "Camera settings:\n -shift: {0}, {1}\n -position: {2}\n -fov_y: {3}\n -rotation: {4}\n\n".format(
                 scene.camera.x_shift, scene.camera.y_shift, scene.camera.position, scene.camera.fov_y, scene.camera.rotation)
+            print("(Press Spacebar to update to new projector parameters")
 
-        # Re-Draw Everything
-        window.draw()
-        window.flip()
+            # If spacebar was pressed, save all.
+            if 'space' in keylist:
+                confirm = raw_input("Are you sure you want to save? (y/n)")
+                if 'y' in confirm.lower():
+                    proj_file = path.join(appdirs.user_data_dir("ratCAVE"), "projector_data.pickle")  # TODO: Use relative import to get data_dir from ratCAVE.__init__.py
+                    data = {'position': scene.camera.position, 'rotation': scene.camera.rotation, 'fov_y': scene.camera.fov_y}
+                    pickle.dump(data, open(proj_file, 'wb'))
+                    print("New Data Saved.  Projector Values Overwritten.")
+                    window.close()
+                    break
+
+
+if __name__ == '__main__':
+    display()

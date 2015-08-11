@@ -17,10 +17,9 @@ def __build_projector():
     import appdirs
     from os import path
 
-
     proj_file = path.join(appdirs.user_data_dir("ratCAVE"), "projector_data.pickle")  # TODO: Use relative import to get data_dir from ratCAVE.__init__.py
     if path.exists(proj_file):
-        projector_data = pickle.load(proj_file)
+        projector_data = pickle.load(open(proj_file))
         projector = Camera(position=projector_data['position'],
                            rotation=projector_data['rotation'],
                            fov_y=projector_data['fov_y'])

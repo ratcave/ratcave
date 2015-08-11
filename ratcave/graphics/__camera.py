@@ -138,28 +138,3 @@ class Camera(mixins.Physical):
 
 
 
-# Setup Projector variables (pre-load for convenience)
-#projector = Camera(fov_y=60.25 - .5, aspect=1.6, y_shift=0.675, x_shift=-0.025, rotation=(-5.5, 0., 0.,))
-#projector = Camera(fov_y=41, aspect=16./9., y_shift=0., x_shift=0., rotation=(-90., 0., 0,))  # 1920 / 1080 mode
-#projector = Camera(fov_y=41.2, aspect=16./9., y_shift=0., x_shift=0., rotation=(-90., 1., 0,))  # 1920 / 1080 mode
-#projector = Camera(fov_y=41.2 / 1.47, aspect=16./9., y_shift=0., x_shift=0., rotation=(-89., -90., 0,))  # 1920 / 1080 mode
-
-projector = Camera(fov_y=41.2 / 1.47, aspect=16./9., y_shift=0., x_shift=0., rotation=(-89., -89.7, -0.2,))  # 1920 / 1080 mode
-#projector = Camera(fov_y=41.2 / 1.47, aspect=16./9., y_shift=0., x_shift=0., rotation=(-89.3, -87.8, .2,))  # 1920 / 1080 mode
-
-
-
-
-
-#projector_position = .408, 2.654, .124
-#projector_position = .411, 2.689, .127
-#projector_position = .004, 2.689 - .35, .001
-#projector_position = .044, 2.658, -.067
-#projector_position = .02, 2.658, -.1
-#projector_position = .044, 2.673, .003
-#projector_position = .053, 2.673, -.024
-
-projector_position = .059, 2.669, -.021
-#projector_position = .048, 2.670, -.015
-
-
