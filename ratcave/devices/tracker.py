@@ -1,6 +1,8 @@
 __author__ = 'nickdg'
 
 import math
+from sklearn.decomposition import PCA
+import numpy as np
 
 class PositionMixin(object):
 
@@ -58,7 +60,8 @@ class RigidBody(PositionMixin):
         self.seen = True  # Indicates that Tracking was successful this frame.
         self.offset = offset  # (x, y, z) offset
 
-        self.rot_x, self.rot_y, self.rot_z = (0, 0, 0)
+        self.rot_x, self.rot_y, self.rot_z = 0., 0., 0.
+        self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw = 0., 0., 0., 0.
 
     @property
     def rotation(self):
@@ -69,13 +72,13 @@ class RigidBody(PositionMixin):
         if len(value) == 3:
             self.rot_x, self.rot_y, self.rot_z = value
         elif len(value) == 4:
+            self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw = value
             self.rot_x, self.rot_y, self.rot_z = self.quaternion_to_euclid(*value)
 
     def quaternion_to_euclid(self, qx, qy, qz, qw):
         """Convert quaternion (qx, qy, qz, qw) angle to euclidean (x, y, z) angles, in degrees"""
-        #o_x, o_y, o_z, o_w = qx, qy, qz, qw
+        # o_x, o_y, o_z, o_w = qx, qy, qz, qw
         qx, qy, qz, qw = qz, qy, -qx, -qw
-
 
         len_q = math.sqrt(qw**2 + qx**2 + qy**2 + qz**2)
         qw, qx, qy, qz = [el/len_q for el in [qw, qx, qy, qz]]
@@ -94,9 +97,34 @@ class RigidBody(PositionMixin):
 
         return x, y, z
 
+    def _calc_local_orientation_transform(self, dims=2):
+        """
+        Calculate which direction the rigid body is facing, based on a PCA of the markers, rather than the Optitrack's
+        orientation report.  Useful for making a consistent orientation estimate when re-creating the same rigid body over
+        multiple sessions. By default, only performs PCA in two dimensions (x and z), but will hopefully support three
+        dimensions in the future.
+        """
 
+        # Check Inputs
+        assert len(self.markers) > dims, "Not enough markers in rigid body '{0}' for local orientation calculation.\n\tMarkers Detected: {1}\n\tMin. Markers Required: {2}".format(
+            self.name, len(self.markers), dims+1)
 
+        if dims != 2:  # TODO: Support 3D local orientation calculation in Optitrack
+            raise NotImplementedError("Only 2D orientation supported for local orientation at the moment--Sorry!")
 
+        # Make an Nx3 array of marker positions
+        marker_positions = []
+        for marker in self.markers:
+            marker_positions.append(marker.position)
+        marker_positions = np.array(marker_positions)
+
+        # Get PCA Coefficients (Represent Quaternion directions)
+        axes = (0, 2) if dims == 2 else (0, 1, 2)
+        coeffs = PCA(n_components=2).fit(marker_positions[:, axes]).components_
+
+        # Compare to current (global) orientation, and calculate global-to-local and local-to-global rotation matrices.
+        # Algorithm found at http://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+        norm = np.dot([coeffs[0], 0, coeffs[1]], (self.rot_qx, 0, self.rot_qz))
 
 
 
