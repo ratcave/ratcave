@@ -412,9 +412,8 @@ class Optitrack(object):
             body_id, x, y, z, qx, qy, qz, qw = unpack('i7f',data.read(32))
             body = self.rigid_bodies_by_id[body_id] #self.rigid_bodies[id]
             body.position = x, y, z
-            body.rotation = qx, qy, qz, qw
-            body.rot_x *= -1.
-            body.rot_z *= -1. # TODO: Find out why some Optitrack rotation parameters are negative.  (Left-Hand Orientation System?)
+            body.rotation_quaternion = qx, qy, qz, qw
+
 
 
             # Get body's markers' information
