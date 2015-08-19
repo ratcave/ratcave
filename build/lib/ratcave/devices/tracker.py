@@ -87,6 +87,10 @@ class RigidBody(PositionMixin):
     def rotation_quaternion(self):
         return self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw
 
+    @property
+    def rotation_matrix(self):
+        return self.quaternion_to_rotation_matrix(*self.rotation_quaternion)
+
     @rotation_quaternion.setter
     def rotation_quaternion(self, value):
         self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw = np.array(value)/ np.linalg.norm(value)  # Normalized
@@ -98,8 +102,16 @@ class RigidBody(PositionMixin):
             self._calc_local_y_orientation_transform()
 
         rot_quat = np.dot(self._global_to_local_rotation_matrix, np.array([self.rotation_quaternion[:3]]).T, ).flatten()
-
         return self.quaternion_to_euclid(rot_quat[0], rot_quat[1], rot_quat[2], 1.0)
+
+
+    def rotation_matrix_to_euclid(self, rot_matrix):
+        x = np.arctan2(rot_matrix[1,2], rot_matrix[2,2])  # Inputs to atan2 may need to be reversed in NumPy
+        c2 = np.sqrt(rot_matrix[0,0]**2 + rot_matrix[0,1]**2)
+        y = np.arctan2(-rot_matrix[0,2], c2)
+        s1, c1 = np.sin(x), np.cos(x)
+        z = np.arctan2(s1*rot_matrix[2,0] - c1*rot_matrix[1,0], c1*rot_matrix[1,1] - s1*rot_matrix[2,1])  # same as above
+        return tuple(np.degrees([x, y, z]))
 
 
     def quaternion_to_euclid(self, qx, qy, qz, qw):
@@ -112,6 +124,11 @@ class RigidBody(PositionMixin):
 
         return [math.degrees(angle) for angle in [attitude, heading, bank]]  # TODO: May need to change some things to negative to deal with left-handed coordinate system.
 
+    def quaternion_to_rotation_matrix(self, qx, qy, qz, qw):
+        """from http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/"""
+        return np.array([[1 - 2*qy**2 - 2*qz**2,  2*qx*qy - 2*qz*qw    , 2*qx*qz + 2*qy*qw    ],
+                         [2*qx*qy + 2*qz*qw    ,  1 - 2*qx**2 - 2*qz**2, 2*qy*qz - 2*qx*qw    ],
+                         [2*qx*qz - 2*qy*qw    ,  2*qy*qz + 2*qx*qw    , 1 - 2*qx**2 - 2*qy**2]])
 
     def _calc_local_y_orientation_transform(self):
         """
@@ -127,23 +144,19 @@ class RigidBody(PositionMixin):
             marker_positions.append(marker.position)
         marker_positions = np.array(marker_positions)
 
-        # Get PCA Coefficients (Represent Quaternion directions)
-        coeffs = PCA(n_components=2).fit(marker_positions[:, (0, 2)]).components_[0]
+        # Get PCA Coefficients (Represent Direction Vector)
+        pdb.set_trace()
+        coeffs = PCA(n_components=2).fit(marker_positions).components_[0]
         coeffs = -coeffs if coeffs[0] < 0 else coeffs  # Flip so that the first coord is always in positive direction
 
-        # Normalize Vectors
-        ll = np.array((coeffs[0], 0, coeffs[1]), dtype=float)
-        gg = np.array((self.rot_qx,  0, self.rot_qz), dtype=float)
-
-        for vec in [ll, gg]:
-            vec /= np.linalg.norm(vec)
+        # Convert Quaternion to vector after rotating pos-X unit vector.
+        glob_vector = np.dot(np.array([1, 0, 0]).T, self.quaternion_to_rotation_matrix(*self.rotation_quaternion))
 
         # Calculate Rotation Matrix about the Y Axis
-        ct, st = np.dot(ll, gg), np.cross(ll, gg)[1]
+        ct, st = np.dot(coeffs, glob_vector), np.cross(coeffs, glob_vector)[1]
         rot_matrix = np.array([[ct, 0, st], [0, 1, 0], [-st, 0, ct]])
 
-        # Set Matrix
-        pdb.set_trace()
+        # Set Matrix,
         self._global_to_local_rotation_matrix = rot_matrix
 
 
