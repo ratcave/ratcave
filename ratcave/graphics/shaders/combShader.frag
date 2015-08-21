@@ -10,8 +10,8 @@ uniform samplerCube my_cube_texture;
 
 in float lightAmount;
 in vec2 texCoord;
-in vec3 vVertex, normal, eyeVec;
-in vec4 ShadowCoord;
+in vec3 normal, eyeVec;
+in vec4 vVertex, ShadowCoord;
 
 out vec4 final_color;
 
@@ -41,7 +41,7 @@ void main()
 
     //// Phong Model
     vec3 normal = normalize(normal);
-    vec3 light_direction = normalize(light_position - vVertex);
+    vec3 light_direction = normalize(light_position - vVertex.xyz);
 
     // Phong Diffuse
     float diffuse_coeff = clamp(max(dot(normal,light_direction),0), 0.0, 1.0);
@@ -50,7 +50,7 @@ void main()
     float specular_coeff = 0.;
     if (spec_weight > 1.0) {
         vec3 reflectionVector = reflect(light_direction, normal);
-        float cosAngle = max(0.0, -dot(normalize(camera_position - vVertex), reflectionVector));
+        float cosAngle = max(0.0, -dot(normalize(camera_position - vVertex.xyz), reflectionVector));
         specular_coeff = pow(cosAngle, spec_weight);
     }
 
