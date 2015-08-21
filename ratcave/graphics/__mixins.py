@@ -179,7 +179,7 @@ class Physical(object):
         rot_mat = np.dot(np.dot(rot_z_mat,rot_y_mat), rot_x_mat)
         model_matrix = np.dot(np.dot(trans_mat, rot_mat), scale_mat)
         self._model_matrix = model_matrix.T.flatten()  # Transpose is to change to column-major mode, for OpenGL
-        self._normal_matrix = np.linalg.inv(model_matrix.T).T.flatten()  # Both transposes could cancel each other our, but don't cost much to do here..
+        self._normal_matrix = np.linalg.inv(model_matrix.T).T.flatten()  # Both transposes could cancel each other out, but don't cost much to do here..
 
 class Color(object):
 
