@@ -156,6 +156,7 @@ class Physical(object):
 
     def _set_transformation_matrix(self):
         """Operates on either Model matrix or View matrix, depending on the type specified by self._tranform_type."""
+        # TODO: Make more efficient--there shouldn't need to be so many calculations, as some of these seem redundant!
 
         # Set View Matrix
         trans_mat = transformations.translation_matrix([-self.x, -self.y, -self.z])
