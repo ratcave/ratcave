@@ -56,11 +56,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="__mesh.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="__mesh.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mesh.py">
           <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.9699499">
+              <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__wavefront.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ratcave/graphics/__wavefront.py">
+          <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="158" column="13" selection-start-line="158" selection-start-column="10" selection-end-line="158" selection-end-column="13" />
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -70,7 +80,7 @@
         <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mixins.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="175" column="40" selection-start-line="175" selection-start-column="40" selection-end-line="175" selection-end-column="40" />
+              <caret line="155" column="0" selection-start-line="155" selection-start-column="0" selection-end-line="155" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -80,17 +90,17 @@
         <entry file="file://$PROJECT_DIR$/ratcave/graphics/__scene.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="250" column="82" selection-start-line="250" selection-start-column="82" selection-end-line="250" selection-end-column="82" />
+              <caret line="229" column="66" selection-start-line="229" selection-start-column="66" selection-end-line="229" selection-end-column="66" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="combShader.vert" pinned="false" current-in-tab="true">
+      <file leaf-file-name="combShader.vert" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ratcave/graphics/shaders/combShader.vert">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.30884808">
-              <caret line="26" column="52" selection-start-line="26" selection-start-column="52" selection-end-line="26" selection-end-column="52" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="16" column="44" selection-start-line="16" selection-start-column="44" selection-end-line="16" selection-end-column="44" />
               <folding />
             </state>
           </provider>
@@ -145,12 +155,12 @@
         <option value="$PROJECT_DIR$/ratcave/devices/optitrack.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/__window.py" />
         <option value="$PROJECT_DIR$/ratcave/devices/tracker.py" />
-        <option value="$PROJECT_DIR$/ratcave/graphics/__mesh.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/shaders/shadowShader.vert" />
         <option value="$PROJECT_DIR$/ratcave/graphics/__mixins.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/shaders/combShader.frag" />
         <option value="$PROJECT_DIR$/ratcave/graphics/__scene.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/shaders/combShader.vert" />
+        <option value="$PROJECT_DIR$/ratcave/graphics/__mesh.py" />
       </list>
     </option>
   </component>
@@ -468,9 +478,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="55" y="-4" width="1625" height="1054" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
-      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3236559" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3236559" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -724,13 +734,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__wavefront.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ratcave/devices/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.125">
@@ -835,22 +838,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mixins.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="175" column="40" selection-start-line="175" selection-start-column="40" selection-end-line="175" selection-end-column="40" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mesh.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="158" column="13" selection-start-line="158" selection-start-column="10" selection-end-line="158" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ratcave/graphics/shaders/shadowShader.vert">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.39065108">
@@ -884,18 +871,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__scene.py">
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/shaders/combShader.vert">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="250" column="82" selection-start-line="250" selection-start-column="82" selection-end-line="250" selection-end-column="82" />
+          <caret line="16" column="44" selection-start-line="16" selection-start-column="44" selection-end-line="16" selection-end-column="44" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ratcave/graphics/shaders/combShader.vert">
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__scene.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.30884808">
-          <caret line="26" column="52" selection-start-line="26" selection-start-column="52" selection-end-line="26" selection-end-column="52" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="229" column="66" selection-start-line="229" selection-start-column="66" selection-end-line="229" selection-end-column="66" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mixins.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="155" column="0" selection-start-line="155" selection-start-column="0" selection-end-line="155" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__wavefront.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/graphics/__mesh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.9699499">
+          <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
           <folding />
         </state>
       </provider>

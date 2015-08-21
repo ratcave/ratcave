@@ -84,15 +84,17 @@ class Mesh(object):
         """
 
         # Mesh Data
-        assert isinstance(mesh_data, MeshData)
+        assert isinstance(mesh_data, MeshData), "Mesh object requires a MeshData object as input."
         self.data = mesh_data
+        vertex_mean = np.mean(self.data.vertices, axis=0)
+        self.data.vertices -= vertex_mean
 
-        # Set variables (not including GL variables)
-        self.world = mixins.Physical(position, rotation, scale)  # Couldn't use "global" as name of property--reserved in python.
-        self.local = mixins.Physical()
+        # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
+        world_position = (0., 0., 0.) if centered else tuple(vertex_mean)
+        self.world = mixins.Physical(position=world_position)  # Couldn't use "global" as name of property--reserved in python.
+        self.local = mixins.Physical(position=position, rotation=rotation, scale=scale)
 
-
-
+        self.material = material if isinstance(material, Material) else Material()
         self.texture = None  # will be changed to pyglet texture object if texture is set.
         self.cubemap = None
         self.meshObj = mesh
@@ -101,28 +103,6 @@ class Mesh(object):
 
         self.visible = True
         self.loaded = False  # If mesh data is loaded into OpenGL yet.
-
-        # Coordinates and Material
-        # self.props = None
-        # self.__objfile = objfile
-        assert isinstance(material, (Material, types.NoneType)), "material should be a Material instance or None."
-        if material is None:
-            material = Material()  # Make Default Material
-        self.material = material
-
-        #  if specifiede.
-        if centered:  # Mean-Center Vertices, if specified.
-            self.mean_center()
-
-    def mean_center(self):
-        """Mean-center the vertices, so self.position_center = [0, 0, 0]"""
-        # TODO: Incorporate into Global and Local coordinate system schemes.
-        self.data.vertices -= self.position_center
-
-    @property
-    def position_center(self):
-        # TODO: Incorporate into Global and Local coordinate system schemes.
-        return np.mean(self.data.vertices, axis=0)
 
     def __repr__(self):
         """Called when print() or str() commands are used on object."""
