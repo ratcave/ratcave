@@ -62,7 +62,7 @@ class Empty(mixins.Physical):
         mixins.Physical.__init__(self, position, rotation)
 
 
-class Mesh(mixins.Physical):
+class Mesh(object):
 
     drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
 
@@ -88,7 +88,10 @@ class Mesh(mixins.Physical):
         self.data = mesh_data
 
         # Set variables (not including GL variables)
-        mixins.Physical.__init__(self, position, rotation, scale)
+        self.world = mixins.Physical(position, rotation, scale)  # Couldn't use "global" as name of property--reserved in python.
+        self.local = mixins.Physical()
+
+
 
         self.texture = None  # will be changed to pyglet texture object if texture is set.
         self.cubemap = None
@@ -113,10 +116,12 @@ class Mesh(mixins.Physical):
 
     def mean_center(self):
         """Mean-center the vertices, so self.position_center = [0, 0, 0]"""
+        # TODO: Incorporate into Global and Local coordinate system schemes.
         self.data.vertices -= self.position_center
 
     @property
     def position_center(self):
+        # TODO: Incorporate into Global and Local coordinate system schemes.
         return np.mean(self.data.vertices, axis=0)
 
     def __repr__(self):

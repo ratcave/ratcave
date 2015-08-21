@@ -245,8 +245,9 @@ class Scene:
             if mesh.visible:
 
                 # Send Model and Normal Matrix to shader.
-                shader.uniform_matrixf('model_matrix', mesh._model_matrix)
-                shader.uniform_matrixf('normal_matrix', mesh._normal_matrix)
+                shader.uniform_matrixf('model_matrix_global', mesh.world._model_matrix)
+                shader.uniform_matrixf('model_matrix_local', mesh.local._model_matrix)
+                shader.uniform_matrixf('normal_matrix', mesh.world._normal_matrix)
 
                 if shader == Scene.genShader:
                     # Change Material to Mesh's
