@@ -24,8 +24,8 @@
             <file leaf-file-name="tracker.py" pinned="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/ratcave/devices/tracker.py">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state vertical-scroll-proportion="0.60655737">
-                    <caret line="119" column="23" selection-start-line="119" selection-start-column="23" selection-end-line="119" selection-end-column="23" />
+                  <state vertical-scroll-proportion="0.6262295">
+                    <caret line="87" column="65" selection-start-line="87" selection-start-column="65" selection-end-line="87" selection-end-column="65" />
                     <folding>
                       <element signature="e#23#34#0" expanded="true" />
                     </folding>
@@ -59,9 +59,21 @@
       <file leaf-file-name="eulerangles.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ratcave/devices/eulerangles.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.48080134">
-              <caret line="268" column="0" selection-start-line="268" selection-start-column="0" selection-end-line="268" selection-end-column="0" />
+            <state vertical-scroll-proportion="1.6010016">
+              <caret line="383" column="24" selection-start-line="383" selection-start-column="24" selection-end-line="383" selection-end-column="24" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="arena_scanner.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/arena_scanner.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-11.32258">
+              <caret line="236" column="88" selection-start-line="236" selection-start-column="88" selection-end-line="236" selection-end-column="88" />
+              <folding>
+                <element signature="e#23#32#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -97,7 +109,6 @@
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/resources.py" />
         <option value="$PROJECT_DIR$/ratcave/__init__.py" />
-        <option value="$PROJECT_DIR$/ratcave/console_scripts/arena_scanner.py" />
         <option value="$PROJECT_DIR$/ratcave/console_scripts/opti_projector_calibration.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/__init__.py" />
         <option value="$PROJECT_DIR$/ratcave/console_scripts/opti_projector_rotation_calib.py" />
@@ -110,6 +121,7 @@
         <option value="$PROJECT_DIR$/ratcave/graphics/__scene.py" />
         <option value="$PROJECT_DIR$/ratcave/graphics/shaders/combShader.vert" />
         <option value="$PROJECT_DIR$/ratcave/graphics/__mesh.py" />
+        <option value="$PROJECT_DIR$/ratcave/console_scripts/arena_scanner.py" />
         <option value="$PROJECT_DIR$/ratcave/devices/tracker.py" />
       </list>
     </option>
@@ -744,13 +756,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/arena_scanner.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="174" column="78" selection-start-line="174" selection-start-column="78" selection-end-line="174" selection-end-column="78" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/opti_projector_rotation_calib.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.704893">
@@ -841,18 +846,28 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ratcave/console_scripts/arena_scanner.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-11.32258">
+          <caret line="236" column="88" selection-start-line="236" selection-start-column="88" selection-end-line="236" selection-end-column="88" />
+          <folding>
+            <element signature="e#23#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ratcave/devices/eulerangles.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.48080134">
-          <caret line="268" column="0" selection-start-line="268" selection-start-column="0" selection-end-line="268" selection-end-column="0" />
+        <state vertical-scroll-proportion="1.6010016">
+          <caret line="383" column="24" selection-start-line="383" selection-start-column="24" selection-end-line="383" selection-end-column="24" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ratcave/devices/tracker.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.60655737">
-          <caret line="119" column="23" selection-start-line="119" selection-start-column="23" selection-end-line="119" selection-end-column="23" />
+        <state vertical-scroll-proportion="0.6262295">
+          <caret line="87" column="65" selection-start-line="87" selection-start-column="65" selection-end-line="87" selection-end-column="65" />
           <folding>
             <element signature="e#23#34#0" expanded="true" />
           </folding>
