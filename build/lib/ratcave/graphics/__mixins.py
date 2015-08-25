@@ -156,6 +156,7 @@ class Physical(object):
 
     def _set_transformation_matrix(self):
         """Operates on either Model matrix or View matrix, depending on the type specified by self._tranform_type."""
+        # TODO: Make more efficient--there shouldn't need to be so many calculations, as some of these seem redundant!
 
         # Set View Matrix
         trans_mat = transformations.translation_matrix([-self.x, -self.y, -self.z])
@@ -178,7 +179,7 @@ class Physical(object):
         rot_mat = np.dot(np.dot(rot_z_mat,rot_y_mat), rot_x_mat)
         model_matrix = np.dot(np.dot(trans_mat, rot_mat), scale_mat)
         self._model_matrix = model_matrix.T.flatten()  # Transpose is to change to column-major mode, for OpenGL
-        self._normal_matrix = np.linalg.inv(model_matrix.T).T.flatten()  # Both transposes could cancel each other our, but don't cost much to do here..
+        self._normal_matrix = np.linalg.inv(model_matrix.T).T.flatten()  # Both transposes could cancel each other out, but don't cost much to do here..
 
 class Color(object):
 
