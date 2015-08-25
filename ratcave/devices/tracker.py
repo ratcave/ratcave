@@ -5,33 +5,28 @@ import pdb
 import numpy as np
 from sklearn.decomposition import PCA
 from types import NoneType
+from collections import namedtuple
+
+Position = namedtuple("Position", "x y z")
+RotationEuler = namedtuple("RotationEuler", "x y z")
 
 
+class MarkerSet(object):
 
-class PositionMixin(object):
-
-    def __init__(self):
-        super(PositionMixin, self).__init__()
-        self.x, self.y, self.z = (0, 0, 0)
-
-    @property
-    def position(self):
-        return (self.x, self.y, self.z)
-
-    @position.setter
-    def position(self, value):
-        if value is not None:
-            self.x, self.y, self.z = value
+    def __init__(self, name='', id=None):
+        self.name = name
+        self.id = id
+        self.markers = []
 
 
-class Marker(PositionMixin):
+class Marker(object):
 
     def __init__(self, position=(0,0,0), name='', id=None, size=None):
         super(Marker, self).__init__()
         self.name = name
         self.id = id
         self.size = size
-        self.position = position
+        self.position = Position(position)
 
         # Optitrack-Provided attributes for labelled markers.
         self.occluded = None
@@ -45,53 +40,36 @@ class Marker(PositionMixin):
         return "Marker at [{:3.2f}, {:3.2f}, {:3.2f}]".format(self.position[0], self.position[1], self.position[2])
 
 
-class MarkerSet(object):
-
-    def __init__(self, name='', id=None):
-        self.name = name
-        self.id = id
-        self.markers = []
-
-
-class RigidBody(PositionMixin):
+class RigidBody(object):
 
     def __init__(self, name='', markers=[], id=None, parent_id=None, offset=(0., 0., 0.)):
         super(RigidBody, self).__init__()
         self.name = name
-        self.id = id
+        self.id, self.parent_id = id, parent_id
         self.markers = markers
         self.error = None  # Mean marker error
         self.seen = True  # Indicates that Tracking was successful this frame.
-        self.offset = offset  # (x, y, z) offset
-
-        self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw = 0., 0., 0., 0.
-        self._global_to_local_rotation_matrix = None
+        self.offset = Position(*offset)
+        self.__position, self.__rotation = None, None
 
     @property
-    def rot_x(self):
-        return self.quaternion_to_euclid(self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw)[0]
+    def position(self):
+        return self.__position
 
-    @property
-    def rot_y(self):
-        return self.quaternion_to_euclid(self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw)[1]
-
-    @property
-    def rot_z(self):
-        return self.quaternion_to_euclid(self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw)[2]
+    @position.setter
+    def position(self, value):
+        self.__position = Position(*value)
 
     @property
     def rotation(self):
-        return self.quaternion_to_euclid(self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw)
+        return self.__rotation
 
-    @property
-    def rotation_quaternion(self):
-        return self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw
+    @rotation.setter
+    def rotation(self, value):
+        coords = value if len(value)==3 else self.__quaternion_to_euler(*value)
+        self.__rotation = RotationEuler(*coords)
 
-    @rotation_quaternion.setter
-    def rotation_quaternion(self, value):
-        self.rot_qx, self.rot_qy, self.rot_qz, self.rot_qw = np.array(value)/ np.linalg.norm(value)  # Normalized
-
-    def quaternion_to_euclid(self, qx, qy, qz, qw):
+    def __quaternion_to_euler(self, qx, qy, qz, qw):
         """Convert quaternion (qx, qy, qz, qw) angle to euclidean (x, y, z) angles, in degrees.
         Equation from http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/"""
 
