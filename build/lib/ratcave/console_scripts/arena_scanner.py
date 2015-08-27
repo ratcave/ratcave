@@ -34,7 +34,7 @@ def scan(optitrack_ip="127.0.0.1"):
     for el in range(10):
         mesh = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, scale=.01)
         mesh.material.diffuse.rgb = 1, 1, 1
-        mesh.position=[0, -1 + .2*el, -1],
+        mesh.world.position=[0, -1 + .2*el, -1],
         meshes.append(mesh)
 
     scene = Scene(meshes)

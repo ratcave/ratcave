@@ -18,6 +18,7 @@ ratcave/devices/eulerangles.py
 ratcave/devices/optitrack.py
 ratcave/devices/propixx_utils.py
 ratcave/devices/tracker.py
+ratcave/devices/ttl.py
 ratcave/graphics/__camera.py
 ratcave/graphics/__init__.py
 ratcave/graphics/__mesh.py
