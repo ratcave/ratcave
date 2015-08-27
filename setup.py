@@ -3,7 +3,7 @@ __author__ = 'ratcave'
 from setuptools import setup, find_packages
 
 setup(name='ratcave',
-      version='0.8',
+      version='0.5',
       description='3D Graphics Engine for CAVE VR setups',
       author='Nicholas A. Del Grosso',
       author_email='delgrosso@bio.lmu.de',
