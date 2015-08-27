@@ -15,6 +15,7 @@ from sklearn.decomposition import PCA
 from scipy import stats
 import pdb
 from psychopy import event, core
+import pandas as pd
 
 
 
@@ -29,26 +30,32 @@ def scan(optitrack_ip="127.0.0.1"):
     tracker = Optitrack(client_ip=optitrack_ip)
     assert "Arena" in tracker.rigid_bodies, "Must Add Arena Rigid Body in Motive!"
     wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.007)
-    circle.material.diffuse.rgb = 1, 1, 1  # Make white
+    meshes = []
+    for el in range(10):
+        mesh = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, scale=.01)
+        mesh.material.diffuse.rgb = 1, 1, 1
+        mesh.position=[0, -1 + .2*el, -1],
+        meshes.append(mesh)
 
-    scene = Scene(circle)
+    scene = Scene(meshes)
     scene.camera.ortho_mode = True
 
     window = Window(scene, screen=1, fullscr=True)
 
     #start drawing.
     data = {'markerPos': [], 'bodyPos': [], 'bodyRot': [], 'screenPos': []}
-    clock = core.CountdownTimer(5 * 60)
+    clock = core.CountdownTimer(.8 * 60)
     while ('escape' not in event.getKeys()) and clock.getTime() > 0:
 
         # Draw Circle
-        circle.visible = False if circle.visible == True else True  # Switch visible to True and False alternately.
-        circle.xy = np.random.uniform(-1.2, 1.2), np.random.uniform(-.85, .85)  # Change circle position to a random one.
+        for mesh in meshes:
+            mesh.visible = False if mesh.visible == True else True  # Switch visible to True and False alternately.
+
+        scene.camera.xy = np.random.uniform(-1.2, 1.2), np.random.uniform(-.85, .85)  # Change circle position to a random one.
         window.draw()
         window.flip()
 
-        time.sleep(.032)
+        time.sleep(.006)
 
         new_position = tracker.get_unidentified_positions(1)
         if new_position:
@@ -62,7 +69,6 @@ def scan(optitrack_ip="127.0.0.1"):
                 data['markerPos'].append(new_position[0])
                 data['bodyPos'].append(body.position)
                 data['bodyRot'].append(body.rotation)
-                data['screenPos'].append(circle.xy)
         else:
             print("No point detected.")
 
@@ -103,73 +109,65 @@ def meshify(data, filename):
     ## IMPORT DATA ##
     # Put values of data dictionary into numpy arrays.
     body_positions, body_rotations = np.array(data['bodyPos']), np.array(data['bodyRot'])
-    data = np.array(data['markerPos'])
-
-    # Assume normally-ish distributed position and rotation data, and get mean body data after removing outliers.
-    fig = plt.figure()
-    plt.hist(body_positions - np.mean(body_positions, axis=0), bins=40)
+    data = pd.DataFrame(data['markerPos'], columns=['x', 'y', 'z'])
+    data['mask'] = True  # Identifies which rows are used in the analysis (will be updated as filters are run)
 
     # Plot raw marker data as 3D Scatterplot
+    """
     fig = plt.figure()
     ax = fig.add_subplot(221, projection='3d')
-    lims = utils.plot3_square(ax, data)
-
+    lims = utils.plot3_square(ax, np.array(data[['x', 'y', 'z']]))
+    plt.show()
+    """
 
     ## REMOVE OUTLIERS ##
     # Remove Obviously Bad Points according to Height
-    data = data[(-.02 < data[:, 1]) * (data[:, 1] < .52), :]  # 1.2
+    data['mask'] &= (-.02 < data['y']) & (data['y'] < .52)   # TODO: Automatize Height-based point filtering.
 
     # Filter out data that's not within a clear plane (mainly corners and outliers)
-    planarity_threshold = .005  # 1 is 100%.  Let's take all below 0.5% (super planar)
-    normals, explained_variances = normal_nearest_neighbors(data)
-    data =       data[explained_variances[:, 2] < planarity_threshold, :]
-    normals = normals[explained_variances[:, 2] < planarity_threshold, :]
-
+    normals, explained_variances = normal_nearest_neighbors(np.array(data[['x', 'y', 'z']]))
+    data = pd.concat([data, pd.DataFrame(normals, columns=['nx', 'ny', 'nz'])], axis=1)
+    data['mask'] &= explained_variances[:,2] < .005  #
 
     ## CLUSTER INTO SEPARATE WALL PLANES ##
     # Label Markers by Clustering of their normals
-    radius = .3
-    distance = lambda dd, cent: np.sqrt(np.sum((dd-cent)**2, axis=1))
-    data_clustered = []  # List of clustered data
+    data['wall'] = None
+    walls = pd.DataFrame(columns=['nx', 'ny', 'nz', 'x', 'y', 'z'])
     for wall in range(5):
-        # Cluster from a random point
-        print(normals.shape)
-        center = normals[np.random.randint(0, len(normals)), :]
-        mask = distance(normals, center) < radius
-        data_clustered.append(data[mask, :])  # Position, normal
+        # Cluster from a random point, taking only points within a given distance (normal direction) from it
+        print("Making Wall {0}.  Points left to assign: {1}".format(wall, sum(data['wall'].notnull()==False)))
+        pdb.set_trace()
 
-        # Remove already-clustered data from the list to be clustered
-        normals = normals[mask == False, :]  # Normals
-        data = data[mask == False, :]  # Positional coordinates
+        normal_data = data.loc[data['mask'] & data['wall'].notnull()==False, ['nx', 'ny', 'nz']]
+        center_idx = np.random.choice(normal_data.index.values)
 
+        wall_mask = np.sqrt(((normal_data - normal_data.ix[center_idx])**2).sum(axis=1)) < .5
+        data.loc[wall_mask, 'wall'] = wall
+
+        # Get Mean position and normal from the cluster of points, filtering again to get rid of any outliers (so much filtering!)
+        wall_data = data[['x', 'y', 'z']].ix[wall_mask]
+        rotated_data = PCA(n_components=3).fit(wall_data).transform(wall_data)[:,2]
+        mean, std, threshold = np.mean(rotated_data), np.std(rotated_data), 1.5
+        mask = (mean - (threshold * std) < rotated_data) * (rotated_data < (mean + (threshold *std)))
+        data.loc[wall_data.index, 'mask'] &= mask
+
+        # Get normal and offset position for each wall
+        normal = PCA(n_components=3).fit(wall_data.ix[mask]).components_[2]
+        normal = -normal if normal[1] < 0 else normal
+        offset = wall_data.ix[mask].mean()
+        walls.loc[wall, ['nx', 'ny', 'nz', 'x', 'y', 'z']] = np.append(normal, offset)
+
+    pdb.set_trace()
+
+    """
     # Plot Box with labeled Sides
     ax = fig.add_subplot(222, projection='3d')
     for data, color in zip(data_clustered, 'rgybm'):
         utils.plot3_square(ax, data, color, lims=lims)
-
+    """
     ## CALCULATE WALL NORMAL AND CENTER ##
     normals, offsets = [], []
     ax = fig.add_subplot(223, projection='3d')
-    for data in data_clustered:
-        # First, Remove outliers in plane to get more robust fit
-        rotate = lambda dd: PCA(n_components=3).fit(dd).transform(dd)
-        rotated_data = rotate(data)
-        rd = rotated_data[:,2]
-        mean, std, threshold = np.mean(rd), np.std(rd), 1.5
-        mask = (mean - (threshold * std) < rd) * (rd < (mean + (threshold *std)))
-        data = data[mask, :]
-
-        # Plot residual map
-        cmhot = plt.cm.get_cmap("bwr")
-        ax.scatter(data[:,0], data[:,1], data[:,2], zdir='y', c=rotate(data)[:,2], cmap=cmhot, vmin=-.002, vmax=.002)
-
-        # Repeat PCA on remaining data, get normal from coeffs and offset from mean.
-        nn = PCA(n_components=3).fit(data).components_[2]
-        nn = nn if nn[1] > 0 else -nn
-        normals.append(nn)
-        offsets.append(np.mean(data, axis=0))
-
-    normals, offsets = np.array(normals), np.array(offsets)
 
     ## CALCULATE PLANE INTERSECTIONS TO GET VERTICES ##
     # Want equation in form ax + by + cz = d.  So, get d from norm and offsets
@@ -263,7 +261,7 @@ def meshify(data, filename):
     ax = fig.add_subplot(224, projection='3d')
     for face_inds, color in zip(quad_faces, 'rgybm'):
         data = np.vstack((vertices[face_inds, :], vertices[face_inds[0], :]))
-        utils.plot3_square(ax, data, color+':', lims=lims)
+        utils.plot3_square(ax, data, color+':', limits=lims)
 
     plt.show()
 
@@ -272,7 +270,6 @@ if __name__ == '__main__':
     # Run the specified function from the command line. Format: arena_scanner function_name file_name
     print("Starting the Scan Process...")
     data = scan()
-    pdb.set_trace()
     print("Analyzing and Saving to {0}".format(ratcave.data_dir))
     meshify(data, filename=os.path.join(ratcave.data_dir, 'arena_unprocessed.obj'))
     print("Save done.  Please import file into blender and export as arena.obj before using in experiments!")

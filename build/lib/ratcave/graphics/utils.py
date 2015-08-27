@@ -13,31 +13,24 @@ def vec(floatlist,newtype='float'):
         elif 'int' in newtype:
             return (gl.GLuint * len(floatlist))(*list(floatlist))
 
-
-def axis_lims(data, buffer_perc=.1):
-    """Returns axis limits for fitting 3D data into a square axis."""
-    ranges = data.max(axis=0) - data.min(axis=0)
-    tot_range = ranges.max() * (1 + buffer_perc) * 0.5
-    mn = data.mean(axis=0, keepdims=True) - tot_range
-    mx = data.mean(axis=0, keepdims=True) + tot_range
-    return np.vstack([mn, mx]).transpose()
-
-
-def set_all_lim3d(axis_object, axis_lims):
-    """Applies axis limits to an Axis"""
-    axis_object.set_xlim3d(axis_lims[0])
-    axis_object.set_ylim3d(axis_lims[1])
-    axis_object.set_zlim3d(axis_lims[2])
-    return axis_object
-
-
-def plot3_square(axis_object, data, color='b', lims=None):
+def plot3_square(axis_object, data, color='b', limits=None):
     """Convenience function for plotting a plot3 scatterplot with square axes."""
-    lims = lims if lims != None else axis_lims(data)
+    # Set axis limits, if not already set.
 
-    axis_object = set_all_lim3d(axis_object, lims)
-    plot = axis_object.plot3D(data[:, 0], data[:, 1], data[:, 2], color+'o', zdir='y')
-    return lims
+    if limits == None:
+        tot_range = (data.max(axis=0) - data.min(axis=0)).max() * .55
+        mn = data.mean(axis=0, keepdims=True) - tot_range
+        mx = data.mean(axis=0, keepdims=True) + tot_range
+        limits = np.vstack([mn, mx]).transpose()
+
+    # apply limits to the axis
+    for coord, idx in zip('xyz', range(3)):
+        getattr(axis_object, 'set_{0}lim3d'.format(coord))(limits[idx])
+
+    # Plot
+    axis_object.plot3D(data[:, 0], data[:, 1], data[:, 2], color+'o', zdir='y')
+
+    return limits
 
 def setpriority(pid=None,priority=1):
     

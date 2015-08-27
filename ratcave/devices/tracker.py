@@ -26,7 +26,7 @@ class Marker(object):
         self.name = name
         self.id = id
         self.size = size
-        self.position = Position(position)
+        self.position = Position(*position)
 
         # Optitrack-Provided attributes for labelled markers.
         self.occluded = None

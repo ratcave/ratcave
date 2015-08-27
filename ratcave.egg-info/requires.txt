@@ -2,3 +2,4 @@ pyglet
 numpy
 psychopy
 appdirs
+pandas

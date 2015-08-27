@@ -324,15 +324,10 @@ class Optitrack(object):
 
             # Rigid Body
             elif d_type == 1:
-                if not d_name in self.rigid_bodies:
-                    self.rigid_bodies[d_name] = RigidBody(name=d_name)
-                body = self.rigid_bodies[d_name]
-
                 id, parent_id, x_offset, y_offset, z_offset = unpack('2i3f', data.read(20))
-                body.id, body.parent_id = id, parent_id
-                body.offset = (x_offset, y_offset, z_offset)
-
-                self.rigid_bodies_by_id[id] = body  # Update id key list, in case id-name association changes.
+                if not d_name in self.rigid_bodies:
+                    body = RigidBody(name=d_name, id=id, parent_id=parent_id, offset=(x_offset, y_offset, z_offset))
+                    self.rigid_bodies[d_name], self.rigid_bodies_by_id[id] = body, body
 
             # Skeleton
             elif d_type == 2:
@@ -351,17 +346,11 @@ class Optitrack(object):
                 skeletons[id] = skeleton
                 """
 
-        # TODO: Check that deleting expired names in modeldef doesn't break anything.
         # Now, delete any items from the dictionaries that aren't in the server's model.
-        temp_marker_sets = self.marker_sets
-        for name in temp_marker_sets:
-            if name not in d_name_list:
-                del self.marker_sets[name]
-
-        temp_rigid_bodies = self.rigid_bodies
-        for name in temp_rigid_bodies:
-            if name not in d_name_list:
-                del self.rigid_bodies[name]
+        for dictionary in [self.marker_sets, self.rigid_bodies]:
+            for name in dictionary.keys():
+                if name not in d_name_list:
+                    del dictionary[name]
 
         return packet
 
@@ -412,7 +401,7 @@ class Optitrack(object):
             body_id, x, y, z, qx, qy, qz, qw = unpack('i7f',data.read(32))
             body = self.rigid_bodies_by_id[body_id] #self.rigid_bodies[id]
             body.position = x, y, z
-            body.rotation_quaternion = qx, qy, qz, qw
+            body.rotation = qx, qy, qz, qw
 
 
 

@@ -12,7 +12,7 @@ setup(name='ratcave',
       package_data={'': ['graphics/assets/*.'+el for el in ['png', 'obj', 'mtl']] +
                         ['graphics/shaders/*'+el for el in ['vert', 'frag']]
                     },
-      install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs'],
+      install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs', 'pandas'],
       scripts=['ratcave/console_scripts/arena_scanner.py',
                'ratcave/console_scripts/newexp.py',
                'ratcave/console_scripts/opti_projector_calibration.py',
