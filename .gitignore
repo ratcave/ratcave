@@ -1,2 +1,5 @@
 *.pyc
 *workspace.xml
+_build
+_static
+_templates
