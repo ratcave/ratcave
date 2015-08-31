@@ -121,8 +121,8 @@ class WavefrontReader(object):
                                     diffuse=props['Kd'],
                                     spec_weight=props['Ns'],
                                     spec_color=props['Ks'],
-                                    ambient=props['Ka'],
-                                    dissolve=props['d'])
+                                    ambient=props['Ka'])
+                                    #dissolve=props['d'])
 
                 self.materials[name] = material
                 props = dict.fromkeys(prefixes, None)

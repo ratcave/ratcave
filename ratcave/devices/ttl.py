@@ -7,6 +7,7 @@ import serial.tools.list_ports as list_usb_ports
 
 
 arduino_ports = [x[0] for x in list_usb_ports.comports() if 'Arduino' in x[1]]
+arduino_ports = [''] if len(arduino_ports) == 0 else arduino_ports  # Really sloppy workaround for if no usb arduino devices connected.  Find a better solution!
 
 class USB_TTL(object):
 

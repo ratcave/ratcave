@@ -31,42 +31,33 @@ class MeshData(object):
         self.texture_uv = np.array(texture_uv, dtype=float).reshape((-1, 2))
 
 
-class Material:
+class Material(object):
 
     """Contains material settings that it gets from a .mtl file
     (must be same filename as .obj file). Currently requires all
     material settings to create object, and relies on defaults to be set
     in the object initialization!"""
 
-    def __init__(self, material_name='DefaultGray', diffuse=(.8,.8,.8), spec_weight=0, spec_color=(0,0,0), ambient=(0,0,0), dissolve=0, illum=2):
+    def __init__(self, name='DefaultGray', diffuse=(.8,.8,.8), spec_weight=0, spec_color=(0,0,0), ambient=(0,0,0), dissolve=0):
 
-        material_name = material_name.split('\n')
-        self.name = material_name[0]
+        name = name.split('\n')
+        self.name = name[0]
         self.diffuse = mixins.Color(*diffuse)
-        self.diffuse_weight = 1.
         self.spec_weight = spec_weight
         self.spec_color = mixins.Color(*spec_color)
         self.ambient = mixins.Color(*ambient)
-        self.dissolve = dissolve
-        self.illum = illum
+        if dissolve != 0:
+            raise NotImplementedError("Material.dissolve not yet implemented.  Please see Mesh.visible for hiding Meshes.")
 
     def __repr__(self):
-
-        """This function is called when str() or print() is used on the object."""
-        return "Material Object: self.name"
-
-class Empty(mixins.Physical):
-
-    def __init__(self, position=(0,0,0), rotation=(0,0,0)):
-        """Only contains Physical information.  Useful for tracking an object that you're not interested in rendering."""
-        mixins.Physical.__init__(self, position, rotation)
+        return "Material: self.name. Diffuse: {0}".format(self.diffuse.rgba)
 
 
 class Mesh(object):
 
     drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
 
-    def __init__(self, mesh_data, material=None, mesh=None, scale=1.0, centered=False, lighting=True,
+    def __init__(self, mesh_data, material=None, scale=1.0, centered=False, lighting=True,
                  drawstyle='fill', position=(0,0,0), rotation=(0,0,0)):
 
         """Returns a Mesh object.
@@ -97,7 +88,6 @@ class Mesh(object):
         self.material = material if isinstance(material, Material) else Material()
         self.texture = None  # will be changed to pyglet texture object if texture is set.
         self.cubemap = None
-        self.meshObj = mesh
         self.lighting = lighting
         self.drawstyle = drawstyle
 
@@ -108,11 +98,11 @@ class Mesh(object):
         """Called when print() or str() commands are used on object."""
         return "Mesh: {0}".format(self.data.name)
 
-    def load_texture(self, texture_source):
+    def load_texture(self, file_name):
         """Loads a texture from an image file."""
-        self.texture = image.load(texture_source).get_texture()
+        self.texture = image.load(file_name).get_texture()
 
-    def create_vao(self):
+    def _create_vao(self):
 
         # Create Vertex Array Object and Bind it
         self.vao = create_opengl_object(gl.glGenVertexArrays)
@@ -150,7 +140,7 @@ class Mesh(object):
 
     def render(self):
         if not self.loaded:
-            self.create_vao()
+            self._create_vao()
         gl.glBindVertexArray(self.vao)
         gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
         gl.glBindVertexArray(0)
