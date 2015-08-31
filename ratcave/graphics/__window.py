@@ -8,7 +8,7 @@ from __scene import Scene
 class Window(visual.Window):
     """Subclass of Pyglet window, with some defaults set to simplify ratCAVE script creation."""
 
-    def __init__(self, active_scene, autoUpdate=False, *args, **kwargs):
+    def __init__(self, active_scene, *args, **kwargs):
         kwargs['winType'] = 'pyglet'
         kwargs['allowStencil'] = False
 
@@ -16,8 +16,6 @@ class Window(visual.Window):
 
         self.active_scene = active_scene  # For normal rendering.
         self.virtual_scene = None  # For dynamic cubemapping.
-
-        self.autoUpdate = autoUpdate  # Will automatically call Scene.update_positions() before each on_draw call if True.
 
     def set_virtual_scene(self, scene, from_viewpoint, to_mesh):
         """Set scene to render to cubemap, as well as the object whose position will be used as viewpoint and what mesh

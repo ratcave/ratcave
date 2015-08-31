@@ -9,6 +9,7 @@ from __mesh import Mesh
 from __scene import Scene
 from __window import Window
 from __wavefront import WavefrontReader
+from __mixins import Physical
 
 
 # Create the projector
@@ -33,5 +34,5 @@ projector = __build_projector()
 
 
 
-__all__ = ['Camera', 'Mesh', 'Scene', 'Window', 'WavefrontReader', 'projector']
+__all__ = ['Camera', 'Mesh', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'projector']
 

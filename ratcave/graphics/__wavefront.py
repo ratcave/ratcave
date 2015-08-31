@@ -117,13 +117,12 @@ class WavefrontReader(object):
             if prefix == 'illum':  # Last property listed in .mtl material
                 # Make Material object and add to list of materials
                 name = props['newmtl']
-                material = Material(material_name=name,
+                material = Material(name=name,
                                     diffuse=props['Kd'],
                                     spec_weight=props['Ns'],
                                     spec_color=props['Ks'],
                                     ambient=props['Ka'],
-                                    dissolve=props['d'],
-                                    illum=props['illum'])
+                                    dissolve=props['d'])
 
                 self.materials[name] = material
                 props = dict.fromkeys(prefixes, None)

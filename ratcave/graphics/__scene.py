@@ -119,7 +119,7 @@ class Scene:
         """Initialize the Scene object using Meshes as input../s"""
 
         self.camera = Camera()  # create a default Camera object
-        self.bgColor = (0.0, 0.0, 0.0)
+        self.bgColor = mixins.Color(0, 0, 0)
 
         # Initialize List of all Meshes to draw
         self.meshes = list(meshes)
@@ -199,7 +199,7 @@ class Scene:
 
     def _render_to_fullscreen_quad(self, shader, texture):
         """Fairly general method, to be converted to more general deferred shading rendering method."""
-        gl.glClearColor(self.bgColor[0], self.bgColor[1], self.bgColor[2], 1.)
+        gl.glClearColor(self.bgColor.r, self.bgColor.g, self.bgColor.b, 1.)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         shader.bind()
         shader.uniformf('frameBufSize', *Scene._viewport[2:])
@@ -220,7 +220,7 @@ class Scene:
         gl.glEnable(gl.GL_TEXTURE_2D)
 
         # Clear and Refresh Screen
-        gl.glClearColor(self.bgColor[0], self.bgColor[1], self.bgColor[2], 1.)
+        gl.glClearColor(self.bgColor.r, self.bgColor.g, self.bgColor.b, 1.)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
         # Bind Shader

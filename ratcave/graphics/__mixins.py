@@ -142,18 +142,6 @@ class Physical(object):
         self.__rot_x, self.__rot_y, self.__rot_z = value
         self._set_transformation_matrix()
 
-    def distance_to(self, other_obj):
-        """Full 3D (X-Y-Z) Distance from own origin to another object's origin"""
-        own_position = np.array(self.position)
-        other_position = np.array(other_obj.position)
-        return np.sqrt(sum((own_position - other_position)**2))
-
-    def distance2D_to(self, other_obj):
-        """X-Y Distance from own origin to another object's origin"""
-        own_position = np.array(self.position[:2])
-        other_position = np.array(other_obj.position[:2])
-        return np.sqrt(sum((own_position - other_position)**2))  # Return their distance using the distance formula
-
     def _set_transformation_matrix(self):
         """Operates on either Model matrix or View matrix, depending on the type specified by self._tranform_type."""
         # TODO: Make more efficient--there shouldn't need to be so many calculations, as some of these seem redundant!
@@ -183,15 +171,9 @@ class Physical(object):
 
 class Color(object):
 
-    names = {'white': (1, 1, 1), 'black': (0, 0, 0), 'red':(1, 0, 0), 'green':(0, 1, 0), 'blue':(0, 0, 1)}
-
     def __init__(self, r, g, b, a=1.):
         """Color object, defines rgba attributes"""
-        self.r = r
-        self.g = g
-        self.b = b
-        self.a = a
-        self._textname = 'other'
+        self.r, self.g, self.b, self.a = r, g, b, a
 
     @property
     def rgb(self):
@@ -208,11 +190,3 @@ class Color(object):
     @rgba.setter
     def rgba(self, value):
         self.r, self.g, self.b, self.a = value
-
-    @property
-    def text(self):
-        return self._textname
-
-    @text.setter
-    def text(self, value):
-        self.r, self.g, self.b = Color.names[value]
