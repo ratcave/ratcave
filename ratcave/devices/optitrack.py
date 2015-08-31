@@ -209,10 +209,6 @@ class Optitrack(object):
     def timestamp_recording(self):
         return self.timestamp - self.recording_start_time if self.is_recording else 0.
 
-    def getTime(self):
-        """returns Optitrack.timestamp_recording.  This method allows Optitrack to stand in for a PsychoPy clock."""
-        return self.timestamp_recording
-
     @property
     def is_recording(self):
         return self._is_recording
@@ -240,6 +236,9 @@ class Optitrack(object):
         return (server_name, Version, NatNetVersion)
 
     def set_take_file_name(self, file_name):
+        if self.is_recording:
+            raise IOError("Cannot change Motive Take filename if already recording.")
+
         warnings.warn("WARNING: Changing the Take File Name often results in Motive Crashing and Faulting...\n...best to not "
                           "use this functionality for current_time.  Trying anyway...")
         self.comm_sock.send(2, "SetRecordTakeName," + file_name)
@@ -510,13 +509,6 @@ class Optitrack(object):
             for marker in self.unidentified_markers:
                 positions.append(marker.position)
             return positions
-
-    def get_rigid_body(self, name):
-        """Returns RigidBody object with name.  If not found, returns None."""
-        if name in self.rigid_bodies:
-            return self.rigid_bodies[name]
-        else:
-            warnings.warn("Rigid Body '{0}' not detected.".format(name))
 
     def wait_for_recording_start(self):
         """Halts script until recording begins."""
