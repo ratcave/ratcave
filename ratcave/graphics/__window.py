@@ -11,6 +11,18 @@ from collections import namedtuple
 FBO = namedtuple('FBO', 'id texture')
 shader_path = join(split(__file__)[0], 'shaders')
 
+def render_to_texture(draw_fun, win):
+    # render to Frame Buffer Object (FBO) (depth values only)
+    gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, win.fbos['shadow'].id)  # Rendering off-screen
+    gl.glViewport(0, 0, win.texture_size, win.texture_size)
+
+    draw_fun(*args, **kwargs)
+
+    # Reset Render settings to normal and unbind FBO
+    gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
+    gl.glViewport(0, 0, win.size[0], win.size[1])
+
+
 class Window(visual.Window):
     """Subclass of Pyglet window, with some defaults set to simplify ratCAVE script creation."""
 
@@ -46,6 +58,7 @@ class Window(visual.Window):
         self.virtual_scene, self.player = scene, from_viewpoint
         to_mesh.cubemap = True
 
+
     def render_shadow(self, scene):
 
         # render to Frame Buffer Object (FBO) (depth values only)
@@ -73,11 +86,11 @@ class Window(visual.Window):
         # Render to Each Face of Cubemap texture, rotating the camera in the correct direction before each shot.
         cube_camera = Camera(fov_y=90., aspect=1., position=self.player.position)
         for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
-            Window.__cubeCamera.rotation = rotation
+            cube_camera.rotation = rotation
             gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
                                          gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                                          self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
-            self._draw(Window.__cubeCamera, Scene.genShader)  # Render
+            self._draw(cube_camera, Window.genShader)  # Render
 
         # Restore previous camera position and lens settings
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)  # Unbind cubemap Framebuffer (so rendering to screen can be done)
@@ -87,12 +100,12 @@ class Window(visual.Window):
 
         # Bind to Cubemap Framebuffer to render directly to the cubemap texture.
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.fbos['antialias'].id)
-        self._draw(self.camera, Scene.genShader)
+        self._draw(self.camera, Window.genShader)
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)  # Unbind cubemap Framebuffer (so rendering to screen can be done)
 
         # Render Scene onto a fullscreen quad, after antialiasing.
-        gl.glViewport(*Scene._viewport)  # Reset Viewport
-        self._render_to_fullscreen_quad(Scene.aaShader, Scene._aaTexture)
+        gl.glViewport(0, 0, self.size[0], self.size[1])  # Reset Viewport
+        self._render_to_fullscreen_quad(Window.aaShader, self.fbos['antialias'].texture)
 
 
 
@@ -103,7 +116,7 @@ class Window(visual.Window):
         shader.bind()
         shader.uniformf('frameBufSize', *self.size)
         shader.uniformi('image_texture', 0)
-        shader.uniformi('grayscale', int(Scene.grayscale))
+        shader.uniformi('grayscale', int(self.grayscale))
         gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
         fullscreen_quad.render()
         shader.unbind()
