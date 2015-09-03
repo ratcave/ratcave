@@ -6,21 +6,23 @@ from __scene import Scene
 from __camera import Camera
 from __shader import Shader
 from utils import *
-from collections import namedtuple
 
-FBO = namedtuple('FBO', 'id texture')
+
 shader_path = join(split(__file__)[0], 'shaders')
 
-def render_to_texture(draw_fun, win):
-    # render to Frame Buffer Object (FBO) (depth values only)
-    gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, win.fbos['shadow'].id)  # Rendering off-screen
-    gl.glViewport(0, 0, win.texture_size, win.texture_size)
+class render_to_fbo(object):
+    def __init__(self, window, fbo):
+        """A context manager that sets the framebuffer target and resizes the viewport before and after the draw commands."""
+        self.window = window
+        self.fbo = fbo
 
-    draw_fun(*args, **kwargs)
+    def __enter__(self):
+        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.fbo.id)  # Rendering off-screen
+        gl.glViewport(0, 0, self.fbo.size[0], self.fbo.size[1])
 
-    # Reset Render settings to normal and unbind FBO
-    gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
-    gl.glViewport(0, 0, win.size[0], win.size[1])
+    def __exit__(self):
+        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
+        gl.glViewport(0, 0, self.window.size[0], self.window.size[1])
 
 
 class Window(visual.Window):
@@ -58,55 +60,26 @@ class Window(visual.Window):
         self.virtual_scene, self.player = scene, from_viewpoint
         to_mesh.cubemap = True
 
-
     def render_shadow(self, scene):
-
-        # render to Frame Buffer Object (FBO) (depth values only)
-        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.fbos['shadow'].id)  # Rendering off-screen
-        gl.glViewport(0, 0, self.texture_size , self.texture_size )
-
-        # Render Scene
-        scene._draw(Camera(fov_y=60., aspect=1., position=scene.light.position, rotation=scene.camera.rotation), Window.shadowShader)
-
-        # Reset Render settings to normal and unbind FBO
-        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
-        gl.glViewport(0, 0, self.size[0], self.size[1])
+        with render_to_fbo(self, self.fbos['shadow']):
+            scene._draw(Camera(fov_y=60., aspect=1., position=scene.light.position, rotation=scene.camera.rotation), Window.shadowShader)
 
     def render_to_cubemap(self, scene):
-        """
-        Renders the scene, 360 degrees around a camera, to a mesh "toMesh" from the perspective of "fromObject".
-        Currently, window width and height must also be supplied.
-        """
-
-        # Bind to Cubemap Framebuffer to render directly to the cubemap texture.
-        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.fbos['cube'].id)
-        gl.glViewport(0, 0, self.texture_size, self.texture_size )  # Change viewport to square texture, as big as possible.
-
-
         # Render to Each Face of Cubemap texture, rotating the camera in the correct direction before each shot.
-        cube_camera = Camera(fov_y=90., aspect=1., position=self.player.position)
-        for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
-            cube_camera.rotation = rotation
-            gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
-                                         gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                                         self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
-            self._draw(cube_camera, Window.genShader)  # Render
-
-        # Restore previous camera position and lens settings
-        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)  # Unbind cubemap Framebuffer (so rendering to screen can be done)
-        gl.glViewport(0, 0, self.size[0], self.size[1])  # Reset Viewport
+        with render_to_fbo(self, self.fbos['cube']):
+            cube_camera = Camera(fov_y=90., aspect=1., position=self.player.position)
+            for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
+                cube_camera.rotation = rotation
+                gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
+                                             gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+                                             self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
+                self._draw(cube_camera, Window.genShader)  # Render
 
     def render_to_antialias(self):
+        with render_to_fbo(self, self.fbos['antialias']):
+            self._draw(self.camera, Window.genShader)
 
-        # Bind to Cubemap Framebuffer to render directly to the cubemap texture.
-        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.fbos['antialias'].id)
-        self._draw(self.camera, Window.genShader)
-        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)  # Unbind cubemap Framebuffer (so rendering to screen can be done)
-
-        # Render Scene onto a fullscreen quad, after antialiasing.
-        gl.glViewport(0, 0, self.size[0], self.size[1])  # Reset Viewport
         self._render_to_fullscreen_quad(Window.aaShader, self.fbos['antialias'].texture)
-
 
 
     def _render_to_fullscreen_quad(self, shader, texture):

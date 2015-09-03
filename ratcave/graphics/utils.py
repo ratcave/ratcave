@@ -1,5 +1,7 @@
 import pyglet.gl as gl
 import numpy as np
+from collections import namedtuple
+
 import pdb
 
 def create_opengl_object(gl_gen_function):
@@ -8,7 +10,7 @@ def create_opengl_object(gl_gen_function):
     gl_gen_function(1, byref(texture_id))  # Create Empty Texture
     return texture_id.value  # Use handle for rest
 
-
+FBO = namedtuple('FBO', 'id texture size')
 def create_fbo(texture_type, width, height, texture_slot=0, color=True, depth=True, grayscale=False):
 
     assert color or depth, "at least one of the two data types, color or depth, must be set to True."
@@ -72,7 +74,7 @@ def create_fbo(texture_type, width, height, texture_slot=0, color=True, depth=Tr
     #Unbind FBO and return it and its texture
     gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
 
-    return fbo, texture
+    return FBO(fbo, texture, (width, height))
 
 
 def vec(floatlist,newtype='float'):
