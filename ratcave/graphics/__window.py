@@ -6,6 +6,7 @@ from __scene import Scene
 from __camera import Camera
 from __shader import Shader
 from __mesh import fullscreen_quad
+from __mixins import Physical
 from utils import *
 from os.path import join, split
 
@@ -42,12 +43,19 @@ class Window(visual.Window):
                      'antialias': FBO(create_fbo(gl.GL_TEXTURE_2D, 1280, 720, texture_slot=0, color=True, depth=True, grayscale=self.grayscale))
                      }
         self.texture_size = 2048
-        self.player = None
-        self.shadow_rendering = shadow_rendering
 
+        # Antialiasing attributes
         self.fullscreen_quad = fullscreen_quad
+
+        # Shadow Rendering attributes
+        self.shadow_rendering = shadow_rendering
         self.__shadow_fov_y = shadow_fov_y
         self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y., aspect=1.)._projection_matrix
+
+        # Cubemap attributes
+        self.player = Physical()
+        self.cubemap_camera = Camera(fov_y=90., aspect=1., position=self.player.position)
+
 
     @property
     def shadow_fov_y(self):
@@ -79,15 +87,18 @@ class Window(visual.Window):
             Window.shadowShader.unbind()
 
     def render_to_cubemap(self, scene):
-        # Render to Each Face of Cubemap texture, rotating the camera in the correct direction before each shot.
+        """Renders the scene 360-degrees about the player's position onto a cubemap texture."""
+        # Center cubemap camera on the player
+        self.cubemap_camera.position = self.player.position
+
+        # Render the scene
         with render_to_fbo(self, self.fbos['cube']):
-            cube_camera = Camera(fov_y=90., aspect=1., position=self.player.position)
             for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
-                cube_camera.rotation = rotation
+                self.cubemap_camera.rotation = rotation
                 gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
                                              gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                                              self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
-                self._draw(cube_camera, Window.genShader)  # Render
+                self._draw(scene, Window.genShader, self.cubemap_camera)  # Render
 
     def render_to_antialias(self):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
