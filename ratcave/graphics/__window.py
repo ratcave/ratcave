@@ -26,7 +26,7 @@ class Window(visual.Window):
     aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                       open(join(shader_path, 'antialiasShader.frag')).read())
 
-    def __init__(self, active_scene, grayscale=False, *args, **kwargs):
+    def __init__(self, active_scene, grayscale=False, shadow_rendering=True, *args, **kwargs):
 
         # Set default Window values for making sure Psychopy windows work with it.
         kwargs['allowStencil'] = False
@@ -43,6 +43,7 @@ class Window(visual.Window):
                      }
         self.texture_size = 2048
         self.player = None
+        self.shadow_rendering = shadow_rendering
 
         self.fullscreen_quad = fullscreen_quad
 
@@ -53,8 +54,9 @@ class Window(visual.Window):
         to_mesh.cubemap = True
 
     def render_shadow(self, scene):
+        scene.light.rotation = scene.camera.rotation  # only works while spotlights aren't implemented, otherwise may have to be careful.
         with render_to_fbo(self, self.fbos['shadow']):
-            scene._draw(Camera(fov_y=60., aspect=1., position=scene.light.position, rotation=scene.camera.rotation), Window.shadowShader)
+            self._draw(scene, Window.shadowShader, camera=Camera(fov_y=60., aspect=1., position=scene.light.position, rotation=scene.camera.rotation))
 
     def render_to_cubemap(self, scene):
         # Render to Each Face of Cubemap texture, rotating the camera in the correct direction before each shot.
@@ -127,16 +129,16 @@ class Window(visual.Window):
         # Send Uniforms that are constant across meshes.
         shader.uniform_matrixf('view_matrix', camera._view_matrix)
         shader.uniform_matrixf('projection_matrix', camera._projection_matrix)
-        shader.uniform_matrixf('shadow_projection_matrix', Scene.__shadowCamera._projection_matrix)
-        shader.uniform_matrixf('shadow_view_matrix', Scene.__shadowCamera._view_matrix)
 
-        shader.uniformf('light_position', *scene.light.position)
-        shader.uniformf('camera_position', *camera.position)
+        if shader == Window.genShader:
+            shader.uniform_matrixf('shadow_view_matrix', scene.light._view_matrix)
 
-        shader.uniformi('hasShadow', int(Scene._shadowFboID is not False))
-        shader.uniformi('ShadowMap', 5)
+            shader.uniformf('light_position', *scene.light.position)
+            shader.uniformf('camera_position', *camera.position)
 
-        shader.uniformi('grayscale', int(Scene.grayscale))
+            shader.uniformi('hasShadow', int(self.shadow_rendering))
+            shader.uniformi('ShadowMap', self.fbos['shadow'].texture)
+            shader.uniformi('grayscale', int(self.grayscale))
 
         # Draw each visible mesh in the scene.
         for mesh in scene.meshes:
@@ -150,7 +152,7 @@ class Window(visual.Window):
                 shader.uniform_matrixf('normal_matrix_local', mesh.local._normal_matrix)
 
 
-                if shader == Scene.genShader:
+                if shader == Window.genShader:
                     # Change Material to Mesh's
                     shader.uniformf('ambient', *mesh.material.ambient.rgb)
                     shader.uniformf('diffuse', *mesh.material.diffuse.rgb)
