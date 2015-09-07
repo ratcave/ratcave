@@ -9,7 +9,7 @@ from __mesh import fullscreen_quad
 from __mixins import Physical
 from utils import *
 from os.path import join, split
-
+import pdb
 
 shader_path = join(split(__file__)[0], 'shaders')
 
@@ -76,7 +76,7 @@ class Window(visual.Window):
             Window.shadowShader.bind()
             Window.shadowShader.uniform_matrixf('view_matrix', scene.light._view_matrix)
             Window.shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
-            [mesh.render(Window.shadowShader) for mesh in scene if mesh.visible]
+            [mesh.render(Window.shadowShader) for mesh in scene.meshes if mesh.visible]
             Window.shadowShader.unbind()
 
     def render_to_cubemap(self, scene):
@@ -186,10 +186,10 @@ class Window(visual.Window):
 
                 # Bind Textures and apply Material
                 shader.uniformi('hasTexture', int(bool(mesh.texture)))
+                shader.uniformi('ImageTextureMap', 2)
                 if mesh.texture:
                     gl.glActiveTexture(gl.GL_TEXTURE2)
                     gl.glBindTexture(gl.GL_TEXTURE_2D, mesh.texture.id)
-                    shader.uniformi('ImageTextureMap', 2)
                     gl.glActiveTexture(gl.GL_TEXTURE0)
 
                 # Draw the Mesh

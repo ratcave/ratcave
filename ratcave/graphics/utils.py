@@ -88,7 +88,7 @@ class render_to_fbo(object):
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.fbo.id)  # Rendering off-screen
         gl.glViewport(0, 0, self.fbo.size[0], self.fbo.size[1])
 
-    def __exit__(self):
+    def __exit__(self, *exc_info):
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
         gl.glViewport(0, 0, self.window.size[0], self.window.size[1])
 
