@@ -58,7 +58,7 @@ class Mesh(object):
     drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
 
     def __init__(self, mesh_data, material=None, scale=1.0, centered=False, lighting=True,
-                 drawstyle='fill', position=(0,0,0), rotation=(0,0,0)):
+                 drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0)):
 
         """Returns a Mesh object.
         Required Inputs:
@@ -87,7 +87,7 @@ class Mesh(object):
 
         self.material = material if isinstance(material, Material) else Material()
         self.texture = None  # will be changed to pyglet texture object if texture is set.
-        self.cubemap = None
+        self.cubemap = cubemap
         self.lighting = lighting
         self.drawstyle = drawstyle
 

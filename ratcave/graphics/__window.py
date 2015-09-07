@@ -37,6 +37,10 @@ class Window(visual.Window):
         # Assign data to window after OpenGL context initialization
         self.active_scene = active_scene  # For normal rendering.
         self.virtual_scene = virtual_scene  # For dynamic cubemapping.
+        if self.virtual_scene:
+            self.virtual_scene.camera.fov_y = 00.
+            self.virtual_scene.camera.aspect = 1.
+
         self.grayscale = grayscale
         self.fbos = {'shadow': FBO(create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=5, color=False, depth=True)),
                      'cube': FBO(create_fbo(gl.GL_TEXTURE_CUBE_MAP, 2048, 2048, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)),
@@ -52,10 +56,6 @@ class Window(visual.Window):
         self.__shadow_fov_y = shadow_fov_y
         self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y., aspect=1.)._projection_matrix
 
-        # Cubemap attributes
-        self.player = Physical()
-        self.cubemap_camera = Camera(fov_y=90., aspect=1., position=self.player.position)
-
 
     @property
     def shadow_fov_y(self):
@@ -66,13 +66,6 @@ class Window(visual.Window):
     def shadow_fov_y(self, value):
         self.shadow_projection_matrix = Camera(fov_y=value, aspect=1.)._projection_matrix
         self.__shadow_fov_y = value
-
-
-    def set_virtual_scene(self, scene, from_viewpoint, to_mesh):
-        """Set scene to render to cubemap, as well as the object whose position will be used as viewpoint and what mesh
-        will be given the cubemap texture."""
-        self.virtual_scene, self.player = scene, from_viewpoint
-        to_mesh.cubemap = True
 
     def render_shadow(self, scene):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
@@ -87,18 +80,16 @@ class Window(visual.Window):
             Window.shadowShader.unbind()
 
     def render_to_cubemap(self, scene):
-        """Renders the scene 360-degrees about the player's position onto a cubemap texture."""
-        # Center cubemap camera on the player
-        self.cubemap_camera.position = self.player.position
+        """Renders the scene 360-degrees about the camera's position onto a cubemap texture."""
 
         # Render the scene
         with render_to_fbo(self, self.fbos['cube']):
             for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
-                self.cubemap_camera.rotation = rotation
+                scene.camera.rotation = rotation
                 gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
                                              gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                                              self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
-                self._draw(scene, Window.genShader, self.cubemap_camera)  # Render
+                self._draw(scene, Window.genShader)  # Render
 
     def render_to_antialias(self):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
@@ -134,12 +125,10 @@ class Window(visual.Window):
             self.active_scene.render_shadow()
 
         #self.active_scene.render_to_antialias()
-        self._draw(self.active_scene, Window.genShader, self.active_scene.camera)
+        self._draw(self.active_scene, Window.genShader)
 
 
-    def _draw(self, scene, shader, camera=None):
-
-        camera = camera if camera else scene.camera
+    def _draw(self, scene, shader):
 
         # Enable 3D OpenGL
         gl.glEnable(gl.GL_DEPTH_TEST)
@@ -155,47 +144,46 @@ class Window(visual.Window):
         shader.bind()
 
         # Send Uniforms that are constant across meshes.
-        shader.uniform_matrixf('view_matrix', camera._view_matrix)
-        shader.uniform_matrixf('projection_matrix', camera._projection_matrix)
+        shader.uniform_matrixf('view_matrix', scene.camera._view_matrix)
+        shader.uniform_matrixf('projection_matrix', scene.camera._projection_matrix)
 
-        if shader == Window.genShader:
-            shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix)
-            shader.uniform_matrixf('shadow_view_matrix', scene.light._view_matrix)
 
-            shader.uniformf('light_position', *scene.light.position)
-            shader.uniformf('camera_position', *camera.position)
+        shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix)
+        shader.uniform_matrixf('shadow_view_matrix', scene.light._view_matrix)
 
-            shader.uniformi('hasShadow', int(self.shadow_rendering))
-            shader.uniformi('ShadowMap', self.fbos['shadow'].texture)
-            shader.uniformi('grayscale', int(self.grayscale))
+        shader.uniformf('light_position', *scene.light.position)
+        shader.uniformf('camera_position', *scene.camera.position)
+
+        shader.uniformi('hasShadow', int(self.shadow_rendering))
+        shader.uniformi('ShadowMap', self.fbos['shadow'].texture)
+        shader.uniformi('grayscale', int(self.grayscale))
 
         # Draw each visible mesh in the scene.
         for mesh in scene.meshes:
 
             if mesh.visible:
 
-                if shader == Window.genShader:
-                    # Change Material to Mesh's
-                    shader.uniformf('ambient', *mesh.material.ambient.rgb)
-                    shader.uniformf('diffuse', *mesh.material.diffuse.rgb)
-                    shader.uniformf('spec_color', *mesh.material.spec_color.rgb)
-                    shader.uniformf('spec_weight', mesh.material.spec_weight)
-                    shader.uniformf('opacity', mesh.material.diffuse.a)
-                    shader.uniformi('hasLighting', mesh.lighting)
+                # Change Material to Mesh's
+                shader.uniformf('ambient', *mesh.material.ambient.rgb)
+                shader.uniformf('diffuse', *mesh.material.diffuse.rgb)
+                shader.uniformf('spec_color', *mesh.material.spec_color.rgb)
+                shader.uniformf('spec_weight', mesh.material.spec_weight)
+                shader.uniformf('opacity', mesh.material.diffuse.a)
+                shader.uniformi('hasLighting', mesh.lighting)
 
-                    # Bind Cubemap if mesh is to be rendered with the cubemap.
-                    shader.uniformi('hasCubeMap', int(bool(mesh.cubemap)))
-                    if mesh.cubemap:
-                        shader.uniformf('playerPos', *vec(self.player.position))
-                        gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
+                # Bind Cubemap if mesh is to be rendered with the cubemap.
+                shader.uniformi('hasCubeMap', int(mesh.cubemap))
+                if mesh.cubemap:
+                    shader.uniformf('playerPos', *vec(self.virtual_scene.camera.position))
+                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
 
-                    # Bind Textures and apply Material
-                    shader.uniformi('hasTexture', int(bool(mesh.texture)))
-                    if mesh.texture:
-                        gl.glActiveTexture(gl.GL_TEXTURE2)
-                        gl.glBindTexture(gl.GL_TEXTURE_2D, mesh.texture.id)
-                        shader.uniformi('ImageTextureMap', 2)
-                        gl.glActiveTexture(gl.GL_TEXTURE0)
+                # Bind Textures and apply Material
+                shader.uniformi('hasTexture', int(bool(mesh.texture)))
+                if mesh.texture:
+                    gl.glActiveTexture(gl.GL_TEXTURE2)
+                    gl.glBindTexture(gl.GL_TEXTURE_2D, mesh.texture.id)
+                    shader.uniformi('ImageTextureMap', 2)
+                    gl.glActiveTexture(gl.GL_TEXTURE0)
 
                 # Draw the Mesh
                 mesh.render(shader)  # Bind VAO.
