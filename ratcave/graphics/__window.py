@@ -5,24 +5,12 @@ import pyglet.gl as gl
 from __scene import Scene
 from __camera import Camera
 from __shader import Shader
+from __mesh import fullscreen_quad
 from utils import *
+from os.path import join, split
 
 
 shader_path = join(split(__file__)[0], 'shaders')
-
-class render_to_fbo(object):
-    def __init__(self, window, fbo):
-        """A context manager that sets the framebuffer target and resizes the viewport before and after the draw commands."""
-        self.window = window
-        self.fbo = fbo
-
-    def __enter__(self):
-        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.fbo.id)  # Rendering off-screen
-        gl.glViewport(0, 0, self.fbo.size[0], self.fbo.size[1])
-
-    def __exit__(self):
-        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
-        gl.glViewport(0, 0, self.window.size[0], self.window.size[1])
 
 
 class Window(visual.Window):
@@ -30,20 +18,22 @@ class Window(visual.Window):
 
     # General, Normal Shader
     genShader = Shader(open(join(shader_path, 'combShader.vert')).read(),
-                    open(join(shader_path, 'combShader.frag')).read())
+                       open(join(shader_path, 'combShader.frag')).read())
 
     shadowShader = Shader(open(join(shader_path, 'shadowShader.vert')).read(),
-                        open(join(shader_path, 'shadowShader.frag')).read())
+                          open(join(shader_path, 'shadowShader.frag')).read())
 
     aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
-                        open(join(shader_path, 'antialiasShader.frag')).read())
+                      open(join(shader_path, 'antialiasShader.frag')).read())
 
     def __init__(self, active_scene, grayscale=False, *args, **kwargs):
-        kwargs['allowStencil'] = False
 
+        # Set default Window values for making sure Psychopy windows work with it.
+        kwargs['allowStencil'] = False
         super(Window, self).__init__(*args, **kwargs)
         assert self.winType == 'pyglet', "Window Type must be 'pyglet' for ratCAVE to work."
 
+        # Assign data to window after OpenGL context initialization
         self.active_scene = active_scene  # For normal rendering.
         self.virtual_scene = None  # For dynamic cubemapping.
         self.grayscale = grayscale
@@ -53,6 +43,8 @@ class Window(visual.Window):
                      }
         self.texture_size = 2048
         self.player = None
+
+        self.fullscreen_quad = fullscreen_quad
 
     def set_virtual_scene(self, scene, from_viewpoint, to_mesh):
         """Set scene to render to cubemap, as well as the object whose position will be used as viewpoint and what mesh
@@ -76,24 +68,27 @@ class Window(visual.Window):
                 self._draw(cube_camera, Window.genShader)  # Render
 
     def render_to_antialias(self):
+        """Render the scene to texture, then render the texture to screen after antialiasing it."""
         with render_to_fbo(self, self.fbos['antialias']):
             self._draw(self.camera, Window.genShader)
 
-        self._render_to_fullscreen_quad(Window.aaShader, self.fbos['antialias'].texture)
-
-
-    def _render_to_fullscreen_quad(self, shader, texture):
-        """Fairly general method, to be converted to more general deferred shading rendering method."""
-        gl.glClearColor(self.bgColor.r, self.bgColor.g, self.bgColor.b, 1.)
+        gl.glClearColor(.5, .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        shader.bind()
-        shader.uniformf('frameBufSize', *self.size)
-        shader.uniformi('image_texture', 0)
-        shader.uniformi('grayscale', int(self.grayscale))
-        gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
-        fullscreen_quad.render()
-        shader.unbind()
+
+        Window.aaShader.bind()
+
+        Window.aaShader.uniformf('frameBufSize', *self.size)
+        Window.aaShader.uniformi('image_texture', 0)
+        Window.aaShader.uniformi('grayscale', int(self.grayscale))
+
+        gl.glBindTexture(gl.GL_TEXTURE_2D, self.fbos['antialias'].texture)
+
+        self.fullscreen_quad.render()
+
+        Window.aaShader.unbind()
+
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
 
     def on_draw(self):
         """Active scene drawn, virtual scene is rendered to a cubemap."""

@@ -77,6 +77,21 @@ def create_fbo(texture_type, width, height, texture_slot=0, color=True, depth=Tr
     return FBO(fbo, texture, (width, height))
 
 
+class render_to_fbo(object):
+    def __init__(self, window, fbo):
+        """A context manager that sets the framebuffer target and resizes the viewport before and after the draw commands."""
+        self.window = window
+        self.fbo = fbo
+
+    def __enter__(self):
+        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.fbo.id)  # Rendering off-screen
+        gl.glViewport(0, 0, self.fbo.size[0], self.fbo.size[1])
+
+    def __exit__(self):
+        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
+        gl.glViewport(0, 0, self.window.size[0], self.window.size[1])
+
+
 def vec(floatlist, newtype='float'):
 
         """ Makes GLfloat or GLuint vector containing float or uint args.
