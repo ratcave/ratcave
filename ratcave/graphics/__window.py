@@ -70,6 +70,8 @@ class Window(visual.Window):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
         scene.light.rotation = scene.camera.rotation  # only works while spotlights aren't implemented, otherwise may have to be careful.
         with render_to_fbo(self, self.fbos['shadow']):
+            gl.glClearColor(scene.bgColor.r, scene.bgColor.g, scene.bgColor.b, 1.)
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             Window.shadowShader.bind()
             Window.shadowShader.uniform_matrixf('view_matrix', scene.light._view_matrix)
             Window.shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
@@ -90,24 +92,17 @@ class Window(visual.Window):
     def render_to_antialias(self):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
         with render_to_fbo(self, self.fbos['antialias']):
-            self._draw(self.camera, Window.genShader)
+            gl.glClearColor(.5, .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-        gl.glClearColor(.5, .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-
-        Window.aaShader.bind()
-
-        Window.aaShader.uniformf('frameBufSize', *self.size)
-        Window.aaShader.uniformi('image_texture', 0)
-        Window.aaShader.uniformi('grayscale', int(self.grayscale))
-
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.fbos['antialias'].texture)
-
-        self.fullscreen_quad.render()
-
-        Window.aaShader.unbind()
-
-        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+            Window.aaShader.bind()
+            Window.aaShader.uniformf('frameBufSize', *self.size)
+            Window.aaShader.uniformi('image_texture', 0)
+            Window.aaShader.uniformi('grayscale', int(self.grayscale))
+            gl.glBindTexture(gl.GL_TEXTURE_2D, self.fbos['antialias'].texture)
+            self.fullscreen_quad.render(Window.aaShader)
+            Window.aaShader.unbind()
+            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
 
     def on_draw(self):
