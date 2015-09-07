@@ -54,7 +54,7 @@ class Window(visual.Window):
         # Shadow Rendering attributes
         self.shadow_rendering = shadow_rendering
         self.__shadow_fov_y = shadow_fov_y
-        self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y., aspect=1.)._projection_matrix
+        self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y, aspect=1.)._projection_matrix
 
 
     @property
