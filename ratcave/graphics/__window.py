@@ -27,7 +27,7 @@ class Window(visual.Window):
     aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                       open(join(shader_path, 'antialiasShader.frag')).read())
 
-    def __init__(self, active_scene, grayscale=False, shadow_rendering=True, shadow_fov_y=60., *args, **kwargs):
+    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=60., *args, **kwargs):
 
         # Set default Window values for making sure Psychopy windows work with it.
         kwargs['allowStencil'] = False
@@ -36,7 +36,7 @@ class Window(visual.Window):
 
         # Assign data to window after OpenGL context initialization
         self.active_scene = active_scene  # For normal rendering.
-        self.virtual_scene = None  # For dynamic cubemapping.
+        self.virtual_scene = virtual_scene  # For dynamic cubemapping.
         self.grayscale = grayscale
         self.fbos = {'shadow': FBO(create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=5, color=False, depth=True)),
                      'cube': FBO(create_fbo(gl.GL_TEXTURE_CUBE_MAP, 2048, 2048, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)),
@@ -116,21 +116,25 @@ class Window(visual.Window):
             gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
 
-    def on_draw(self):
-        """Active scene drawn, virtual scene is rendered to a cubemap."""
+    def draw(self):
+        """Active scene drawn, virtual scene is rendered to a cubemap. iF auto_light_position is True, then automatically
+        put the lights for the active and virtual scene to the active scene's camera position (useful for convenient CAVE
+        api.)"""
 
         if self.virtual_scene:
-            self.virtual_scene.render_shadow()
+            # Put light in camera's position before rendering.
+            self.virtual_scene.light.position = self.active_scene.camera.position
+            self.active_scene.light.position = self.active_scene.camera.position
+
+            # Render shadow and cubemap from virtual camera's position.
+            if self.shadow_rendering:
+                self.virtual_scene.render_shadow()
             self.virtual_scene.render_to_cubemap()
-            Scene.light.position = self.active_scene.camera.position  # Comes after rendering to allow flexible behavior.
-        else:
+        elif self.shadow_rendering:
             self.active_scene.render_shadow()
 
         #self.active_scene.render_to_antialias()
-        self.active_scene.draw()
-
-    def draw(self):
-        self.on_draw()
+        self._draw(self.active_scene, Window.genShader, self.active_scene.camera)
 
 
     def _draw(self, scene, shader, camera=None):
