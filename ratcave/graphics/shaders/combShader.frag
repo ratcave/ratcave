@@ -62,7 +62,7 @@ void main()
             float distanceFromLight = texture2D(ShadowMap,shadowCoordinateWdivide.xy).z;
 
             if ( distanceFromLight < shadowCoordinateWdivide.z - .0001) { // to prevent "shadow acne" caused from precision errors
-                shadow_coeff = 0.75;
+                shadow_coeff = 0.65;
             }
         }
     }

@@ -27,7 +27,7 @@ class Window(visual.Window):
     aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                       open(join(shader_path, 'antialiasShader.frag')).read())
 
-    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=60., *args, **kwargs):
+    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., *args, **kwargs):
 
         # Set default Window values for making sure Psychopy windows work with it.
         kwargs['allowStencil'] = False
@@ -71,13 +71,13 @@ class Window(visual.Window):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
         scene.light.rotation = scene.camera.rotation  # only works while spotlights aren't implemented, otherwise may have to be careful.
         with render_to_fbo(self, self.fbos['shadow']):
-            gl.glClearColor(scene.bgColor.r, scene.bgColor.g, scene.bgColor.b, 1.)
-            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+            gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
             Window.shadowShader.bind()
             Window.shadowShader.uniform_matrixf('view_matrix', scene.light._view_matrix)
             Window.shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
             [mesh.render(Window.shadowShader) for mesh in scene.meshes if mesh.visible]
             Window.shadowShader.unbind()
+
 
     def render_to_cubemap(self, scene):
         """Renders the scene 360-degrees about the camera's position onto a cubemap texture."""
@@ -161,7 +161,7 @@ class Window(visual.Window):
         shader.uniformf('camera_position', *scene.camera.position)
 
         shader.uniformi('hasShadow', int(self.shadow_rendering))
-        shader.uniformi('ShadowMap', self.fbos['shadow'].texture)
+        shader.uniformi('ShadowMap', self.fbos['shadow'].texture_slot)
         shader.uniformi('grayscale', int(self.grayscale))
 
         # Draw each visible mesh in the scene.
