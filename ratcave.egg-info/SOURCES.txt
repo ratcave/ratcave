@@ -9,10 +9,6 @@ ratcave/console_scripts/arena_scanner.py
 ratcave/console_scripts/newexp.py
 ratcave/console_scripts/opti_projector_calibration.py
 ratcave/console_scripts/opti_projector_rotation_calib.py
-ratcave/console_scripts/arena_scanner.py
-ratcave/console_scripts/newexp.py
-ratcave/console_scripts/opti_projector_calibration.py
-ratcave/console_scripts/opti_projector_rotation_calib.py
 ratcave/devices/__init__.py
 ratcave/devices/eulerangles.py
 ratcave/devices/optitrack.py

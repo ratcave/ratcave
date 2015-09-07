@@ -1,6 +1,7 @@
 import pyglet.gl as gl
 import numpy as np
 from collections import namedtuple
+from ctypes import byref
 
 import pdb
 
