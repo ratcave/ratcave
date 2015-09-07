@@ -91,20 +91,24 @@ class Window(visual.Window):
                                              self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
                 self._draw(scene, Window.genShader)  # Render
 
-    def render_to_antialias(self):
+    def render_to_antialias(self, scene):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
+        # First Render the scene to the antialias texture
         with render_to_fbo(self, self.fbos['antialias']):
-            gl.glClearColor(.5, .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
-            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+            self._draw(scene, Window.genShader)
 
-            Window.aaShader.bind()
-            Window.aaShader.uniformf('frameBufSize', *self.size)
-            Window.aaShader.uniformi('image_texture', 0)
-            Window.aaShader.uniformi('grayscale', int(self.grayscale))
-            gl.glBindTexture(gl.GL_TEXTURE_2D, self.fbos['antialias'].texture)
-            self.fullscreen_quad.render(Window.aaShader)
-            Window.aaShader.unbind()
-            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        #Then, Render the antialias texture to the screen on a fullscreen quad mesh.
+        gl.glClearColor(.5, .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        Window.aaShader.bind()
+        Window.aaShader.uniformf('frameBufSize', *self.size)
+        Window.aaShader.uniformi('image_texture', 0)
+        Window.aaShader.uniformi('grayscale', int(self.grayscale))
+        gl.glBindTexture(gl.GL_TEXTURE_2D, self.fbos['antialias'].texture)
+
+        self.fullscreen_quad.render(Window.aaShader)
+        Window.aaShader.unbind()
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
 
     def draw(self):
@@ -119,12 +123,15 @@ class Window(visual.Window):
 
             # Render shadow and cubemap from virtual camera's position.
             if self.shadow_rendering:
-                self.virtual_scene.render_shadow()
-            self.virtual_scene.render_to_cubemap()
-        elif self.shadow_rendering:
-            self.active_scene.render_shadow()
+                self.render_shadow(self.virtual_scene)
 
-        #self.active_scene.render_to_antialias()
+            # Render to cubemap texture.
+            self.render_to_cubemap(self.virtual_scene)
+
+        elif self.shadow_rendering:
+            self.render_shadow(self.active_scene)
+
+        #self.render_to_antialias(self.active_Scene)
         self._draw(self.active_scene, Window.genShader)
 
 
@@ -146,7 +153,6 @@ class Window(visual.Window):
         # Send Uniforms that are constant across meshes.
         shader.uniform_matrixf('view_matrix', scene.camera._view_matrix)
         shader.uniform_matrixf('projection_matrix', scene.camera._projection_matrix)
-
 
         shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix)
         shader.uniform_matrixf('shadow_view_matrix', scene.light._view_matrix)
@@ -174,6 +180,7 @@ class Window(visual.Window):
                 # Bind Cubemap if mesh is to be rendered with the cubemap.
                 shader.uniformi('hasCubeMap', int(mesh.cubemap))
                 if mesh.cubemap:
+                    assert self.virtual_scene, "Window.virtual_scene must be set for cubemap to render!"
                     shader.uniformf('playerPos', *vec(self.virtual_scene.camera.position))
                     gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
 
