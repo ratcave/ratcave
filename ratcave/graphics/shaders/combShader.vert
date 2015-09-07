@@ -20,15 +20,6 @@ mat4 texture_bias = mat4(0.5, 0.0, 0.0, 0.0,
 
 float diffuse_weight = .5;
 
-//60 degree fov_y, aspect=1 perspective matrix. May need to transpose for GLSL column-major order.
-mat4 shadow_projection_matrix = mat4(1.73205,     0.0,      0.0,        0.0,
-                                     0.0,     1.73205,      0.0,        0.0,
-                                     0.0,         0.0, -1.00445,   -0.02004,
-                                     0.0,         0.0,      -1.,        0.0);
-
-
-
-
 void main()
   {
     //Calculate Vertex World Position and Normal Direction

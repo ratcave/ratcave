@@ -26,7 +26,7 @@ class Window(visual.Window):
     aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                       open(join(shader_path, 'antialiasShader.frag')).read())
 
-    def __init__(self, active_scene, grayscale=False, shadow_rendering=True, *args, **kwargs):
+    def __init__(self, active_scene, grayscale=False, shadow_rendering=True, shadow_fov_y=60., *args, **kwargs):
 
         # Set default Window values for making sure Psychopy windows work with it.
         kwargs['allowStencil'] = False
@@ -46,6 +46,19 @@ class Window(visual.Window):
         self.shadow_rendering = shadow_rendering
 
         self.fullscreen_quad = fullscreen_quad
+        self.__shadow_fov_y = shadow_fov_y
+        self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y., aspect=1.)._projection_matrix
+
+    @property
+    def shadow_fov_y(self):
+        """Fov_y for calculating shadow area.  Automatically updates shadow_projection_matrix when set."""
+        return self.__shadow_fov_y
+
+    @shadow_fov_y.setter
+    def shadow_fov_y(self, value):
+        self.shadow_projection_matrix = Camera(fov_y=value, aspect=1.)._projection_matrix
+        self.__shadow_fov_y = value
+
 
     def set_virtual_scene(self, scene, from_viewpoint, to_mesh):
         """Set scene to render to cubemap, as well as the object whose position will be used as viewpoint and what mesh
@@ -54,9 +67,14 @@ class Window(visual.Window):
         to_mesh.cubemap = True
 
     def render_shadow(self, scene):
+        """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
         scene.light.rotation = scene.camera.rotation  # only works while spotlights aren't implemented, otherwise may have to be careful.
         with render_to_fbo(self, self.fbos['shadow']):
-            self._draw(scene, Window.shadowShader, camera=Camera(fov_y=60., aspect=1., position=scene.light.position, rotation=scene.camera.rotation))
+            Window.shadowShader.bind()
+            Window.shadowShader.uniform_matrixf('view_matrix', scene.light._view_matrix)
+            Window.shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
+            [mesh.render(Window.shadowShader) for mesh in scene if mesh.visible]
+            Window.shadowShader.unbind()
 
     def render_to_cubemap(self, scene):
         # Render to Each Face of Cubemap texture, rotating the camera in the correct direction before each shot.
@@ -131,6 +149,7 @@ class Window(visual.Window):
         shader.uniform_matrixf('projection_matrix', camera._projection_matrix)
 
         if shader == Window.genShader:
+            shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix)
             shader.uniform_matrixf('shadow_view_matrix', scene.light._view_matrix)
 
             shader.uniformf('light_position', *scene.light.position)
@@ -144,13 +163,6 @@ class Window(visual.Window):
         for mesh in scene.meshes:
 
             if mesh.visible:
-
-                # Send Model and Normal Matrix to shader.
-                shader.uniform_matrixf('model_matrix_global', mesh.world._model_matrix)
-                shader.uniform_matrixf('model_matrix_local', mesh.local._model_matrix)
-                shader.uniform_matrixf('normal_matrix_global', mesh.world._normal_matrix)
-                shader.uniform_matrixf('normal_matrix_local', mesh.local._normal_matrix)
-
 
                 if shader == Window.genShader:
                     # Change Material to Mesh's
@@ -176,7 +188,7 @@ class Window(visual.Window):
                         gl.glActiveTexture(gl.GL_TEXTURE0)
 
                 # Draw the Mesh
-                mesh.render()  # Bind VAO.
+                mesh.render(shader)  # Bind VAO.
 
         # Unbind Shader
         shader.unbind()

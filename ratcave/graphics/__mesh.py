@@ -138,7 +138,15 @@ class Mesh(object):
 
         self.loaded = True
 
-    def render(self):
+    def render(self, shader):
+
+        # Send Model and Normal Matrix to shader.
+        shader.uniform_matrixf('model_matrix_global', self.world._model_matrix)
+        shader.uniform_matrixf('model_matrix_local', self.local._model_matrix)
+        shader.uniform_matrixf('normal_matrix_global', self.world._normal_matrix)
+        shader.uniform_matrixf('normal_matrix_local', self.local._normal_matrix)
+
+        # Bind VAO data for rendering each vertex.
         if not self.loaded:
             self._create_vao()
         gl.glBindVertexArray(self.vao)
