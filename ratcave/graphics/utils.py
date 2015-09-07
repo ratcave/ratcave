@@ -77,7 +77,7 @@ def create_fbo(texture_type, width, height, texture_slot=0, color=True, depth=Tr
     return FBO(fbo, texture, (width, height))
 
 
-def vec(floatlist,newtype='float'):
+def vec(floatlist, newtype='float'):
 
         """ Makes GLfloat or GLuint vector containing float or uint args.
         By default, newtype is 'float', but can be set to 'int' to make

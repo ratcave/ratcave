@@ -111,3 +111,75 @@ class Window(visual.Window):
     def draw(self):
         self.on_draw()
 
+
+    def _draw(self, scene, shader, camera=None):
+
+        camera = camera if camera else scene.camera
+
+        # Enable 3D OpenGL
+        gl.glEnable(gl.GL_DEPTH_TEST)
+        #gl.glEnable(gl.GL_CULL_FACE)
+        gl.glEnable(gl.GL_TEXTURE_CUBE_MAP)
+        gl.glEnable(gl.GL_TEXTURE_2D)
+
+        # Clear and Refresh Screen
+        gl.glClearColor(scene.bgColor.r, scene.bgColor.g, scene.bgColor.b, 1.)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+
+        # Bind Shader
+        shader.bind()
+
+        # Send Uniforms that are constant across meshes.
+        shader.uniform_matrixf('view_matrix', camera._view_matrix)
+        shader.uniform_matrixf('projection_matrix', camera._projection_matrix)
+        shader.uniform_matrixf('shadow_projection_matrix', Scene.__shadowCamera._projection_matrix)
+        shader.uniform_matrixf('shadow_view_matrix', Scene.__shadowCamera._view_matrix)
+
+        shader.uniformf('light_position', *scene.light.position)
+        shader.uniformf('camera_position', *camera.position)
+
+        shader.uniformi('hasShadow', int(Scene._shadowFboID is not False))
+        shader.uniformi('ShadowMap', 5)
+
+        shader.uniformi('grayscale', int(Scene.grayscale))
+
+        # Draw each visible mesh in the scene.
+        for mesh in scene.meshes:
+
+            if mesh.visible:
+
+                # Send Model and Normal Matrix to shader.
+                shader.uniform_matrixf('model_matrix_global', mesh.world._model_matrix)
+                shader.uniform_matrixf('model_matrix_local', mesh.local._model_matrix)
+                shader.uniform_matrixf('normal_matrix_global', mesh.world._normal_matrix)
+                shader.uniform_matrixf('normal_matrix_local', mesh.local._normal_matrix)
+
+
+                if shader == Scene.genShader:
+                    # Change Material to Mesh's
+                    shader.uniformf('ambient', *mesh.material.ambient.rgb)
+                    shader.uniformf('diffuse', *mesh.material.diffuse.rgb)
+                    shader.uniformf('spec_color', *mesh.material.spec_color.rgb)
+                    shader.uniformf('spec_weight', mesh.material.spec_weight)
+                    shader.uniformf('opacity', mesh.material.diffuse.a)
+                    shader.uniformi('hasLighting', mesh.lighting)
+
+                    # Bind Cubemap if mesh is to be rendered with the cubemap.
+                    shader.uniformi('hasCubeMap', int(bool(mesh.cubemap)))
+                    if mesh.cubemap:
+                        shader.uniformf('playerPos', *vec(self.player.position))
+                        gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
+
+                    # Bind Textures and apply Material
+                    shader.uniformi('hasTexture', int(bool(mesh.texture)))
+                    if mesh.texture:
+                        gl.glActiveTexture(gl.GL_TEXTURE2)
+                        gl.glBindTexture(gl.GL_TEXTURE_2D, mesh.texture.id)
+                        shader.uniformi('ImageTextureMap', 2)
+                        gl.glActiveTexture(gl.GL_TEXTURE0)
+
+                # Draw the Mesh
+                mesh.render()  # Bind VAO.
+
+        # Unbind Shader
+        shader.unbind()
