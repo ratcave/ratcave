@@ -27,7 +27,7 @@ class Window(visual.Window):
     aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                       open(join(shader_path, 'antialiasShader.frag')).read())
 
-    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., *args, **kwargs):
+    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., autoCam=False, *args, **kwargs):
 
         # Set default Window values for making sure Psychopy windows work with it.
         kwargs['allowStencil'] = False
@@ -40,6 +40,8 @@ class Window(visual.Window):
         if self.virtual_scene:
             self.virtual_scene.camera.fov_y = 90.
             self.virtual_scene.camera.aspect = 1.
+        self.autoCam = autoCam  # Convenience attribute for moving virtual scene's light to the active scene's position.
+
 
         if grayscale:
             raise NotImplementedError("Grayscale not quite properly working yet.  To be fixed!")
@@ -122,9 +124,10 @@ class Window(visual.Window):
 
         if self.virtual_scene:
 
-            # Put light in camera's position before rendering.
-            #self.virtual_scene.light.position = self.active_scene.camera.position
-            #self.active_scene.light.position = self.active_scene.camera.position
+            if self.autoCam:
+                # Put virtual scene's light in active scene's camera position before rendering.
+                self.virtual_scene.light.position = self.active_scene.camera.position
+                self.active_scene.light.position = self.active_scene.camera.position
 
             # Render shadow and cubemap from virtual camera's position.
             if self.shadow_rendering:
