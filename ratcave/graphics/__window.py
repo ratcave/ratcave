@@ -38,7 +38,7 @@ class Window(visual.Window):
         self.active_scene = active_scene  # For normal rendering.
         self.virtual_scene = virtual_scene  # For dynamic cubemapping.
         if self.virtual_scene:
-            self.virtual_scene.camera.fov_y = 00.
+            self.virtual_scene.camera.fov_y = 90.
             self.virtual_scene.camera.aspect = 1.
 
         self.grayscale = grayscale
@@ -117,6 +117,7 @@ class Window(visual.Window):
         api.)"""
 
         if self.virtual_scene:
+
             # Put light in camera's position before rendering.
             self.virtual_scene.light.position = self.active_scene.camera.position
             self.active_scene.light.position = self.active_scene.camera.position
@@ -182,7 +183,7 @@ class Window(visual.Window):
                 if mesh.cubemap:
                     assert self.virtual_scene, "Window.virtual_scene must be set for cubemap to render!"
                     shader.uniformf('playerPos', *vec(self.virtual_scene.camera.position))
-                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
+                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture_slot)  # No ActiveTexture needed, because only one Cubemap.
 
                 # Bind Textures and apply Material
                 shader.uniformi('hasTexture', int(bool(mesh.texture)))
