@@ -45,6 +45,7 @@ class Window(visual.Window):
             raise NotImplementedError("Grayscale not quite properly working yet.  To be fixed!")
         self.grayscale = grayscale
         self.fbos = {'shadow': create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=5, color=False, depth=True),
+                     'vrshadow' create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=6, color=False, depth=True),
                      'cube': create_fbo(gl.GL_TEXTURE_CUBE_MAP, 2048, 2048, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
                      'antialias': create_fbo(gl.GL_TEXTURE_2D, 1280, 720, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
                      }
@@ -164,7 +165,8 @@ class Window(visual.Window):
         shader.uniformf('camera_position', *scene.camera.position)
 
         shader.uniformi('hasShadow', int(self.shadow_rendering))
-        shader.uniformi('ShadowMap', self.fbos['shadow'].texture_slot)
+        shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
+        shader.uniformi('ShadowMap', shadow_slot)
         shader.uniformi('grayscale', int(self.grayscale))
 
         # Draw each visible mesh in the scene.
