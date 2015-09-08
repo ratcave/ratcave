@@ -45,7 +45,7 @@ class Window(visual.Window):
             raise NotImplementedError("Grayscale not quite properly working yet.  To be fixed!")
         self.grayscale = grayscale
         self.fbos = {'shadow': create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=5, color=False, depth=True),
-                     'vrshadow' create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=6, color=False, depth=True),
+                     'vrshadow': create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=6, color=False, depth=True),
                      'cube': create_fbo(gl.GL_TEXTURE_CUBE_MAP, 2048, 2048, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
                      'antialias': create_fbo(gl.GL_TEXTURE_2D, 1280, 720, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
                      }
@@ -73,7 +73,8 @@ class Window(visual.Window):
     def render_shadow(self, scene):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
         scene.light.rotation = scene.camera.rotation  # only works while spotlights aren't implemented, otherwise may have to be careful.
-        with render_to_fbo(self, self.fbos['shadow']):
+        fbo = self.fbos['shadow'] if scene == self.active_scene else self.fbos['vrshadow']
+        with render_to_fbo(self, fbo):
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
             Window.shadowShader.bind()
             Window.shadowShader.uniform_matrixf('view_matrix', scene.light._view_matrix)
@@ -122,11 +123,12 @@ class Window(visual.Window):
         if self.virtual_scene:
 
             # Put light in camera's position before rendering.
-            self.virtual_scene.light.position = self.active_scene.camera.position
-            self.active_scene.light.position = self.active_scene.camera.position
+            #self.virtual_scene.light.position = self.active_scene.camera.position
+            #self.active_scene.light.position = self.active_scene.camera.position
 
             # Render shadow and cubemap from virtual camera's position.
             if self.shadow_rendering:
+                self.render_shadow(self.active_scene)
                 self.render_shadow(self.virtual_scene)
 
             # Render to cubemap texture.
