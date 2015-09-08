@@ -3,7 +3,7 @@ import copy
 
 import numpy as np
 
-from __mesh import MeshData, Mesh, Material
+from mesh import MeshData, Mesh, Material
 
 
 class WavefrontReader(object):

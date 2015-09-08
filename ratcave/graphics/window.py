@@ -2,11 +2,11 @@ __author__ = 'nickdg'
 
 from psychopy import visual
 import pyglet.gl as gl
-from __scene import Scene
-from __camera import Camera
-from __shader import Shader
-from __mesh import fullscreen_quad
-from __mixins import Physical
+from scene import Scene
+from camera import Camera
+from shader import Shader
+from mesh import fullscreen_quad
+from mixins import Physical
 from utils import *
 from os.path import join, split
 import pdb

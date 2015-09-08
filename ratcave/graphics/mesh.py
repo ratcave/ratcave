@@ -4,7 +4,7 @@ import ctypes
 from pyglet import image
 from utils import *
 import numpy as np
-import __mixins as mixins
+import mixins as mixins
 
 
 def create_opengl_object(gl_gen_function, n=1):
