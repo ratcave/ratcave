@@ -41,6 +41,8 @@ class Window(visual.Window):
             self.virtual_scene.camera.fov_y = 90.
             self.virtual_scene.camera.aspect = 1.
 
+        if grayscale:
+            raise NotImplementedError("Grayscale not quite properly working yet.  To be fixed!")
         self.grayscale = grayscale
         self.fbos = {'shadow': create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=5, color=False, depth=True),
                      'cube': create_fbo(gl.GL_TEXTURE_CUBE_MAP, 2048, 2048, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
@@ -183,7 +185,7 @@ class Window(visual.Window):
                 if mesh.cubemap:
                     assert self.virtual_scene, "Window.virtual_scene must be set for cubemap to render!"
                     shader.uniformf('playerPos', *vec(self.virtual_scene.camera.position))
-                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture_slot)  # No ActiveTexture needed, because only one Cubemap.
+                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
 
                 # Bind Textures and apply Material
                 shader.uniformi('hasTexture', int(bool(mesh.texture)))
