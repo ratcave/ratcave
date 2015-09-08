@@ -159,8 +159,7 @@ class Mesh(object):
         gl.glVertexAttribPointer(2, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
         gl.glEnableVertexAttribArray(2)
 
-
-        # Everything is now assigned and all data passed to the GPU.  Can disable VAO and VBO now.
+        # Everything is now assigned and all data passed to the GPU.  Can unbind VAO and VBO now.
         gl.glBindVertexArray(0)
 
         self.__loaded = True
@@ -169,10 +168,10 @@ class Mesh(object):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
 
         # Send Model and Normal Matrix to shader.
-        shader.uniform_matrixf('model_matrix_global', self.world._model_matrix)
-        shader.uniform_matrixf('model_matrix_local', self.local._model_matrix)
-        shader.uniform_matrixf('normal_matrix_global', self.world._normal_matrix)
-        shader.uniform_matrixf('normal_matrix_local', self.local._normal_matrix)
+        shader.uniform_matrixf('model_matrix_global', self.world.model_matrix)
+        shader.uniform_matrixf('model_matrix_local', self.local.model_matrix)
+        shader.uniform_matrixf('normal_matrix_global', self.world.normal_matrix)
+        shader.uniform_matrixf('normal_matrix_local', self.local.normal_matrix)
 
         # Bind VAO data for rendering each vertex.
         if not self.__loaded:

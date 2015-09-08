@@ -5,19 +5,28 @@ import transformations
 
 
 class Physical(object):
-    """Provides shortcut for adding position attributes and shortcut properties to objects whose xyz position
-    must be specified."""
+
 
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=(1., 1., 1.)):
+        """XYZ Position, Scale and XYZEuler Rotation Class.
+
+        :param position: (x, y, z) translation values.
+        :type position: tuple
+        :param rotation: (x, y, z) rotation values
+        :type rotation: tuple
+        :param scale: (x, y, z) or s scale factors. If int is used, will be applied to x, y, and z.
+        :type scale: int, tuple
+        """
+
         self.__x, self.__y, self.__z = position
         self.__rot_x, self.__rot_y, self.__rot_z = rotation
         if isinstance(scale, (int, float)):
             scale = (scale,) * 3
         self.__scale_x, self.__scale_y, self.__scale_z = scale
 
-        self._model_matrix = None
-        self._normal_matrix = None
-        self._view_matrix = None
+        self.model_matrix = None
+        self.normal_matrix = None
+        self.view_matrix = None
 
         self._set_transformation_matrix()
 
@@ -25,6 +34,9 @@ class Physical(object):
 
     @property
     def x(self):
+        """
+        :return: x position coord
+        """
         return self.__x
 
     @x.setter
@@ -34,6 +46,9 @@ class Physical(object):
 
     @property
     def y(self):
+        """
+        :return: y position coord
+        """
         return self.__y
 
     @y.setter
@@ -43,6 +58,9 @@ class Physical(object):
 
     @property
     def z(self):
+        """
+        :return: z position coord
+        """
         return self.__z
 
     @z.setter
@@ -52,6 +70,9 @@ class Physical(object):
 
     @property
     def position(self):
+        """
+        :return: (x, y, z) position coords
+        """
         return self.x, self.y, self.z
 
     @position.setter
@@ -61,6 +82,9 @@ class Physical(object):
 
     @property
     def xy(self):
+        """
+        :return: (x, y) position coords
+        """
         return self.x, self.y
 
     @xy.setter
@@ -70,6 +94,9 @@ class Physical(object):
 
     @property
     def scale_x(self):
+        """
+        :return: x scale factor
+        """
         return self.__scale_x
 
     @scale_x.setter
@@ -79,6 +106,9 @@ class Physical(object):
 
     @property
     def scale_y(self):
+        """
+        :return: y scale factor
+        """
         return self.__scale_y
 
     @scale_y.setter
@@ -88,6 +118,9 @@ class Physical(object):
 
     @property
     def scale_z(self):
+        """
+        :return: z scale factor
+        """
         return self.__scale_z
 
     @scale_z.setter
@@ -142,9 +175,20 @@ class Physical(object):
         self.__rot_x, self.__rot_y, self.__rot_z = value
         self._set_transformation_matrix()
 
+    def distance_to(self, other_obj):
+        """Full 3D (X-Y-Z) Distance from own origin to another object's origin"""
+        own_position = np.array(self.position)
+        other_position = np.array(other_obj.position)
+        return np.sqrt(sum((own_position - other_position)**2))
+
+    def distance2D_to(self, other_obj):
+        """X-Y Distance from own origin to another object's origin"""
+        own_position = np.array(self.position[:2])
+        other_position = np.array(other_obj.position[:2])
+        return np.sqrt(sum((own_position - other_position)**2))  # Return their distance using the distance formula
+
     def _set_transformation_matrix(self):
         """Operates on either Model matrix or View matrix, depending on the type specified by self._tranform_type."""
-        # TODO: Make more efficient--there shouldn't need to be so many calculations, as some of these seem redundant!
 
         # Set View Matrix
         trans_mat = transformations.translation_matrix([-self.x, -self.y, -self.z])
@@ -155,7 +199,7 @@ class Physical(object):
         rot_mat = np.dot(np.dot(rot_x_mat,rot_y_mat), rot_z_mat)
         view_matrix = np.dot(rot_mat, trans_mat)
         self.view_matrix = view_matrix
-        self._view_matrix = view_matrix.transpose().flatten()  # Transpose is to change to column-major mode, for OpenGL
+        self.view_matrix = view_matrix.transpose().flatten()  # Transpose is to change to column-major mode, for OpenGL
 
         # Set Model and Normal Matrices
         trans_mat = transformations.translation_matrix([self.x, self.y, self.z])
@@ -166,14 +210,20 @@ class Physical(object):
 
         rot_mat = np.dot(np.dot(rot_z_mat,rot_y_mat), rot_x_mat)
         model_matrix = np.dot(np.dot(trans_mat, rot_mat), scale_mat)
-        self._model_matrix = model_matrix.T.flatten()  # Transpose is to change to column-major mode, for OpenGL
-        self._normal_matrix = np.linalg.inv(model_matrix.T).T.flatten()  # Both transposes could cancel each other out, but don't cost much to do here..
+        self.model_matrix = model_matrix.T.flatten()  # Transpose is to change to column-major mode, for OpenGL
+        self.normal_matrix = np.linalg.inv(model_matrix.T).T.flatten()  # Both transposes could cancel each other our, but don't cost much to do here..
 
 class Color(object):
 
+    names = {'white': (1, 1, 1), 'black': (0, 0, 0), 'red':(1, 0, 0), 'green':(0, 1, 0), 'blue':(0, 0, 1)}
+
     def __init__(self, r, g, b, a=1.):
         """Color object, defines rgba attributes"""
-        self.r, self.g, self.b, self.a = r, g, b, a
+        self.r = r
+        self.g = g
+        self.b = b
+        self.a = a
+        self._textname = 'other'
 
     @property
     def rgb(self):
@@ -190,3 +240,11 @@ class Color(object):
     @rgba.setter
     def rgba(self, value):
         self.r, self.g, self.b, self.a = value
+
+    @property
+    def text(self):
+        return self._textname
+
+    @text.setter
+    def text(self, value):
+        self.r, self.g, self.b = Color.names[value]
