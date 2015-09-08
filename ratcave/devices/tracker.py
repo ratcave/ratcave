@@ -109,5 +109,3 @@ class RigidBody(object):
         # Set Matrix,
         self._global_to_local_rotation_matrix = rot_matrix
 
-
-

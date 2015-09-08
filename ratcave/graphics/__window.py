@@ -10,6 +10,7 @@ from __mixins import Physical
 from utils import *
 from os.path import join, split
 import pdb
+from math import ceil, log
 
 shader_path = join(split(__file__)[0], 'shaders')
 
@@ -27,7 +28,7 @@ class Window(visual.Window):
     aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                       open(join(shader_path, 'antialiasShader.frag')).read())
 
-    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., autoCam=False, *args, **kwargs):
+    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=2048, autoCam=False, *args, **kwargs):
 
         # Set default Window values for making sure Psychopy windows work with it.
         kwargs['allowStencil'] = False
@@ -46,10 +47,11 @@ class Window(visual.Window):
         if grayscale:
             raise NotImplementedError("Grayscale not quite properly working yet.  To be fixed!")
         self.grayscale = grayscale
-        self.fbos = {'shadow': create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=5, color=False, depth=True),
-                     'vrshadow': create_fbo(gl.GL_TEXTURE_2D, 2048, 2048, texture_slot=6, color=False, depth=True),
-                     'cube': create_fbo(gl.GL_TEXTURE_CUBE_MAP, 2048, 2048, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
-                     'antialias': create_fbo(gl.GL_TEXTURE_2D, 1280, 720, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
+        aa_texture_size = int(pow(2, ceil(log(max(self.size), 2))))  # Automatically get next power-of-2 size of monitor edge
+        self.fbos = {'shadow': create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=5, color=False, depth=True),
+                     'vrshadow': create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=6, color=False, depth=True),
+                     'cube': create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size, texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
+                     'antialias': create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
                      }
         self.texture_size = 2048
 
@@ -140,8 +142,8 @@ class Window(visual.Window):
         elif self.shadow_rendering:
             self.render_shadow(self.active_scene)
 
-        #self.render_to_antialias(self.active_Scene)
-        self._draw(self.active_scene, Window.genShader)
+        self.render_to_antialias(self.active_scene)
+        #self._draw(self.active_scene, Window.genShader)
 
 
     def _draw(self, scene, shader):
