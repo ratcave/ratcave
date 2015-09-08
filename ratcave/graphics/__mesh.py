@@ -58,20 +58,34 @@ class Mesh(object):
     drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
 
     def __init__(self, mesh_data, material=None, scale=1.0, centered=False, lighting=True,
-                 drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0)):
+                 drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0), visible=True):
+        """
+        Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
-        """Returns a Mesh object.
-        Required Inputs:
-            -string objfile: the .obj filename to load the mesh data from.
-        Optional Keyword Inputs:
-            -bool cubemap: whether to link a cubemap texture to the mesh.
-            -string mesh: if multiple meshes are in the objfile, which mesh to use.
-            -bool centered:
-            -[x,y,z] position: origin point of mesh in 3D space.
-            -bool lighting: whether to perform diffuse and specular shading on the model.
+        Meshes have two coordinate system, the "local" and "world" systems, on which the transforms are performed
+        sequentially.  This allows them to be placed in the scene while maintaining a relative position to one another.
 
-        Note: faces in the objfile must have triangle faces, normals,
-              and UV texture coords.
+        .. note:: Meshes are not usually instantiated directly, but from a 3D file, like the WavefrontReader .obj and .mtl files.
+
+        :param mesh_data: MeshData object containing the vertex data to be displayed.
+        :type mesh_data: MeshData
+        :param material: Material object containing the color data for how the Mesh should be lit.
+        :type material: Material
+        :param scale: local size scaling factor (1.0 is normal size)
+        :param centered: if True, sets local position to 0 after mean-centering the vertices. If false, sets it to the mean.
+        :type centered: bool
+        :param lighting: Whether 3D shading should be done when rendering the mesh. If not, will be rendered with flat shading in its diffuse color.
+        :type lighting: bool
+        :param drawstyle: 'point': only vertices, 'line': points and edges, 'fill': points, edges, and faces (full)
+        :type drawstyle: str
+        :param cubemap: whether the cubemap texture will be applied to this Mesh.
+        :type cubemap: bool
+        :param position: the local xyz position of the Mesh (default 0,0,0)
+        :type position: tuple
+        :param rotation: the local xyz rotation of the Mesh, in degrees (default 0,0,0)
+        :type rotation: tuple
+        :param visible: whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
+        :type visible: bool
         """
 
         # Mesh Data
@@ -82,27 +96,40 @@ class Mesh(object):
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         world_position = (0., 0., 0.) if centered else tuple(vertex_mean)
-        self.world = mixins.Physical(position=world_position)  # Couldn't use "global" as name of property--reserved in python.
+        #: World Mesh coordinates (Physical type)
+        self.world = mixins.Physical(position=world_position)
+        #: Local Mesh coordinates (Physical type)
         self.local = mixins.Physical(position=position, rotation=rotation, scale=scale)
 
+        #: Material object that describes how the Mesh is lit.
         self.material = material if isinstance(material, Material) else Material()
-        self.texture = None  # will be changed to pyglet texture object if texture is set.
+        #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
+        self.texture = None
+        #: Bool, whether the cubemap texture is applied to this Mesh.
         self.cubemap = cubemap
+        #: Bool, whether 3D shading (described in Material) is applied.  Else flat diffuse color will be used.
         self.lighting = lighting
+        #: 'fill', 'line', or 'point'
         self.drawstyle = drawstyle
-
-        self.visible = True
-        self.loaded = False  # If mesh data is loaded into OpenGL yet.
+        #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
+        self.visible = visible
+        self.__loaded = False  # If mesh data is loaded into OpenGL yet.
 
     def __repr__(self):
         """Called when print() or str() commands are used on object."""
         return "Mesh: {0}".format(self.data.name)
 
     def load_texture(self, file_name):
-        """Loads a texture from an image file."""
+        """Loads a texture from an image file into OpenGL and applies it to the Mesh for rendering.
+
+        :param file_name: the filename of the image file. Support jpg, png, and more.
+        :type file_name: str
+        :rtype: None
+        """
         self.texture = image.load(file_name).get_texture()
 
     def _create_vao(self):
+        """Puts the MeshData into a Vertex Array Object for OpenGl, saving it in the GPU to be rendered later."""
 
         # Create Vertex Array Object and Bind it
         self.vao = create_opengl_object(gl.glGenVertexArrays)
@@ -136,9 +163,10 @@ class Mesh(object):
         # Everything is now assigned and all data passed to the GPU.  Can disable VAO and VBO now.
         gl.glBindVertexArray(0)
 
-        self.loaded = True
+        self.__loaded = True
 
     def render(self, shader):
+        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
 
         # Send Model and Normal Matrix to shader.
         shader.uniform_matrixf('model_matrix_global', self.world._model_matrix)
@@ -147,11 +175,12 @@ class Mesh(object):
         shader.uniform_matrixf('normal_matrix_local', self.local._normal_matrix)
 
         # Bind VAO data for rendering each vertex.
-        if not self.loaded:
+        if not self.__loaded:
             self._create_vao()
         gl.glBindVertexArray(self.vao)
         gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
         gl.glBindVertexArray(0)
+
 
 fullscreen_quad = None
 
