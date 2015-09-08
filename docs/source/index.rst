@@ -3,13 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to ratCAVE's documentation!
-===================================
+Welcome to ratCAVE's documentation! Hello, this is new.
+=======================================================
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
+
+   modules
+
 
 
 

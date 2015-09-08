@@ -1,3 +1,11 @@
+"""
+    mesh
+    ~~~~
+
+    This module contains the Mesh, MeshData, and Material classes.
+    This documentation was auto-generated from the mesh.py file.
+"""
+
 import types
 import ctypes
 
