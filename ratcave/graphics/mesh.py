@@ -5,15 +5,10 @@
     This module contains the Mesh, MeshData, and Material classes.
     This documentation was auto-generated from the mesh.py file.
 """
-
-import types
-import ctypes
-
-from pyglet import image
-from utils import *
+import mixins
 import numpy as np
-import mixins as mixins
-
+from pyglet import gl, image
+from utils import vec, create_opengl_object
 
 class MeshData(object):
 

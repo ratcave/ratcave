@@ -1,4 +1,4 @@
-import mixins as mixins
+import mixins
 from camera import Camera
 
 class Scene:

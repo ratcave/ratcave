@@ -1,8 +1,6 @@
 from os import path
 import copy
-
 import numpy as np
-
 from mesh import MeshData, Mesh, Material
 
 
