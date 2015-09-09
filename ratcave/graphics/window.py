@@ -81,8 +81,8 @@ class Window(visual.Window):
         with render_to_fbo(self, fbo):
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
             Window.shadowShader.bind()
-            Window.shadowShader.uniform_matrixf('view_matrix', scene.light._view_matrix)
-            Window.shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
+            Window.shadowShader.uniform_matrixf('view_matrix', scene.light.view_matrix.T.ravel())
+            Window.shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix.T.ravel())
             [mesh.render(Window.shadowShader) for mesh in scene.meshes if mesh.visible]
             Window.shadowShader.unbind()
 
