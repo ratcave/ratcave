@@ -10,12 +10,10 @@ class Physical(object):
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=(1., 1., 1.)):
         """XYZ Position, Scale and XYZEuler Rotation Class.
 
-        :param position: (x, y, z) translation values.
-        :type position: tuple
-        :param rotation: (x, y, z) rotation values
-        :type rotation: tuple
-        :param scale: (x, y, z) or s scale factors. If int is used, will be applied to x, y, and z.
-        :type scale: int, tuple
+        Args:
+            position (tuple): (x, y, z) translation values.
+            rotation (tuple): (x, y, z) rotation values
+            scale (tuple, float): (x, y, z) or s scale factors. If float is used, will be applied to x, y, and z equally.
         """
 
         self.__x, self.__y, self.__z = position

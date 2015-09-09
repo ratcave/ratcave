@@ -18,10 +18,17 @@ import mixins as mixins
 class MeshData(object):
 
     def __init__(self, vertices, face_indices, normals, texture_uv):
-        """Contains NumPy Arrayed Mesh Data (vertices, normals, face_indices, etc) for generating an OpenGL mesh.
-        Assumes data's shape is (N_Points x Coords) and that face_indices represent triangulated faces.
-        Optitional arguments:
-            -bool centered: whether to mean-center the vertices, so the position is equal to the vertex center
+        """
+        Collects all vertex data for rendering in 3D graphics packages.
+
+        Args:
+            vertices (list): Nx3 vertex array
+            face_indices (list): Nx3 Face index array (0-indexed)
+            normals (list): Nx3 normals array
+            texture_uv (list): Nx2 texture_uv array
+
+        Returns:
+            MeshData object
         """
         # CPU Data
         self.vertices = np.array(vertices, dtype=float).reshape((-1, 3))
@@ -42,14 +49,16 @@ class Material(object):
         """
         Returns a Material object containing various Color properties for 3D shading in graphics packages.
 
-        :param name: The name of the material
-        :type name: str
-        :param diffuse: (r,g,b) values for diffuse reflections.  Also used as color if flat shading is used.
-        :param spec_weight: falloff exponent for specular shading. if <= 1, specular lighting is not performed.
-        :param spec_color: (r,g,b) values for specular reflections
-        :param ambient:  (r,g,b) values for ambient reflections.
-        :param dissolve:  Dissolve transparancy level (0-1).  Not implemented for shading yet, though.
-        :return: Material
+        Args:
+            name: (str): The name of the material
+            diffuse (tuple): (r,g,b) values for diffuse reflections.  Also used as color if flat shading is used.
+            spec_weight (float): falloff exponent for specular shading. if <= 1, specular lighting is not performed.
+            spec_color (tuple): (r,g,b) values for specular reflections
+            ambient (tuple): (r,g,b) values for ambient reflections.
+            dissolve (float): Dissolve transparancy level (0-1).  Not implemented for shading yet, though.
+
+        Returns:
+            Material instance
         """
         self.name = name.split('\n')[0]
         self.diffuse = mixins.Color(*diffuse)
@@ -77,50 +86,43 @@ class Mesh(object):
 
         .. note:: Meshes are not usually instantiated directly, but from a 3D file, like the WavefrontReader .obj and .mtl files.
 
-        :param mesh_data: MeshData object containing the vertex data to be displayed.
-        :type mesh_data: MeshData
-        :param material: Material object containing the color data for how the Mesh should be lit.
-        :type material: Material
-        :param scale: local size scaling factor (1.0 is normal size)
-        :param centered: if True, sets local position to 0 after mean-centering the vertices. If false, sets it to the mean.
-        :type centered: bool
-        :param lighting: Whether 3D shading should be done when rendering the mesh. If not, will be rendered with flat shading in its diffuse color.
-        :type lighting: bool
-        :param drawstyle: 'point': only vertices, 'line': points and edges, 'fill': points, edges, and faces (full)
-        :type drawstyle: str
-        :param cubemap: whether the cubemap texture will be applied to this Mesh.
-        :type cubemap: bool
-        :param position: the local xyz position of the Mesh (default 0,0,0)
-        :type position: tuple
-        :param rotation: the local xyz rotation of the Mesh, in degrees (default 0,0,0)
-        :type rotation: tuple
-        :param visible: whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
-        :type visible: bool
+        Args:
+            mesh_data (MeshData): MeshData object containing the vertex data to be displayed.
+            material (Material): Material object containing the color data for how the Mesh should be lit.
+            scale (float): local size scaling factor (1.0 is normal size)
+            centered (bool): if True, sets local position to 0 after mean-centering the vertices. If false, sets it to the mean.
+            lighting (bool):Whether 3D shading should be done when rendering the mesh. If not, will be rendered with flat shading in its diffuse color.
+            drawstyle (str): 'point': only vertices, 'line': points and edges, 'fill': points, edges, and faces (full)
+            cubemap (bool): whether the cubemap texture will be applied to this Mesh.
+            position (tuple): the local (x,y,z) position of the Mesh (default 0,0,0)
+            rotation (tuple): the local (x,y,z) rotation of the Mesh, in degrees (default 0,0,0)
+            visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
+
+        Returns:
+            Mesh instance
         """
 
         # Mesh Data
         assert isinstance(mesh_data, MeshData), "Mesh object requires a MeshData object as input."
         self.data = mesh_data
-        vertex_mean = np.mean(self.data.vertices, axis=0)
-        self.data.vertices -= vertex_mean
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
+        vertex_mean = np.mean(self.data.vertices, axis=0)
+        self.data.vertices -= vertex_mean
         world_position = (0., 0., 0.) if centered else tuple(vertex_mean)
         #: World Mesh coordinates (Physical type)
         self.world = mixins.Physical(position=world_position)
         #: Local Mesh coordinates (Physical type)
         self.local = mixins.Physical(position=position, rotation=rotation, scale=scale)
 
-        #: Material object that describes how the Mesh is lit.
         self.material = material if isinstance(material, Material) else Material()
+
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         self.texture = None
-        #: Bool, whether the cubemap texture is applied to this Mesh.
         self.cubemap = cubemap
-        #: Bool, whether 3D shading (described in Material) is applied.  Else flat diffuse color will be used.
         self.lighting = lighting
-        #: 'fill', 'line', or 'point'
         self.drawstyle = drawstyle
+
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
         self.__loaded = False  # If mesh data is loaded into OpenGL yet.
@@ -130,12 +132,7 @@ class Mesh(object):
         return "Mesh: {0}".format(self.data.name)
 
     def load_texture(self, file_name):
-        """Loads a texture from an image file into OpenGL and applies it to the Mesh for rendering.
-
-        :param file_name: the filename of the image file. Support jpg, png, and more.
-        :type file_name: str
-        :rtype: None
-        """
+        """Loads a texture from an image file into OpenGL and applies it to the Mesh for rendering."""
         self.texture = image.load(file_name).get_texture()
 
     def _create_vao(self):

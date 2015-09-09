@@ -6,19 +6,24 @@ class Camera(mixins.Physical):
     """A convenient object for controlling the scene viewing angle."""
 
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), fov_y=60., aspect=16. / 9., z_near=.01, z_far=4.5, x_shift=0., y_shift=0., ortho_mode=False):
-
-        """Returns a new Camera object.
-        Optional Keyword Arguments:
-            -position: [x, y, z]
-            -rot_vector: [x, y, z]
-            -int rot_amount: degrees of rotation about rot_vector axis
-            -float fov_y: vertical field of view
-            -float aspect: screen width/height
-            -float z_near:  near clipping distance
-            -float z_far:   far clipping distance
-            -float xshift: horizontal lens shift
-            -float yshift: vertical lens shift
         """
+        My camera class.
+
+        Args:
+            position (tuple): (x,y,z)
+            rotation (tuple): (x,y,z)
+            fov_y (float): vertical field of view (degrees)
+            aspect (float): screen width/height
+            z_near (float): near clipping distance
+            z_far (float): far clipping distance
+            x_shift (float): horizontal lens shift
+            y_shift (float): vertical lens shift
+            ortho_mode (bool): Whether to use orthographic projection instead of perpective projection.
+
+        Return:
+            Camera instance
+        """
+
         mixins.Physical.__init__(self, position, rotation)
 
         # Set intrinsic Camera attributes (must be manually applied using update() method during Scene.draw())
@@ -111,7 +116,7 @@ class Camera(mixins.Physical):
                                        [0.,           0.,                     0., 1.]])
 
     def update(self):
-        """Applies perspective changes to rendering during Scene.draw() loop."""
+        """Recalculates and Updates the Camera's projection_matrix attribute."""
 
         rom = lambda x,y: -float(x+y)/(x-y)
         zN, zF = self.zNear, self.zFar

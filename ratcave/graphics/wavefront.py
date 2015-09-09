@@ -8,9 +8,15 @@ from mesh import MeshData, Mesh, Material
 
 class WavefrontReader(object):
 
-    def __init__(self, file_name,):
-        """Reads a .obj and corresponding .mtl file upon initialization.  Mesh objects can
-        be obtained through the Wavefront.getMesh(name, materialname=None) method."""
+    def __init__(self, file_name):
+        """
+        Reads Wavefront (.obj) files created in Blender to build ratCAVE.graphics Mesh objects.
+
+        :param file_name: .obj file to read (assumes an accompanying .mtl file has the same base file name.)
+        :type file_name: str
+        :return:
+        :rtype: WavefrontReader
+        """
         self.file_name = file_name
         self.meshdata = {}
         self.materials = {}
@@ -22,9 +28,14 @@ class WavefrontReader(object):
         self._parse_mtl(file_name + '.mtl')
 
     def get_mesh(self, mesh_name, **kwargs):
-        """Returns a Mesh object for directly rendering in a scene.  Additional keyword arguments will be applied to Mesh.
-        Optional Keyword:
-           material_name: name of material to apply to mesh, if not one already assigned in .obj file."""
+        """
+        Returns a Mesh object for directly rendering in a scene.
+
+        :param mesh_name:
+        :param kwargs: All of Mesh's keword arguments will be applied to the Mesh, for convenient Mesh creation.
+        :return: Mesh
+        :rtype: Mesh
+        """
         meshdata = self.meshdata[mesh_name]
         material_name = self.mesh_material_names[mesh_name] if 'material_name' not in kwargs else kwargs['material_name']
         material = self.materials[material_name]
