@@ -71,6 +71,8 @@ class Physical(object):
 
     @property
     def model_matrix(self):
+        """The 4x4 model matrix."""
+
         # Set Model and Normal Matrices
         trans_mat = transformations.translation_matrix(self.position.xyz)
 
@@ -85,10 +87,12 @@ class Physical(object):
 
     @property
     def normal_matrix(self):
+        """The 4x4 normal matrix, which is the inverse of the transpose of the model matrix."""
         return np.linalg.inv(self.model_matrix.T)
 
     @property
     def view_matrix(self):
+        """The 4x4 view matrix."""
         # Set View Matrix
         trans_mat = transformations.translation_matrix((-self.position.x, -self.position.y, -self.position.z))
 
