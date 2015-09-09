@@ -37,10 +37,21 @@ class Material(object):
     material settings to create object, and relies on defaults to be set
     in the object initialization!"""
 
-    def __init__(self, name='DefaultGray', diffuse=(.8,.8,.8), spec_weight=0, spec_color=(0,0,0), ambient=(0,0,0), dissolve=0):
+    def __init__(self, name='DefaultGray', diffuse=(.8, .8, .8), spec_weight=0, spec_color=(0, 0, 0), ambient=(0, 0, 0),
+                 dissolve=0):
+        """
+        Returns a Material object containing various Color properties for 3D shading in graphics packages.
 
-        name = name.split('\n')
-        self.name = name[0]
+        :param name: The name of the material
+        :type name: str
+        :param diffuse: (r,g,b) values for diffuse reflections.  Also used as color if flat shading is used.
+        :param spec_weight: falloff exponent for specular shading. if <= 1, specular lighting is not performed.
+        :param spec_color: (r,g,b) values for specular reflections
+        :param ambient:  (r,g,b) values for ambient reflections.
+        :param dissolve:  Dissolve transparancy level (0-1).  Not implemented for shading yet, though.
+        :return: Material
+        """
+        self.name = name.split('\n')[0]
         self.diffuse = mixins.Color(*diffuse)
         self.spec_weight = spec_weight
         self.spec_color = mixins.Color(*spec_color)
