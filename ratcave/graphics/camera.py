@@ -24,7 +24,7 @@ class Camera(mixins.Physical):
             Camera instance
         """
 
-        mixins.Physical.__init__(self, position, rotation)
+        mixins.Physical.__init__(self, position=position, rotation=rotation)
 
         # Set intrinsic Camera attributes (must be manually applied using update() method during Scene.draw())
         self.__fov_y = fov_y
@@ -41,8 +41,7 @@ class Camera(mixins.Physical):
         self.__ortho_mode = ortho_mode
 
         # Save projection matrix
-        self._projection_matrix = np.zeros(16)
-        self._projection_view_matrix = np.zeros(16)
+        self.projection_matrix = np.zeros(16)
         self.update()
 
     @property
@@ -139,7 +138,7 @@ class Camera(mixins.Physical):
             persp_mat = np.dot(persp_mat, self._shift_matrix)  # Apply lens shift
 
 
-        self._projection_matrix = persp_mat.transpose().flatten()
+        self.projection_matrix = persp_mat.transpose().flatten()
 
 
 

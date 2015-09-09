@@ -59,6 +59,8 @@ class Material(object):
 
         Returns:
             Material instance
+
+        .. warning:: Transparancy hasn't been fully implemented yet.  If alpha values are changed from 1., unexpected outputs may occur.
         """
         self.name = name.split('\n')[0]
         self.diffuse = mixins.Color(*diffuse)
@@ -175,10 +177,10 @@ class Mesh(object):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
 
         # Send Model and Normal Matrix to shader.
-        shader.uniform_matrixf('model_matrix_global', self.world.model_matrix)
-        shader.uniform_matrixf('model_matrix_local', self.local.model_matrix)
-        shader.uniform_matrixf('normal_matrix_global', self.world.normal_matrix)
-        shader.uniform_matrixf('normal_matrix_local', self.local.normal_matrix)
+        shader.uniform_matrixf('model_matrix_global', self.world.model_matrix.T.flatten())
+        shader.uniform_matrixf('model_matrix_local', self.local.model_matrix.T.flatten())
+        shader.uniform_matrixf('normal_matrix_global', self.world.normal_matrix.T.flatten())
+        shader.uniform_matrixf('normal_matrix_local', self.local.normal_matrix.T.flatten())
 
         # Bind VAO data for rendering each vertex.
         if not self.__loaded:
