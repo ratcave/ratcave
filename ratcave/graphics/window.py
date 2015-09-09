@@ -1,10 +1,10 @@
 __author__ = 'nickdg'
 
 from psychopy import visual
-from camera import Camera
-from shader import Shader
-from mesh import fullscreen_quad
-import utils
+from . import Camera
+from .shader import Shader
+from .mesh import fullscreen_quad
+from . import utils
 from os.path import join, split
 from math import ceil, log
 import pyglet.gl as gl
