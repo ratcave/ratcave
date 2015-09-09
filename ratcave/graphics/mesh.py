@@ -15,15 +15,6 @@ import numpy as np
 import mixins as mixins
 
 
-def create_opengl_object(gl_gen_function, n=1):
-    """Returns int pointing to an OpenGL texture"""
-    handle = gl.GLuint(1)
-    gl_gen_function(n, ctypes.byref(handle))  # Create n Empty Objects
-    if n > 1:
-        return [handle.value + el for el in range(n)]  # Return list of handle values
-    else:
-        return handle.value  # Return handle value
-
 class MeshData(object):
 
     def __init__(self, vertices, face_indices, normals, texture_uv):

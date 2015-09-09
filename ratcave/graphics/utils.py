@@ -5,11 +5,15 @@ from ctypes import byref
 
 import pdb
 
-def create_opengl_object(gl_gen_function):
+def create_opengl_object(gl_gen_function, n=1):
     """Returns int pointing to an OpenGL texture"""
-    texture_id = gl.GLuint(1)
-    gl_gen_function(1, byref(texture_id))  # Create Empty Texture
-    return texture_id.value  # Use handle for rest
+    handle = gl.GLuint(1)
+    gl_gen_function(n, ctypes.byref(handle))  # Create n Empty Objects
+    if n > 1:
+        return [handle.value + el for el in range(n)]  # Return list of handle values
+    else:
+        return handle.value  # Return handle value
+
 
 FBO = namedtuple('FBO', 'id texture texture_slot size')
 def create_fbo(texture_type, width, height, texture_slot=0, color=True, depth=True, grayscale=False):
