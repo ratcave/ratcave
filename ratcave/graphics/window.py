@@ -162,11 +162,11 @@ class Window(visual.Window):
         shader.bind()
 
         # Send Uniforms that are constant across meshes.
-        shader.uniform_matrixf('view_matrix', scene.camera.view_matrix.T.flatten())
-        shader.uniform_matrixf('projection_matrix', scene.camera.projection_matrix.T.flatten())
+        shader.uniform_matrixf('view_matrix', scene.camera.view_matrix.T.ravel())
+        shader.uniform_matrixf('projection_matrix', scene.camera.projection_matrix.T.ravel())
 
-        shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix.T.flatten())
-        shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.flatten())
+        shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix.T.ravel())
+        shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
 
         shader.uniformf('light_position', *scene.light.position.xyz)
         shader.uniformf('camera_position', *scene.camera.position.xyz)

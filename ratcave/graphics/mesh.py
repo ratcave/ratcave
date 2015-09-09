@@ -150,21 +150,21 @@ class Mesh(object):
         # Upload Vertex Coordinates
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo[0])
         gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * self.data.vertices.size,
-                        vec(self.data.vertices.flatten()), gl.GL_STATIC_DRAW)
+                        vec(self.data.vertices.ravel()), gl.GL_STATIC_DRAW)
         gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
         gl.glEnableVertexAttribArray(0)
 
         # Upload Normal Coordinates
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo[1])
         gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * self.data.normals.size,
-                        vec(self.data.normals.flatten()), gl.GL_STATIC_DRAW)
+                        vec(self.data.normals.ravel()), gl.GL_STATIC_DRAW)
         gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
         gl.glEnableVertexAttribArray(1)
 
         # Upload Texture UV Coordinates
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo[2])
         gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * self.data.texture_uv.size,
-                        vec(self.data.texture_uv.flatten()), gl.GL_STATIC_DRAW)
+                        vec(self.data.texture_uv.ravel()), gl.GL_STATIC_DRAW)
         gl.glVertexAttribPointer(2, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
         gl.glEnableVertexAttribArray(2)
 
@@ -177,10 +177,10 @@ class Mesh(object):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
 
         # Send Model and Normal Matrix to shader.
-        shader.uniform_matrixf('model_matrix_global', self.world.model_matrix.T.flatten())
-        shader.uniform_matrixf('model_matrix_local', self.local.model_matrix.T.flatten())
-        shader.uniform_matrixf('normal_matrix_global', self.world.normal_matrix.T.flatten())
-        shader.uniform_matrixf('normal_matrix_local', self.local.normal_matrix.T.flatten())
+        shader.uniform_matrixf('model_matrix_global', self.world.model_matrix.T.ravel())
+        shader.uniform_matrixf('model_matrix_local', self.local.model_matrix.T.ravel())
+        shader.uniform_matrixf('normal_matrix_global', self.world.normal_matrix.T.ravel())
+        shader.uniform_matrixf('normal_matrix_local', self.local.normal_matrix.T.ravel())
 
         # Bind VAO data for rendering each vertex.
         if not self.__loaded:
