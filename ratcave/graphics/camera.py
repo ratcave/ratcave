@@ -40,7 +40,7 @@ class Camera(mixins.Physical):
 
     @property
     def shift_matrix(self):
-        """The Camera's lens-shift matrix."""
+        """np.array: The Camera's lens-shift matrix."""
         return np.array([[1.,           0.,           self.x_shift, 0.],
                          [0.,           1.,           self.y_shift, 0.],
                          [0.,           0.,                     1., 0.],
@@ -48,7 +48,7 @@ class Camera(mixins.Physical):
 
     @property
     def projection_matrix(self):
-        """The Camera's Projection Matrix.  Will be an Orthographic matrix if ortho_mode is set to True."""
+        """np.array: The Camera's Projection Matrix.  Will be an Orthographic matrix if ortho_mode is set to True."""
 
         zn, zf = self.zNear, self.zFar
 
