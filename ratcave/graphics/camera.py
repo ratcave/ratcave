@@ -70,8 +70,7 @@ class Camera(mixins.Physical):
                                   [             0.,    0.,             -1.,                 0.]])
             persp_mat = np.dot(persp_mat, self.shift_matrix)  # Apply lens shift
 
-
-        return persp_mat.transpose().flatten()
+        return persp_mat
 
 
 
