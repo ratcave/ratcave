@@ -92,7 +92,7 @@ class Window(visual.Window):
         # Render the scene
         with utils.render_to_fbo(self, self.fbos['cube']):
             for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
-                scene.camera.rotation = np.array(rotation)
+                scene.camera.rotation = rotation
                 gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
                                              gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                                              self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
