@@ -1,4 +1,4 @@
 # ratcave
 3D Graphics Engine running off Python, Psychopy, and Pyglet
 
-Future Documentation will go here.
+For full documentation, go to http://neuroneuro15.github.io/ratcave
