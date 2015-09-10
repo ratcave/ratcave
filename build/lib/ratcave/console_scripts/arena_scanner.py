@@ -13,7 +13,7 @@ from psychopy import event, core
 import pandas as pd
 
 import ratcave
-from ratcave.devices.optitrack import Optitrack
+from ratcave.devices.trackers.optitrack import Optitrack
 from ratcave.graphics import *
 from ratcave.graphics.core import utils
 

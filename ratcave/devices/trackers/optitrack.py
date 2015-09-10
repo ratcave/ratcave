@@ -1,10 +1,9 @@
 import socket
 from struct import pack, unpack
-from tracker import Marker, MarkerSet, RigidBody
+from .tracker import Marker, MarkerSet, RigidBody
 from cStringIO import StringIO
 import time
 import threading
-import pdb
 import warnings
 import datetime
 

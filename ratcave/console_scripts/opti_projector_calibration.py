@@ -12,7 +12,8 @@ from matplotlib import pyplot as plt
 from statsmodels.formula.api import ols
 
 import ratcave
-from ratcave.devices import Optitrack, propixx_utils
+from ratcave.devices import Optitrack
+from ratcave.devices.displays import propixx_utils
 from ratcave.graphics.core import utils
 from ratcave.graphics import *
 

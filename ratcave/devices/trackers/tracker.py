@@ -4,7 +4,6 @@ import math
 import pdb
 import numpy as np
 from sklearn.decomposition import PCA
-from types import NoneType
 from collections import namedtuple
 
 Position = namedtuple("Position", "x y z")
