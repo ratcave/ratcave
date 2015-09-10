@@ -1,5 +1,6 @@
 import numpy as np
-import mixins
+
+from . import mixins
 
 
 class Camera(mixins.Physical):

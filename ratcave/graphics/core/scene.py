@@ -1,5 +1,5 @@
-import mixins
-from . import Camera
+from . import mixins
+from .camera import Camera
 
 class Scene:
 

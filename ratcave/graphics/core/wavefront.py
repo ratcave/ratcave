@@ -1,7 +1,8 @@
 from os import path
 import copy
 import numpy as np
-from .mesh import MeshData, Mesh, Material
+
+from ratcave.graphics.core.mesh import MeshData, Mesh, Material
 
 
 class WavefrontReader(object):

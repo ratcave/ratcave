@@ -1,23 +1,20 @@
 __author__ = 'nickdg'
 
 import itertools
-from psychopy import event, core
-import ratcave
-from ratcave.devices import Optitrack, propixx_utils
-from ratcave.graphics import utils
-from ratcave.graphics import *
 import numpy as np
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import pdb
 import time
 import os
 import pickle
+import sys
 
-import sys
+from psychopy import event, core
+from matplotlib import pyplot as plt
 from statsmodels.formula.api import ols
-from os import path
-import sys
+
+import ratcave
+from ratcave.devices import Optitrack, propixx_utils
+from ratcave.graphics.core import utils
+from ratcave.graphics import *
 
 np.set_printoptions(precision=3, suppress=True)
 

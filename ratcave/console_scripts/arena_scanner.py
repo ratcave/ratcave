@@ -2,22 +2,20 @@ __author__ = 'nickdg'
 
 import os
 import time
-import ratcave
-from ratcave.devices.optitrack import Optitrack
-from ratcave.graphics import *
-from ratcave.graphics import utils
 import numpy as np
-import sys
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from sklearn.neighbors import NearestNeighbors
-from sklearn.decomposition import PCA
 from scipy import stats
 import pdb
+
+from matplotlib import pyplot as plt
+from sklearn.neighbors import NearestNeighbors
+from sklearn.decomposition import PCA
 from psychopy import event, core
 import pandas as pd
 
-
+import ratcave
+from ratcave.devices.optitrack import Optitrack
+from ratcave.graphics import *
+from ratcave.graphics.core import utils
 
 np.set_printoptions(precision=3, suppress=True)
 

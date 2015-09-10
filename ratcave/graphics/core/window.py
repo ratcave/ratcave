@@ -1,13 +1,15 @@
 __author__ = 'nickdg'
 
+from os.path import join, split
+from math import ceil, log
+
 from psychopy import visual
-from . import Camera
+import pyglet.gl as gl
+
+from .camera import Camera
 from .shader import Shader
 from .mesh import fullscreen_quad
 from . import utils
-from os.path import join, split
-from math import ceil, log
-import pyglet.gl as gl
 
 shader_path = join(split(__file__)[0], 'shaders')
 
