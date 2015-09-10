@@ -1,5 +1,9 @@
 __author__ = 'ratcave'
 
+# First import pyglet and turn off the debug_gl option.  This is great for performance!
+import pyglet
+pyglet.options['debug_gl'] = False
+
 from .core import transformations, utils
 import resources
 from .core import utils
