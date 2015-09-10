@@ -1,3 +1,8 @@
+"""This is the devices package __init__.py docstring.
+
+.. todo:: Fix the sphinx autodocs (or the way imports are handled), so the devices are properly documented.
+"""
+
 __author__ = 'ratcave'
 
 from .trackers.optitrack import Optitrack, NatDataSocket, NatCommSocket

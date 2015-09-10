@@ -73,7 +73,12 @@ class NatCommSocket(NatSocket):
 
     def __init__(self, client_ip=CLIENT_ADDRESS, uPort=PORT_COMMAND,
                  max_packet_size=MAX_PACKETSIZE):
-        """Internet Protocol socket with presets for Motive Command Socket."""
+        """Internet Protocol socket with presets for Motive Command Socket.
+
+        Args:
+            client_ip (int): an int
+
+        """
         super(NatCommSocket, self).__init__(client_ip, uPort, max_packet_size)
         # Set Instance Attributes
         self.server_ip = client_ip  # Currently set to same value as client_ip.  May change when computer changes.
@@ -165,6 +170,12 @@ class NatDataSocket(NatSocket):
 class Optitrack(object):
 
     def __init__(self, client_ip=CLIENT_ADDRESS, data_port=PORT_DATA, comm_port=PORT_COMMAND, read_rate=400):
+        """
+        The Optitrack NatNet Interface.
+
+        Args:
+            client_ip (str): The Motive server ip address
+        """
 
         # Initialize data structures
         self.unidentified_markers = []

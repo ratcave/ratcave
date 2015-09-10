@@ -31,7 +31,8 @@ sys.path.insert(0, os.path.abspath('../../../ratcave'))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinxcontrib.napoleon'
+    'sphinxcontrib.napoleon',
+    'sphinx.ext.todo'
 ]
 
 autoclass_content = "both"
@@ -47,6 +48,9 @@ source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
+
+# support for to-do lists
+todo_include_todos = True
 
 # General information about the project.
 project = u'ratCAVE'
