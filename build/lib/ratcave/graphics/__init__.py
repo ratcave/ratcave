@@ -1,15 +1,14 @@
 __author__ = 'ratcave'
 
-
-import transformations
+from .core import transformations, utils
 import resources
-import utils
-from __camera import Camera
-from __mesh import Mesh
-from __scene import Scene
-from __window import Window
-from __wavefront import WavefrontReader
-from __mixins import Physical
+from .core import utils
+from .core.camera import Camera
+from .core.mesh import Mesh
+from .core.scene import Scene
+from .core.window import Window
+from .core.wavefront import WavefrontReader
+from .core.mixins import Physical
 
 
 # Create the projector
