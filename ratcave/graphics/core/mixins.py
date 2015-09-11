@@ -1,7 +1,7 @@
 __author__ = 'nickdg'
 
 import numpy as np
-import ._transformations as transformations
+from . import _transformations as transformations
 
 
 class Color(object):
