@@ -1,6 +1,9 @@
 __author__ = 'ratcave'
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
+import numpy
+
+
 
 setup(name='ratcave',
       version='0.5',
@@ -18,6 +21,7 @@ setup(name='ratcave',
                'ratcave/console_scripts/newexp.py',
                'ratcave/console_scripts/opti_projector_calibration.py',
                'ratcave/console_scripts/opti_projector_rotation_calib.py'
-                ]
+                ],
+      ext_modules=[Extension('ratcave.graphics.core._transformations', sources=['ratcave/c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
       )
 

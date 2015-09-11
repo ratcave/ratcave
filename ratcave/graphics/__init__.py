@@ -4,7 +4,7 @@ __author__ = 'ratcave'
 import pyglet
 pyglet.options['debug_gl'] = False
 
-from .core import transformations, utils
+from .core import utils
 import resources
 from .core import utils
 from .core.camera import Camera
@@ -13,7 +13,7 @@ from .core.scene import Scene
 from .core.window import Window
 from .core.wavefront import WavefrontReader
 from .core.mixins import Physical
-
+from .core import _transformations
 
 # Create the projector
 def __build_projector():

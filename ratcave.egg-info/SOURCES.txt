@@ -5,6 +5,7 @@ ratcave.egg-info/SOURCES.txt
 ratcave.egg-info/dependency_links.txt
 ratcave.egg-info/requires.txt
 ratcave.egg-info/top_level.txt
+ratcave/c_sources/transformations.c
 ratcave/console_scripts/arena_scanner.py
 ratcave/console_scripts/newexp.py
 ratcave/console_scripts/opti_projector_calibration.py
@@ -26,7 +27,6 @@ ratcave/graphics/core/mesh.py
 ratcave/graphics/core/mixins.py
 ratcave/graphics/core/scene.py
 ratcave/graphics/core/shader.py
-ratcave/graphics/core/transformations.py
 ratcave/graphics/core/utils.py
 ratcave/graphics/core/wavefront.py
 ratcave/graphics/core/window.py
