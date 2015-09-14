@@ -174,20 +174,16 @@ class Mesh(object):
 
         self.__loaded = True
     def manually_set_mats(self):
-        self._modelmat_preset = np.dot(self.world.model_matrix, self.local.model_matrix)
-        self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix)
+        self._modelmat_preset = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
+        self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
 
 
     def render(self, shader):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
 
         # Send Model and Normal Matrix to shader.
-        # shader.uniform_matrixf('model_matrix_global', self.world._modelmat_preset.T.ravel())
-        # shader.uniform_matrixf('model_matrix_local', self.local._modelmat_preset.T.ravel())
-        shader.uniform_matrixf('model_matrix', self._modelmat_preset.T.ravel())
-        # shader.uniform_matrixf('normal_matrix_global', self.world._normalmat_preset.T.ravel())
-        # shader.uniform_matrixf('normal_matrix_local', self.local._normalmat_preset.T.ravel())
-        shader.uniform_matrixf('normal_matrix', self._normalmat_preset.T.ravel())
+        shader.uniform_matrixf('model_matrix', self._modelmat_preset)
+        shader.uniform_matrixf('normal_matrix', self._normalmat_preset)
 
         # Bind VAO data for rendering each vertex.
         if not self.__loaded:
