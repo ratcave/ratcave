@@ -96,7 +96,7 @@ class Window(visual.Window):
                 gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
                                              gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                                              self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
-                self._draw(scene, Window.genShader)  # Render
+                self._draw(scene, Window.genShader, send_light_and_camera_intrinsics=(face==0))  # Render
 
     def render_to_antialias(self, scene):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
@@ -145,7 +145,7 @@ class Window(visual.Window):
         #self._draw(self.active_scene, Window.genShader)
 
 
-    def _draw(self, scene, shader):
+    def _draw(self, scene, shader, send_light_and_camera_intrinsics=True):
 
         # Enable 3D OpenGL
         gl.glEnable(gl.GL_DEPTH_TEST)
@@ -162,18 +162,20 @@ class Window(visual.Window):
 
         # Send Uniforms that are constant across meshes.
         shader.uniform_matrixf('view_matrix', scene.camera.view_matrix.T.ravel())
-        shader.uniform_matrixf('projection_matrix', scene.camera.projection_matrix.T.ravel())
 
-        shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix.T.ravel())
-        shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
+        if send_light_and_camera_intrinsics:
+            shader.uniform_matrixf('projection_matrix', scene.camera.projection_matrix.T.ravel())
 
-        shader.uniformf('light_position', *scene.light.position)
-        shader.uniformf('camera_position', *scene.camera.position)
+            shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix.T.ravel())
+            shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
 
-        shader.uniformi('hasShadow', int(self.shadow_rendering))
-        shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
-        shader.uniformi('ShadowMap', shadow_slot)
-        shader.uniformi('grayscale', int(self.grayscale))
+            shader.uniformf('light_position', *scene.light.position)
+            shader.uniformf('camera_position', *scene.camera.position)
+
+            shader.uniformi('hasShadow', int(self.shadow_rendering))
+            shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
+            shader.uniformi('ShadowMap', shadow_slot)
+            shader.uniformi('grayscale', int(self.grayscale))
 
         # Draw each visible mesh in the scene.
         for mesh in scene.meshes:
