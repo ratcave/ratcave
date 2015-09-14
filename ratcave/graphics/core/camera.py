@@ -36,8 +36,10 @@ class Camera(mixins.Physical):
         self.x_shift = x_shift
         self.y_shift = y_shift
         self.ortho_mode = ortho_mode
+        self._projmat_preset = self.projection_matrix.T.ravel()
 
-
+    def preset_mats(self):
+        self._projmat_preset = self.projection_matrix.T.ravel()
 
     @property
     def shift_matrix(self):

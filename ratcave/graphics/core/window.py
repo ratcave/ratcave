@@ -60,7 +60,7 @@ class Window(visual.Window):
         # Shadow Rendering attributes
         self.shadow_rendering = shadow_rendering
         self.__shadow_fov_y = shadow_fov_y
-        self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y, aspect=1.).projection_matrix
+        self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y, aspect=1.).projection_matrix.T.ravel()
 
 
     @property
@@ -81,7 +81,7 @@ class Window(visual.Window):
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
             Window.shadowShader.bind()
             Window.shadowShader.uniform_matrixf('view_matrix', scene.light.view_matrix.T.ravel())
-            Window.shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix.T.ravel())
+            Window.shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
             [mesh.render(Window.shadowShader) for mesh in scene.meshes if mesh.visible]
             Window.shadowShader.unbind()
 
@@ -125,12 +125,14 @@ class Window(visual.Window):
         api.)"""
 
         # Pre-set model and normal matrices to increase draw time performance
+        self.active_scene.camera.preset_mats()
         for mesh in self.active_scene.meshes:
             mesh.manually_set_mats()
 
         if self.virtual_scene:
 
             # Pre-set model and normal matrices to increase draw time performance
+            self.virtual_scene.camera.preset_mats()
             for mesh in self.virtual_scene.meshes:
                 mesh.manually_set_mats()
 
@@ -173,7 +175,7 @@ class Window(visual.Window):
         shader.uniform_matrixf('view_matrix', scene.camera.view_matrix.T.ravel())
 
         if send_light_and_camera_intrinsics:
-            shader.uniform_matrixf('projection_matrix', scene.camera.projection_matrix.T.ravel())
+            shader.uniform_matrixf('projection_matrix', scene.camera._projmat_preset)
 
             shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix.T.ravel())
             shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
