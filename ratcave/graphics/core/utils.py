@@ -34,11 +34,8 @@ def create_fbo(texture_type, width, height, texture_slot=0, color=True, depth=Tr
         gl.glTexParameterf(texture_type, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE)
 
     # Generate empty texture(s)
-    color_type = gl.GL_R8 if grayscale else gl.GL_RGBA
-    internal_format = gl.GL_DEPTH_COMPONENT if depth and not color else color_type
-
-    color_type = gl.GL_RED if grayscale else gl.GL_RGBA
-    pixel_format = gl.GL_DEPTH_COMPONENT if depth and not color else color_type
+    internal_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_R8 if grayscale else gl.GL_RGBA)
+    pixel_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_RED if grayscale else gl.GL_RGBA)
 
     if texture_type == gl.GL_TEXTURE_2D:
         gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, internal_format, width, height, 0,
