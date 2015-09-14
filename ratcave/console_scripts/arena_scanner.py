@@ -39,37 +39,21 @@ def scan(optitrack_ip="127.0.0.1"):
 
     #start drawing.
     data = {'markerPos': [], 'bodyPos': [], 'bodyRot': [], 'screenPos': []}
-    clock = core.CountdownTimer(30)
+    clock = core.CountdownTimer(2)
     while ('escape' not in event.getKeys()) and clock.getTime() > 0:
 
         # Draw Circle
         amp, speed = .03, 5.
-
         scene.camera.position[:2] = (amp * np.sin(clock.getTime() * speed)), (amp * np.cos(clock.getTime() * speed))
-        # scene.camera.position[:2] = np.random.uniform(-1.2, 1.2), np.random.uniform(-.85, .85)  # Change circle position to a random one.
         window.draw()
         window.flip()
 
-        time.sleep(.016)
-
-        new_position = tracker.get_unidentified_positions(1)
-
-        if new_position:
-
-            # Try to get Arena rigid body and a single unidentified marker
-            try:
-                body = tracker.rigid_bodies['Arena']
-            except KeyError:
-                raise KeyError("Cannot find Arena in Motive.  Please Add a Rigid Body called 'Arena' in Movie and try again!")
-
-            # If successful, add the new position to the list.
-            feedback = bool(new_position and body)
-            if feedback:
-                data['markerPos'].append(new_position[0])
+        # Try to get Arena rigid body and a single unidentified marker
+        body = tracker.rigid_bodies['Arena']
+        for marker in tracker.unidentified_markers:
+                data['markerPos'].append(marker.position)
                 data['bodyPos'].append(body.position)
                 data['bodyRot'].append(body.rotation)
-        else:
-            print("No point detected.")
 
     window.close()
     return data

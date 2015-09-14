@@ -13,6 +13,7 @@ img_colorgrid = __path.join(resource_path, 'colorgrid.png')
 
 # Meshes
 obj_primitives = __path.join(resource_path, 'primitives.obj')
+obj_grid3D = __path.join(resource_path, 'grid3D.obj')
 
 # Arena .obj file
 obj_arena = __path.join(__data_dir("ratCAVE"), 'arena.obj')
