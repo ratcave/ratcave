@@ -89,6 +89,7 @@ class Window(visual.Window):
     def render_to_cubemap(self, scene):
         """Renders the scene 360-degrees about the camera's position onto a cubemap texture."""
 
+        # TODO: Combat slowness of glUniformMat4v calls in Python by sending data to a Geometry shader to render all faces in a single pass.
         # Render the scene
         with utils.render_to_fbo(self, self.fbos['cube']):
             for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
