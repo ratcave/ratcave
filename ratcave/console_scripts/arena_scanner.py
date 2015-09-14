@@ -28,7 +28,7 @@ def scan(optitrack_ip="127.0.0.1"):
     tracker = Optitrack(client_ip=optitrack_ip)
     assert "Arena" in tracker.rigid_bodies, "Must Add Arena Rigid Body in Motive!"
     wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    mesh = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, scale=.005)
+    mesh = wavefront_reader.get_mesh('Grid', centered=True, lighting=False, scale=1.5, drawstyle='point', point_size=10)
     mesh.material.diffuse.rgb = 1, 1, 1
     mesh.world.position=[0, 0, -1]
 
@@ -39,13 +39,14 @@ def scan(optitrack_ip="127.0.0.1"):
 
     #start drawing.
     data = {'markerPos': [], 'bodyPos': [], 'bodyRot': [], 'screenPos': []}
-    clock = core.CountdownTimer(.8 * 60)
+    clock = core.CountdownTimer(30)
     while ('escape' not in event.getKeys()) and clock.getTime() > 0:
 
         # Draw Circle
-        mesh.visible = False if mesh.visible == True else True  # Switch visible to True and False alternately.
+        amp, speed = .03, 5.
 
-        scene.camera.position[:2] = np.random.uniform(-1.2, 1.2), np.random.uniform(-.85, .85)  # Change circle position to a random one.
+        scene.camera.position[:2] = (amp * np.sin(clock.getTime() * speed)), (amp * np.cos(clock.getTime() * speed))
+        # scene.camera.position[:2] = np.random.uniform(-1.2, 1.2), np.random.uniform(-.85, .85)  # Change circle position to a random one.
         window.draw()
         window.flip()
 
