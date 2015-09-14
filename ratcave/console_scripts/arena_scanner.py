@@ -26,9 +26,10 @@ def scan(optitrack_ip="127.0.0.1"):
 
     # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
     tracker = Optitrack(client_ip=optitrack_ip)
+    old_frame = tracker.iFrame
     assert "Arena" in tracker.rigid_bodies, "Must Add Arena Rigid Body in Motive!"
     wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    mesh = wavefront_reader.get_mesh('Grid', centered=True, lighting=False, scale=1.5, drawstyle='point', point_size=10)
+    mesh = wavefront_reader.get_mesh('Grid', centered=True, lighting=False, scale=1.5, drawstyle='point', point_size=12)
     mesh.material.diffuse.rgb = 1, 1, 1
     mesh.world.position=[0, 0, -1]
 
@@ -39,21 +40,25 @@ def scan(optitrack_ip="127.0.0.1"):
 
     #start drawing.
     data = {'markerPos': [], 'bodyPos': [], 'bodyRot': [], 'screenPos': []}
-    clock = core.CountdownTimer(2)
+    clock = core.CountdownTimer(3.)
+
     while ('escape' not in event.getKeys()) and clock.getTime() > 0:
 
         # Draw Circle
-        amp, speed = .03, 5.
+        amp, speed = .06, 3.
         scene.camera.position[:2] = (amp * np.sin(clock.getTime() * speed)), (amp * np.cos(clock.getTime() * speed))
         window.draw()
         window.flip()
 
-        # Try to get Arena rigid body and a single unidentified marker
-        body = tracker.rigid_bodies['Arena']
-        for marker in tracker.unidentified_markers:
-                data['markerPos'].append(marker.position)
-                data['bodyPos'].append(body.position)
-                data['bodyRot'].append(body.rotation)
+        # Try to get Arena rigid body and a single unidentified marker, if a new frame of data is grabbed.
+        new_frame = tracker.iFrame
+        if new_frame != old_frame:
+            old_frame = new_frame
+            body = tracker.rigid_bodies['Arena']
+            for marker in tracker.unidentified_markers:
+                    data['markerPos'].append(marker.position)
+                    data['bodyPos'].append(body.position)
+                    data['bodyRot'].append(body.rotation)
 
     window.close()
     return data
@@ -106,7 +111,7 @@ def meshify(data, filename):
 
     # Filter out data that's not within a clear plane (mainly corners and outliers)
     normals, explained_variances = normal_nearest_neighbors(np.array(points[['x', 'y', 'z']]))
-    points['mask'] &= explained_variances[:,2] < .005  #
+    points['mask'] &= explained_variances[:,2] < .004  #
 
     # Add normal data to each point
     points = pd.concat([points, pd.DataFrame(normals, columns=['nx', 'ny', 'nz'])], axis=1)
