@@ -5,7 +5,7 @@ layout(location = 1) in vec3 normalPosition;
 layout(location = 2) in vec2 uvTexturePosition;
 
 uniform vec3 light_position, playerPos;
-uniform mat4 projection_matrix, view_matrix, model_matrix_global, model_matrix_local, normal_matrix_global, normal_matrix_local;
+uniform mat4 projection_matrix, view_matrix, model_matrix, normal_matrix;
 uniform mat4 shadow_projection_matrix, shadow_view_matrix;
 
 out float lightAmount;
@@ -23,8 +23,8 @@ float diffuse_weight = .5;
 void main()
   {
     //Calculate Vertex World Position and Normal Direction
-    vVertex = model_matrix_global * model_matrix_local * vec4(vertexPosition, 1.0);
-    normal = normalize(normal_matrix_global * normal_matrix_local * vec4(normalPosition, 1.0)).xyz;
+    vVertex = model_matrix * vec4(vertexPosition, 1.0);
+    normal = normalize(normal_matrix * vec4(normalPosition, 1.0)).xyz;
 
     //Calculate Vertex Position on Screen
 	gl_Position = projection_matrix * view_matrix * vVertex;
