@@ -20,7 +20,8 @@ setup(name='ratcave',
       scripts=['ratcave/console_scripts/arena_scanner.py',
                'ratcave/console_scripts/newexp.py',
                'ratcave/console_scripts/opti_projector_calibration.py',
-               'ratcave/console_scripts/opti_projector_rotation_calib.py'
+               'ratcave/console_scripts/opti_projector_rotation_calib.py',
+               'ratcave/console_scripts/test_ratcave.py'
                 ],
       ext_modules=[Extension('ratcave.graphics.core._transformations', sources=['ratcave/c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
       )
