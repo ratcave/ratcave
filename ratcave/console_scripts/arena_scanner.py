@@ -270,10 +270,16 @@ def meshify(data, filename):
     points_ff = points_f[normfilter, :]
     normals_ff = normals_f[normfilter, :]
 
-    # Fit the filtered normal data using a gaussian classifier
-    n_components = 5
-    gmm = mixture.GMM(n_components=n_components)
-    model = gmm.fit(normals_ff)
+    # Fit the filtered normal data using a gaussian classifier, comparing models with different wall numbers to get the
+    # best model.
+    old_bic = -1e32
+    for n_components in range(4, 20):
+        gmm = mixture.GMM(n_components=n_components)
+        temp_model, temp_bic = gmm.fit(normals_ff), temp_model.bic(normals_ff)
+        print("N Components: {}\tBIC: {}".format(n_components, temp_bic))
+        if temp_bic > old_bic:
+            model, old_bic = temp_model, temp_bic
+    n_components = model.n_components
 
     # Get normals from model means
     surface_normals = model.means_  # n_components x 3 normals array, giving mean normal for each surface.
