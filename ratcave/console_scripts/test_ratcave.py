@@ -17,12 +17,10 @@ monkey2 = reader.get_mesh("Monkey", position=(0,0, -1), scale = .7, centered=Tru
 monkey2.cubemap = True
 
 
-plane = reader.get_mesh("Plane_Plane.001", position=(0, 0, -3), scale = 2, centered=True)
-plane.local.rotation[0] = 0
-plane.material.diffuse.rgb = .7, 0., .2
+plane = reader.get_mesh("Grid", position=(0, 0, -3), scale = 2, centered=True, drawstyle='point')
+plane.material.diffuse.rgb = 0, 0, 0
 
-plane2 = reader.get_mesh("Plane_Plane.001", position=(0, 0, -3), scale = 2, centered=True)
-plane2.local.rotation[0] = 0
+plane2 = reader.get_mesh("Plane", position=(0, 0, -3), scale = 2, centered=True)
 plane2.material.diffuse.rgb = .7, .5, .2
 
 scene = graphics.Scene([monkey2, plane])

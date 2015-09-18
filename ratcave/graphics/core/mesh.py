@@ -77,7 +77,7 @@ class Mesh(object):
     drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
 
     def __init__(self, mesh_data, material=None, scale=1.0, centered=False, lighting=True,
-                 drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0), visible=True):
+                 drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -122,6 +122,7 @@ class Mesh(object):
         self.cubemap = cubemap
         self.lighting = lighting
         self.drawstyle = drawstyle
+        self.point_size = point_size
 
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
@@ -188,8 +189,19 @@ class Mesh(object):
         # Bind VAO data for rendering each vertex.
         if not self.__loaded:
             self._create_vao()
+
+        if self.drawstyle == 'point':
+            gl.glEnable(gl.GL_POINT_SMOOTH)
+            gl.glPointSize(int(self.point_size))
+
         gl.glBindVertexArray(self.vao)
+
+
         gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
+
+        if self.drawstyle == 'point':
+            gl.glDisable(gl.GL_POINT_SMOOTH)
+
         gl.glBindVertexArray(0)
 
 
