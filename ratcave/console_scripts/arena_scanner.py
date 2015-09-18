@@ -137,6 +137,19 @@ def normal_nearest_neighbors(data, n_neighbors=40):
     # Convert to NumPy Array and return
     return np.array(normal_all), np.array(latent_all)
 
+def cluster_normals(normal_array, min_clusters=4, max_clusters=15):
+    """Returns sklearn model from clustering an NxK array, comparing different numbers of clusters for a best fit."""
+    old_bic = 1e32
+    for n_components in range(min_clusters, max_clusters):
+        gmm = mixture.GMM(n_components=n_components) # Fit the filtered normal data using a gaussian classifier
+        temp_model = gmm.fit(normal_array)
+        temp_bic = temp_model.bic(normal_array)
+        print("N Components: {}\tBIC: {}".format(n_components, temp_bic))
+        if temp_bic< old_bic:  # If the new model has a higher BIC than the old one, keep it as a better model.
+            model, old_bic = temp_model, temp_bic
+
+    return model
+
 
 def get_vertices_at_intersections(normals, offsets, ceiling_height):
     """Returns a dict of vertices and normals for each surface intersecton of walls given by the Nx3 arrays of
@@ -272,23 +285,17 @@ def meshify(data, filename):
 
     # Fit the filtered normal data using a gaussian classifier, comparing models with different wall numbers to get the
     # best model.
-    old_bic = -1e32
-    for n_components in range(4, 20):
-        gmm = mixture.GMM(n_components=n_components)
-        temp_model, temp_bic = gmm.fit(normals_ff), temp_model.bic(normals_ff)
-        print("N Components: {}\tBIC: {}".format(n_components, temp_bic))
-        if temp_bic > old_bic:
-            model, old_bic = temp_model, temp_bic
-    n_components = model.n_components
+    model = cluster_normals(normals_ff)
 
     # Get normals from model means
     surface_normals = model.means_  # n_components x 3 normals array, giving mean normal for each surface.
 
-    # Calculate mean offset of vertices
+    # Calculate mean offset of vertices for each wall
     ids = model.predict(normals_ff)  # index for each point, giving the wall id number (0:n_components)
     surface_offsets = np.zeros_like(surface_normals)
-    for idx in range(n_components):
+    for idx in range(len(surface_normals)):
         surface_offsets[idx, :] = np.mean(points_ff[ids==idx, :], axis=0)
+    assert not np.isnan(surface_offsets.sum()), "Incorrect model: No Points found to assign to at least one wall for intersection calculation."
 
     ## CALCULATE PLANE INTERSECTIONS TO GET VERTICES ##
     vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max())
