@@ -7,10 +7,13 @@ from scipy import stats
 import pdb
 
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from sklearn.neighbors import NearestNeighbors
 from sklearn.decomposition import PCA
+from sklearn import mixture
 from psychopy import event, core
 import pandas as pd
+from scipy import spatial
 
 import ratcave
 from ratcave.devices.trackers.optitrack import Optitrack
@@ -64,194 +67,246 @@ def scan(optitrack_ip="127.0.0.1"):
     return data
 
 
-def normal_nearest_neighbors(data, n_neighbors=40, min_dist_filter=.04):
+def plot_3d(array3d, title='', ax=None, line=False):
+    """make 3D scatterplot that plots the x, y, and z columns in a dataframe. Returns figure."""
+    if not ax:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+    plot_fun = ax.plot if line else ax.scatter
+    plot_fun(array3d[:,0], array3d[:,2], array3d[:,1])
+    plt.title(title)
+    return ax
+
+
+def hist_mask(data, threshold=.95, keep='lower'):
+    """
+    Returns boolean mask of values below a frequency percentage threshold (0-1).
+
+    Args:
+        -data (1D array)
+        -threshold (float): 0-1
+        -keep (str): lower, greater, middle. If middle, threshold is ignored,
+                     and a single cluster is searched out.
+    """
+
+    bins = len(data)/100 if keep.lower()=='middle' else len(data)/2
+    freq, val = np.histogram(data, bins=bins)
+    freq = freq / np.sum(freq).astype(float)  # Normalize frequency data
+
+    if keep.lower() in ('lower', 'upper'):
+        cutoff_value = val[np.where(np.diff(np.cumsum(freq) < threshold))[0] + 1]
+        cutoff_value = val[1] if len(cutoff_value)==0 else cutoff_value
+        if keep.lower() == 'lower':
+            return data < cutoff_value
+        else:
+            return data > cutoff_value
+    else:
+        histmask = np.ones(points.shape[0], dtype=bool)  # Initializing mask with all True values
+
+        # Slowly increment the parameter until a strong single central cluster is found
+        for param in np.arange(0.0005, .02, .0003):
+            cutoff_values = val[np.where(np.diff(freq < param))[0]]
+            if len(cutoff_values) == 2:
+                histmask &= data > cutoff_values[0]
+                histmask &= data < cutoff_values[1]
+                return histmask
+        else:
+            raise ValueError("Histogram filter not finding a good parameter to form a central cluster.")
+
+
+def normal_nearest_neighbors(data, n_neighbors=40):
     """Find the normal direction of a hopefully-planar cluster of n_neighbors"""
 
     # K-Nearest neighbors on whole dataset
     nbrs = NearestNeighbors(n_neighbors).fit(data)
-    distances, indices = nbrs.kneighbors(data)
+    _, indices = nbrs.kneighbors(data)
 
     # PCA on each cluster of k-nearest neighbors
     latent_all, normal_all = [], []
-    for dist_array, idx_array in zip(distances, indices):
+    for idx_array in indices:
 
-        if np.min(dist_array) < min_dist_filter: # Filter out huge distances for outliers:
-            pp = PCA(n_components=3).fit(data[idx_array, :]) # Perform PCA
+        pp = PCA(n_components=3).fit(data[idx_array, :]) # Perform PCA
 
-             # Get the percent variance of each component
-            latent_all.append(pp.explained_variance_ratio_)
+        # Get the percent variance of each component
+        latent_all.append(pp.explained_variance_ratio_)
 
-            # Get the normal of the plane along the third component (flip if pointing in -y direction)
-            normal = pp.components_[2] if pp.components_[2][1] > 0 else -pp.components_[2]
-            normal_all.append(normal)
+        # Get the normal of the plane along the third component (flip if pointing in -y direction)
+        normal = pp.components_[2] if pp.components_[2][1] > 0 else -pp.components_[2]
+        normal_all.append(normal)
 
     # Convert to NumPy Array and return
     return np.array(normal_all), np.array(latent_all)
+
+def cluster_normals(normal_array, min_clusters=4, max_clusters=15):
+    """Returns sklearn model from clustering an NxK array, comparing different numbers of clusters for a best fit."""
+    old_bic = 1e32
+    for n_components in range(min_clusters, max_clusters):
+        gmm = mixture.GMM(n_components=n_components) # Fit the filtered normal data using a gaussian classifier
+        temp_model = gmm.fit(normal_array)
+        temp_bic = temp_model.bic(normal_array)
+        print("N Components: {}\tBIC: {}".format(n_components, temp_bic))
+        if temp_bic< old_bic:  # If the new model has a higher BIC than the old one, keep it as a better model.
+            model, old_bic = temp_model, temp_bic
+
+    return model
+
+
+def get_vertices_at_intersections(normals, offsets, ceiling_height):
+    """Returns a dict of vertices and normals for each surface intersecton of walls given by the Nx3 arrays of
+    normals and offsets."""
+
+    # Calculate d in equation ax + by + cz = d
+    dd = np.sum(normals * offsets, axis=1)
+
+    # Automatically Separate out the floor from the walls.
+    floor_idx = normals[:,1].argsort()[-1]
+    wall_normals, wall_d = np.delete(normals, floor_idx, axis=0), np.delete(dd, floor_idx)
+    floor_normal, floor_d = normals[floor_idx, :], dd[floor_idx]
+
+    # Get neighbors between all walls (excluding the floor, which touches everything.)
+    distances = spatial.distance_matrix(wall_normals, wall_normals) + (3 * np.eye(wall_normals.shape[0]))
+    neighboring_walls = np.sort(distances.argsort()[:, :2])  # Get the two closest wall indices to each wall
+    neighbors =  {dd: el.tolist() for (dd, el) in enumerate(neighboring_walls)}
+
+    # Solve for intersection between the floor/ceiling and adjacent walls,
+    vertices = {wall: [] for wall in range(len(neighbors))}
+    floor_verts = []
+    for wall in neighbors:
+        for adj_wall in neighbors[wall]:
+            for normal, d in ((floor_normal, floor_d), (np.array([0., 1., 0.]), ceiling_height)):
+                all_norms = np.vstack((wall_normals[wall], wall_normals[adj_wall], normal))
+                all_d = np.array((wall_d[wall], wall_d[adj_wall], d))
+                vertex = np.linalg.solve(all_norms, all_d).transpose()
+                vertices[wall].append(vertex)
+
+                if d < ceiling_height and vertex.tolist() not in floor_verts:
+                    floor_verts.append(vertex.tolist())
+
+    # Convert vertex lists to dict of NumPy arrays
+    vertices = {key: np.array(value) for key, value in vertices.items()}
+    vertices[len(vertices)] =  np.array(floor_verts)
+
+    norms = {key: np.array(value) for key, value in enumerate(wall_normals)}
+    norms[len(norms)] = np.array(floor_normal)
+
+    return vertices, norms
+
+
+def reorder_vertices(vertices):
+    """Takes an unordered Nx3 vertex array and reorders them to face the same direction as the normal"""
+    # Turn the vertex positions to unit-length rays from the mean position (assumes coplanarity)
+    vertices = np.array(vertices)
+    rays = vertices - np.mean(vertices, axis=0)
+    rays /= np.linalg.norm(rays, axis=1).reshape(-1, 1)  # Normalize their lengths, so we get pure cos and sin values
+
+    # Build a covariance matrix, which is the cos values
+    cov = np.arccos(np.dot(rays, rays.T) - np.eye(len(rays)))
+
+    # Compare the cross product of each ray combination to the normal, and only keep if the same direction.
+    cross_mask = np.zeros_like(cov, dtype=bool)
+    for i, ray_i in enumerate(rays):
+        for j, ray_j in enumerate(rays):
+            cp = np.cross(ray_i, ray_j)
+            cross_mask[i, j] = np.dot(cp, [0, 1, 0]) >  0.
+
+    # Apply the filter and reorder the vertices
+    cov_filtered = cov * cross_mask
+    cov_filtered[cov_filtered==0] = 100.  # Change zeros to a large number, so they aren't taken as the min value.
+    new_indices = cov_filtered.argsort()[:,0]
+
+    nn_i, idx = [], 0
+    for _ in new_indices:
+        nn_i.append(new_indices[idx])
+        idx = nn_i[-1]
+
+    return vertices[nn_i, :]
+
+
+def fan_triangulate(vertices):
+    """Return a new vertices array in triangular order from an Nx3 vertices array using a fan triangulation algorithm."""
+    new_verts = []
+    vert0 = vertices[0]
+    for ii, jj in zip(vertices[1:-1], vertices[2:]):
+        new_verts.extend([vert0, ii, jj])
+    return np.array(new_verts)
+
+
+def data_to_wavefront(mesh_name, vert_dict, normal_dict):
+    """Returns a wavefront .obj string using pre-triangulated vertex dict and normal dict as reference."""
+
+    # Put header in string
+    wavefront_str = "# Blender v2.69 (sub 5) OBJ File: ''\n" + "# www.blender.org\n" + "o {name}\n".format(name=mesh_name)
+
+    # Write Vertex data from vert_dict
+    for wall in vert_dict:
+        for vert in vert_dict[wall]:
+            wavefront_str += "v {0} {1} {2} \n".format(*vert)
+
+    # Write (false) UV data
+    wavefront_str += "vt 1.0 1.0\n"
+
+    # Write Normal data from normal_dict
+    for wall, norm in normal_dict.items():
+        wavefront_str += "vn {0} {1} {2}\n".format(*norm)
+
+    # Write Face Indices (1-indexed)
+    vert_idx = 0
+    for wall in vert_dict:
+        for _ in range(0, len(vert_dict[wall]), 3):
+            wavefront_str += 'f '
+            for vert in range(3): # 3 vertices in each face
+                vert_idx += 1
+                wavefront_str += "{v}/1/{n} ".format(v=vert_idx, n=wall+1)
+            wavefront_str += '\n'
+
+    # Return Wavefront string
+    return wavefront_str
 
 
 def meshify(data, filename):
 
     ## IMPORT DATA ##
     # Put values of data dictionary into numpy arrays.
-    body_positions, body_rotations = np.array(data['bodyPos']), np.array(data['bodyRot'])
-    points = pd.DataFrame(data['markerPos'], columns=['x', 'y', 'z'])
-    points['mask'] = True  # Identifies which rows are used in the analysis (will be updated as filters are run)
+    body_rot, body_pos, points = np.array(data['bodyRot']), np.array(data['bodyPos']), np.array(data['markerPos'])
 
-    # Plot raw marker data as 3D Scatterplot
-    """
-    fig = plt.figure()
-    ax = fig.add_subplot(221, projection='3d')
-    lims = utils.plot3_square(ax, np.array(data[['x', 'y', 'z']]))
-    plt.show()
-    """
+    # Remove Obviously Bad Points according to how far away from main cluster they are
+    histmask = np.ones(points.shape[0], dtype=bool)  # Initializing mask with all True values
+    for coord in range(3):
+        histmask &= hist_mask(points[:, coord], keep='middle')
+    points_f = points[histmask, :]
 
-    ## REMOVE OUTLIERS ##
-    # Remove Obviously Bad Points according to Height
-    points['mask'] &= (-.02 < points['y']) & (points['y'] < .52)   # TODO: Automatize Height-based point filtering.
+    # Get the normals of the N-Neighborhood around each point, and filter out points with lowish planarity
+    normals_f, explained_variances = normal_nearest_neighbors(points_f)
 
-    # Filter out data that's not within a clear plane (mainly corners and outliers)
-    normals, explained_variances = normal_nearest_neighbors(np.array(points[['x', 'y', 'z']]))
-    points['mask'] &= explained_variances[:,2] < .004  #
+    # Histogram filter: take the 70% best-planar data to model.
+    normfilter = hist_mask(explained_variances[:, 2], threshold=.7, keep='lower')
+    points_ff = points_f[normfilter, :]
+    normals_ff = normals_f[normfilter, :]
 
-    # Add normal data to each point
-    points = pd.concat([points, pd.DataFrame(normals, columns=['nx', 'ny', 'nz'])], axis=1)
+    # Fit the filtered normal data using a gaussian classifier, comparing models with different wall numbers to get the
+    # best model.
+    model = cluster_normals(normals_ff)
 
+    # Get normals from model means
+    surface_normals = model.means_  # n_components x 3 normals array, giving mean normal for each surface.
 
-    ## CLUSTER INTO SEPARATE WALL PLANES ##
-    # Label Markers by Clustering of their normals
-    points['wall'] = None
-    walls = pd.DataFrame(columns=['nx', 'ny', 'nz', 'x', 'y', 'z'])
-    for wall in range(5):
-        # Cluster from a random point, taking only points within a given distance (normal direction) from it
-        print("Making Wall {0}.  Points left to assign: {1}".format(wall, sum(points['wall'].notnull()==False)))
-        pdb.set_trace()
-
-        normal_data = points.loc[points['mask'] & points['wall'].notnull()==False, ['nx', 'ny', 'nz']]
-        center_idx = np.random.choice(normal_data.index.values)
-
-        wall_mask = np.sqrt(((normal_data - normal_data.ix[center_idx])**2).sum(axis=1)) < .5
-        points.loc[wall_mask, 'wall'] = wall
-
-        # Get Mean position and normal from the cluster of points, filtering again to get rid of any outliers (so much filtering!)
-        wall_data = points[['x', 'y', 'z']].ix[wall_mask]
-        rotated_data = PCA(n_components=3).fit(wall_data).transform(wall_data)[:,2]
-        mean, std, threshold = np.mean(rotated_data), np.std(rotated_data), 1.5
-        mask = (mean - (threshold * std) < rotated_data) * (rotated_data < (mean + (threshold *std)))
-        points.loc[wall_data.index, 'mask'] &= mask
-
-        # Get normal and offset position for each wall
-        normal = PCA(n_components=3).fit(wall_data.ix[mask]).components_[2]
-        normal = -normal if normal[1] < 0 else normal
-        offset = wall_data.ix[mask].mean()
-        walls.loc[wall, ['nx', 'ny', 'nz', 'x', 'y', 'z']] = np.append(normal, offset)
-
-    pdb.set_trace()
-
-    """
-    # Plot Box with labeled Sides
-    ax = fig.add_subplot(222, projection='3d')
-    for data, color in zip(data_clustered, 'rgybm'):
-        utils.plot3_square(ax, data, color, lims=lims)
-    """
-    ## CALCULATE WALL NORMAL AND CENTER ##
-    normals, offsets = [], []
-    ax = fig.add_subplot(223, projection='3d')
+    # Calculate mean offset of vertices for each wall
+    ids = model.predict(normals_ff)  # index for each point, giving the wall id number (0:n_components)
+    surface_offsets = np.zeros_like(surface_normals)
+    for idx in range(len(surface_normals)):
+        surface_offsets[idx, :] = np.mean(points_ff[ids==idx, :], axis=0)
+    assert not np.isnan(surface_offsets.sum()), "Incorrect model: No Points found to assign to at least one wall for intersection calculation."
 
     ## CALCULATE PLANE INTERSECTIONS TO GET VERTICES ##
-    # Want equation in form ax + by + cz = d.  So, get d from norm and offsets
-    d = np.sum(normals * offsets, axis=1)
+    vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max())
 
-    # Find floor plane
-    floor_mask = normals[:,1] == normals[:,1].max()
-    floor_normal, floor_dd = normals[floor_mask, :], d[floor_mask]
-    wall_mask = floor_mask == False
-    wall_normals, wall_dd = normals[wall_mask, :], d[wall_mask]
-
-    ceiling_norm, ceiling_dd = np.array([0., 1., 0.]), .6  # TODO: Have it auto-find highest point.
-
-    #
-    num_walls = 4
-    floor_verts, ceiling_verts = np.zeros((num_walls, 3)), np.zeros((num_walls, 3))
-    floor_vertnorms = np.zeros((num_walls, 3))
-    ceil_vertnorms = np.zeros((num_walls, 3))
-    idx = 0
-    wn, wd = wall_normals[0], wall_dd[0]
-    while idx < 4:
-        # Find nearest wall to the left by finding two nearest wall normals (distance), and the positive y cross product
-        distance = lambda x, xx: np.sqrt(np.sum((x-xx)**2, axis=1))
-        yy = distance(wn, wall_normals)
-        mask = (stats.rankdata(yy) > 1) * (stats.rankdata(yy) < 4)
-        cross_prod = np.cross(wn, wall_normals[mask])
-        adj_wall_idx = np.where(mask)[0][np.where(cross_prod[:,1]>0)[0]]  # Complicated, but works.  Fix later.
-        adj_wall_norm, adj_wall_dd = wall_normals[adj_wall_idx], wall_dd[adj_wall_idx]
-
-        # Calculate intersection of this wall with adjacent wall and floor.
-        def find_intersection((wn1, wn2, wn3), (d1, d2, d3)):
-            """Solve system of 3 Equations to get intersection point between three planes."""
-            abc_mat, d_mat = np.vstack((wn1, wn2, wn3)), np.vstack((d1, d2, d3))
-            return np.linalg.solve(abc_mat, d_mat).transpose()
-
-        print (wn, adj_wall_norm, floor_normal)
-        floor_intersection = find_intersection((wn, adj_wall_norm, floor_normal), (wd, adj_wall_dd, floor_dd))
-
-        ceil_intersection = find_intersection((wn, adj_wall_norm, ceiling_norm), (wd, adj_wall_dd, ceiling_dd))
-
-        floor_verts[idx, :] = floor_intersection
-        ceiling_verts[idx, :] = ceil_intersection
-
-        # Find average direction of the intersecting planes for the vertex (essential for a short normal list)
-        normalize = lambda x: x/ np.sqrt(np.sum(x**2))
-        fvn = normalize(wn + adj_wall_norm + floor_normal)
-        cvn = normalize(wn + adj_wall_norm)
-        floor_vertnorms[idx, :] = fvn
-        ceil_vertnorms[idx, :] = cvn
-
-        wn, wd = adj_wall_norm, adj_wall_dd
-        idx +=1
-
-    ## BUILD VERTEX, NORMAL, AND FACE INDICES FROM VERTEX DATA ##
-
-    # Build quad face index list
-    quad_faces = []
-    quad_faces.append([0, 1, 2, 3])  # Add the floor first, to match normals order!
-    for idx in range(len(floor_verts)):  # Add all the walls
-        idx2 = idx+1 if idx<len(floor_verts)-1 else 0
-        quad_faces.append([idx, idx2, len(floor_verts)+idx2, len(floor_verts)+idx])
-
-
-    # Make new vertex and normals lists, so they match the face_indices order (will be unncecessaryily long
-    vertices = np.vstack((floor_verts, ceiling_verts)) - np.mean(body_positions, axis=0)
-    normals = np.vstack((floor_normal, wall_normals))
+    # Reorder vertices in clockwise direction in the positive y direction, then triangulate them for OpenGL.
+    vertices = {wall: fan_triangulate(reorder_vertices(verts)) for wall, verts in vertices.items()}
 
     ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
+    wave_str = data_to_wavefront('MyArena', vertices, normals)
     with open(filename, 'wb') as wavfile:
-
-        header = "# Blender v2.69 (sub 5) OBJ File: ''\n" + "# www.blender.org\n" + "o Arena\n"
-        wavfile.write(header)
-
-        for vert in vertices:
-            vertline = "v {0} {1} {2} \n".format(*vert)
-            wavfile.write(vertline)
-
-        for norm in normals:
-            normline = "vn {0} {1} {2}\n".format(norm[0], norm[1], norm[2])
-            wavfile.write(normline)
-
-        for idx, face in enumerate(quad_faces):
-            faceline = 'f'
-            for f in face:
-                faceline += r" {f}//{n}".format(f=f+1, n=idx+1)
-            faceline += '\n'
-            wavfile.write(faceline)
-
-
-    # Make final plot with drawing of reconstructed object.
-    ax = fig.add_subplot(224, projection='3d')
-    for face_inds, color in zip(quad_faces, 'rgybm'):
-        data = np.vstack((vertices[face_inds, :], vertices[face_inds[0], :]))
-        utils.plot3_square(ax, data, color+':', limits=lims)
-
-    plt.show()
+        wavfile.write(wave_str)
 
 
 if __name__ == '__main__':
