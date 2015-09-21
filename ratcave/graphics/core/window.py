@@ -62,14 +62,6 @@ class Window(visual.Window):
         self.__shadow_fov_y = shadow_fov_y
         self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y, aspect=1.).projection_matrix.T.ravel()
 
-    def __enter__(self):
-        """Setup code for context managers."""
-        pass
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Destructor, for context managers."""
-        self.close()
-
     @property
     def shadow_fov_y(self):
         """Fov_y for calculating shadow area.  Automatically updates shadow_projection_matrix when set."""
