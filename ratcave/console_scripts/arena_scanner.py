@@ -390,6 +390,7 @@ if __name__ == '__main__':
     ax = plot_3d(points, square_axis=True)
     for idx, verts in vertices.items():
         vert_loop = np.vstack((verts, verts[0,:]))  # so the line reconnects with the first point to show a complete outline
-        ax = plot_3d(vert_loop, ax=ax, title='Triangulated Model', line=True, show=True)
+        show = True if idx == len(vertices)-1 else False
+        ax = plot_3d(vert_loop, ax=ax, title='Triangulated Model', line=True, show=show)
 
 
