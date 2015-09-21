@@ -100,7 +100,7 @@ class RigidBody(object):
     @property
     def rotation_pca_y(self):
         """Return RotationEuler, compensated for the initialized PCA Y rotation angle.  Use for 3D-scanned objects."""
-        if self.__rotation_to_var == None:
+        if self.__rotation_to_var is None:
             self.__rotation_to_var = self.rotate_to_var()
         return RotationEuler(self.__rotation[0], self.__rotation[1]-self.__rotation_to_var, self.__rotation[2])
 
