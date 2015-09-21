@@ -42,9 +42,9 @@ def scan(optitrack_ip="127.0.0.1"):
     window = Window(scene, screen=1, fullscr=True)
 
     #start drawing.
-    data = {'markerPos': [], 'bodyPos': [], 'bodyRot': [], 'screenPos': []}
+    data = {'markerPos': [], 'bodyPos': [], 'body_markers': []}
     clock = core.CountdownTimer(3.)
-
+    body_position, body_markers = [], []
     while ('escape' not in event.getKeys()) and clock.getTime() > 0:
 
         # Draw Circle
@@ -55,13 +55,22 @@ def scan(optitrack_ip="127.0.0.1"):
 
         # Try to get Arena rigid body and a single unidentified marker, if a new frame of data is grabbed.
         new_frame = tracker.iFrame
+
+
         if new_frame != old_frame:
             old_frame = new_frame
             body = tracker.rigid_bodies['Arena']
+
             for marker in tracker.unidentified_markers:
                     data['markerPos'].append(marker.position)
-                    data['bodyPos'].append(body.position)
-                    data['bodyRot'].append(body.rotation)
+
+            body_position.append(body.position)
+            print(body_position)
+            body_markers.append(np.array([marker.position for marker in body.markers]))
+
+
+    data['bodyPos'] = np.mean(np.array(body_position), axis=0).tolist()
+    data['body_markers'] = np.mean(np.array(body_markers), axis=0).tolist()
 
     window.close()
     return data
@@ -312,6 +321,9 @@ if __name__ == '__main__':
     # Run the specified function from the command line. Format: arena_scanner function_name file_name
     print("Starting the Scan Process...")
     data = scan()
+    import pickle
+    with open('C:/Users/ratcave/Desktop/newArenaScan.pickle', 'wb') as datafile:
+        pickle.dump(data, datafile)
     print("Analyzing and Saving to {0}".format(ratcave.data_dir))
     meshify(data, filename=os.path.join(ratcave.data_dir, 'arena_unprocessed.obj'))
     print("Save done.  Please import file into blender and export as arena.obj before using in experiments!")
