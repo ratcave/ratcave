@@ -41,29 +41,25 @@ def scan(optitrack_ip="127.0.0.1", rigid_body_name='Arena'):
     scene = Scene([mesh])
     scene.camera.ortho_mode = True
 
-    window = Window(scene, screen=1, fullscr=True)
+    with Window(scene, screen=1, fullscr=True) as window:
 
-    # Main Loop
-    old_frame, clock, points, body_markers = tracker.iFrame, core.CountdownTimer(3.), [], []
-    while ('escape' not in event.getKeys()) and clock.getTime() > 0:
+        # Main Loop
+        old_frame, clock, points, body_markers = tracker.iFrame, core.CountdownTimer(3.), [], []
+        while ('escape' not in event.getKeys()) and clock.getTime() > 0:
 
-        # Update Calibration Grid
-        scene.camera.position[:2] = (pointwidth * np.sin(clock.getTime() * pointspeed)), (pointwidth * np.cos(clock.getTime() * pointspeed))
-        window.draw()
-        window.flip()
+            # Update Calibration Grid
+            scene.camera.position[:2] = (pointwidth * np.sin(clock.getTime() * pointspeed)), (pointwidth * np.cos(clock.getTime() * pointspeed))
+            window.draw()
+            window.flip()
 
-        # Take new Tracker data, if new data is available.
-        if tracker.iFrame != old_frame:
-            old_frame = tracker.iFrame
-            points.extend([marker.position for marker in tracker.unidentified_markers])
-            body_markers.append(np.array([marker.position for marker in body.markers]))
+            # Take new Tracker data, if new data is available.
+            if tracker.iFrame != old_frame:
+                old_frame = tracker.iFrame
+                points.extend([marker.position for marker in tracker.unidentified_markers])
+                body_markers.append(np.array([marker.position for marker in body.markers]))
 
-
-    # Destructor code.
-    window.close()
     points = np.array(points)
     body_markers = np.mean(np.array(body_markers), axis=0)  # Return average marker position over time.
-
     return points, body_markers
 
 
