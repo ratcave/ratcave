@@ -81,7 +81,7 @@ def rotate_to_var(markers):
     # Vector in direction of greatest variance
     coeff_vec = PCA(n_components=1).fit(markers[:, [0, 2]]).components_
     marker_var = markers[markers[:,2].argsort(), 2]  # Check variance along component to determine whether to flip.
-    winlen = len(marker_var)/2+1  # Window length for moving mean (two steps, with slight overlap)
+    winlen = int(len(marker_var)/2+1)  # Window length for moving mean (two steps, with slight overlap)
     var_means = np.array([marker_var[:winlen], marker_var[-winlen:]]).mean(axis=1)
     coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec
 
@@ -349,9 +349,10 @@ if __name__ == '__main__':
         wavfile.write(wave_str)
 
     # Show resulting plot with points and model in same place.
-    ax = plot_3d(points)
+    ax = plot_3d(points, square_axis=True)
     for idx, verts in vertices.items():
         vert_loop = np.vstack((verts, verts[0,:]))  # so the line reconnects with the first point to show a complete outline
         ax = plot_3d(vert_loop, ax=ax, title='Triangulated Model', line=True)
+    plt.show()
 
 

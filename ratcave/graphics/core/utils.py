@@ -105,25 +105,6 @@ def vec(floatlist, newtype='float'):
         elif 'int' in newtype:
             return (gl.GLuint * len(floatlist))(*list(floatlist))
 
-def plot3_square(axis_object, data, color='b', limits=None):
-    """Convenience function for plotting a plot3 scatterplot with square axes."""
-    # Set axis limits, if not already set.
-
-    if limits == None:
-        tot_range = (data.max(axis=0) - data.min(axis=0)).max() * .55
-        mn = data.mean(axis=0, keepdims=True) - tot_range
-        mx = data.mean(axis=0, keepdims=True) + tot_range
-        limits = np.vstack([mn, mx]).transpose()
-
-    # apply limits to the axis
-    for coord, idx in zip('xyz', range(3)):
-        getattr(axis_object, 'set_{0}lim3d'.format(coord))(limits[idx])
-
-    # Plot
-    axis_object.plot3D(data[:, 0], data[:, 1], data[:, 2], color+'o', zdir='y')
-
-    return limits
-
 def setpriority(pid=None,priority=1):
     
     """ Set The Priority of a Windows Process.  Priority is a value between 0-5 where
