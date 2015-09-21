@@ -284,16 +284,18 @@ def data_to_wavefront(mesh_name, vert_dict, normal_dict):
     return wavefront_str
 
 
-def meshify(data, filename):
+def meshify(points, n_surfaces=None):
+    """Returns vertex and normal coordinates for a 3D mmesh model from an Nx3 array of points after filtering.
 
-    ## IMPORT DATA ##
-    # Put values of data dictionary into numpy arrays.
-    points, markers = np.array(data['markerPos']), np.array(data['body_markers'])
+    Args:
+        -points (Nx3 Numpy Array): Data to be fit to a model.
+        -n_surfaces: If none, many different models with different numbers of surfaces will be compared.
 
-    # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
-    points -= np.mean(markers, axis=0)
-    rot_angle = rotate_to_var(markers)
-    points = np.dot(points,  y_rotation_matrix(rot_angle))
+    Returns:
+        -vertices
+        -normals
+    """
+
 
     # Remove Obviously Bad Points according to how far away from main cluster they are
     histmask = np.ones(points.shape[0], dtype=bool)  # Initializing mask with all True values
@@ -310,6 +312,8 @@ def meshify(data, filename):
     normals_ff = normals_f[normfilter, :]
 
     # Fit the filtered normal data using a gaussian classifier.
+    min_clusters = n_surfaces if n_surfaces else 4
+    max_clusters = n_surfaces+1 if n_surfaces else 15
     model = cluster_normals(normals_ff, min_clusters=4, max_clusters=15)
 
     # Get normals from model means
@@ -324,21 +328,40 @@ def meshify(data, filename):
 
     ## CALCULATE PLANE INTERSECTIONS TO GET VERTICES ##
     vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max())
-
-    # Reorder vertices in clockwise direction in the positive y direction, then triangulate them for OpenGL.
-    vertices = {wall: fan_triangulate(reorder_vertices(verts)) for wall, verts in vertices.items()}
-
-    ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
-    wave_str = data_to_wavefront('MyArena', vertices, normals)
-    with open(filename, 'wb') as wavfile:
-        wavfile.write(wave_str)
+    return vertices, normals
 
 
 if __name__ == '__main__':
     # Run the specified function from the command line. Format: arena_scanner function_name file_name
-    print("Starting the Scan Process...")
     data = scan()
-    print("Analyzing and Saving to {0}".format(ratcave.data_dir))
-    meshify(data, filename=os.path.join(ratcave.data_dir, 'arena.obj'))
-    print("Save done.  Please import file into blender and export as arena.obj before using in experiments!")
+
+    ## IMPORT DATA ##
+    # Put values of data dictionary into numpy arrays.
+    points, markers = np.array(data['markerPos']), np.array(data['body_markers'])
+
+    # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
+    points -= np.mean(markers, axis=0)
+    rot_angle = rotate_to_var(markers)
+    points = np.dot(points,  y_rotation_matrix(rot_angle))
+
+    # Get vertex positions and normal directions from the collected data.
+    vertices, normals = meshify(points, n_surfaces=None)
+    vertices = {wall: fan_triangulate(reorder_vertices(verts)) for wall, verts in vertices.items()}  # Triangulate
+
+
+
+    ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
+    filename = None
+    filename = filename if filename else os.path.join(ratcave.data_dir, 'arena.obj')
+    wave_str = data_to_wavefront('Arena', vertices, normals)
+    with open(filename, 'wb') as wavfile:
+        wavfile.write(wave_str)
+
+    # Show resulting plot with points and model in same place.
+    ax = plot_3d(points)
+    for idx, verts in vertices.items():
+        vert_loop = np.vstack((verts, verts[0,:]))  # so the line reconnects with the first point to show a complete outline
+        ax = plot_3d(vert_loop, ax=ax, title='Triangulated Model', line=True)
+        plot_3d()
+
 
