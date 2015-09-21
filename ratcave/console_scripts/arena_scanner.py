@@ -223,7 +223,7 @@ def reorder_vertices(vertices):
 
 
 def fan_triangulate(vertices):
-    """Return a new vertices array in triangular order from an Nx3 vertices array using a fan triangulation algorithm."""
+    """Return an array of vertices in triangular order using a fan triangulation algorithm."""
     new_verts = []
     vert0 = vertices[0]
     for ii, jj in zip(vertices[1:-1], vertices[2:]):
@@ -283,9 +283,8 @@ def meshify(data, filename):
     points_ff = points_f[normfilter, :]
     normals_ff = normals_f[normfilter, :]
 
-    # Fit the filtered normal data using a gaussian classifier, comparing models with different wall numbers to get the
-    # best model.
-    model = cluster_normals(normals_ff)
+    # Fit the filtered normal data using a gaussian classifier.
+    model = cluster_normals(normals_ff, min_clusters=4, max_clusters=15)
 
     # Get normals from model means
     surface_normals = model.means_  # n_components x 3 normals array, giving mean normal for each surface.
