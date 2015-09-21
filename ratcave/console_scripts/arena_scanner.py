@@ -271,7 +271,7 @@ def data_to_wavefront(mesh_name, vert_dict, normal_dict):
     # Write Vertex data from vert_dict
     for wall in vert_dict:
         for vert in vert_dict[wall]:
-            wavefront_str += "v {0} {1} {2} \n".format(*vert)
+            wavefront_str += "v {0} {1} {2}\n".format(*vert)
 
     # Write (false) UV data
     wavefront_str += "vt 1.0 1.0\n"
@@ -288,7 +288,7 @@ def data_to_wavefront(mesh_name, vert_dict, normal_dict):
             for vert in range(3): # 3 vertices in each face
                 vert_idx += 1
                 wavefront_str += "{v}/1/{n} ".format(v=vert_idx, n=wall+1)
-            wavefront_str += '\n'
+            wavefront_str = wavefront_str[:-1] + '\n'  # Cutoff trailing space and add a newline.
 
     # Return Wavefront string
     return wavefront_str

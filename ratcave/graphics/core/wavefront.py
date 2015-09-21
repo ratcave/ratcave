@@ -104,8 +104,13 @@ class WavefrontReader(object):
     def _parse_mtl(self, filename):
 
         # Get filename (same as .obj filename, but different extension)
-        with open(filename, 'r') as material_file:
-            lines = [line for line in material_file]  # Loop through each line
+        try:
+            with open(filename, 'r') as material_file:
+                lines = [line for line in material_file]  # Loop through each line
+        except IOError:
+            print("Warning: No .mtl material file found for .obj file. Using default material instead...")
+            self.materials[None] = Material()
+            return
 
         prefixes = ['#', 'newmtl', 'Ns', 'Ka', 'Kd', 'Ks', 'Ni', 'd', 'illum']
         props = dict.fromkeys(prefixes, None)
