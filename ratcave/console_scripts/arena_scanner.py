@@ -364,8 +364,25 @@ def meshify(points, n_surfaces=None):
 
 if __name__ == '__main__':
 
+    import argparse
     import ratcave
     from os import path
+
+    # Get command line inputs
+    parser = argparse.ArgumentParser(description="This is the RatCAVE arena scanner script.  It projects a dot pattern and collects the positions of the dots.")
+    parser.add_argument('-f',
+                        action='store',
+                        dest='filename',
+                        default=path.join(ratcave.data_dir, 'arena.obj'),
+                        help='Wavefront .obj File to save Arena to.')
+    parser.add_argument('-n',
+                        action='store',
+                        dest='n_sides',
+                        default=0,
+                        type=int,
+                        help='Number of Sides the Arena has. (If none given, will automatically search for best fit.')
+
+    args = parser.parse_args()
 
     # Start scan process and collect calibreation data
     points, markers = scan()
@@ -376,14 +393,12 @@ if __name__ == '__main__':
     points = np.dot(points,  y_rotation_matrix(rot_angle))
 
     # Get vertex positions and normal directions from the collected data.
-    vertices, normals = meshify(points, n_surfaces=None)
+    vertices, normals = meshify(points, n_surfaces=args.n_sides)
     vertices = {wall: fan_triangulate(reorder_vertices(verts)) for wall, verts in vertices.items()}  # Triangulate
 
     ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
-    filename = None
-    filename = filename if filename else path.join(ratcave.data_dir, 'arena.obj')
     wave_str = data_to_wavefront('Arena', vertices, normals)
-    with open(filename, 'wb') as wavfile:
+    with open(args.filename, 'wb') as wavfile:
         wavfile.write(wave_str)
 
     # Show resulting plot with points and model in same place.
