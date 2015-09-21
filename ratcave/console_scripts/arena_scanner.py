@@ -20,17 +20,19 @@ from ratcave.devices.trackers.optitrack import Optitrack
 from ratcave.graphics import *
 from ratcave.graphics.core import utils
 
-np.set_printoptions(precision=3, suppress=True)
+np.set_printoptions(precision=3, suppress=True, pointwidth=.06, pointspeed=3.)
 
-def scan(optitrack_ip="127.0.0.1"):
+def scan(optitrack_ip="127.0.0.1", rigid_body_name='Arena'):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
 
 
-    # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
+    # Get Tracker and Arena Rigid Body
     tracker = Optitrack(client_ip=optitrack_ip)
-    old_frame = tracker.iFrame
-    assert "Arena" in tracker.rigid_bodies, "Must Add Arena Rigid Body in Motive!"
+    assert rigid_body_name in tracker.rigid_bodies, "Rigid Body '{}' not found.".format(rigid_body_name)
+    body = tracker.rigid_bodies['Arena']
+
+    # Initialize Calibration Point Grid.
     wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
     mesh = wavefront_reader.get_mesh('Grid', centered=True, lighting=False, scale=1.5, drawstyle='point', point_size=12)
     mesh.material.diffuse.rgb = 1, 1, 1
@@ -41,30 +43,28 @@ def scan(optitrack_ip="127.0.0.1"):
 
     window = Window(scene, screen=1, fullscr=True)
 
-    #start drawing.
-    data = {'markerPos': [], 'bodyPos': [], 'bodyRot': [], 'screenPos': []}
-    clock = core.CountdownTimer(3.)
-
+    # Main Loop
+    old_frame, clock, points, body_markers = tracker.iFrame, core.CountdownTimer(3.), [], []
     while ('escape' not in event.getKeys()) and clock.getTime() > 0:
 
-        # Draw Circle
-        amp, speed = .06, 3.
-        scene.camera.position[:2] = (amp * np.sin(clock.getTime() * speed)), (amp * np.cos(clock.getTime() * speed))
+        # Update Calibration Grid
+        scene.camera.position[:2] = (pointwidth * np.sin(clock.getTime() * pointspeed)), (pointwidth * np.cos(clock.getTime() * pointspeed))
         window.draw()
         window.flip()
 
-        # Try to get Arena rigid body and a single unidentified marker, if a new frame of data is grabbed.
-        new_frame = tracker.iFrame
-        if new_frame != old_frame:
-            old_frame = new_frame
-            body = tracker.rigid_bodies['Arena']
-            for marker in tracker.unidentified_markers:
-                    data['markerPos'].append(marker.position)
-                    data['bodyPos'].append(body.position)
-                    data['bodyRot'].append(body.rotation)
+        # Take new Tracker data, if new data is available.
+        if tracker.iFrame != old_frame:
+            old_frame = tracker.iFrame
+            points.extend([marker.position for marker in tracker.unidentified_markers])
+            body_markers.append(np.array([marker.position for marker in body.markers]))
 
+
+    # Destructor code.
     window.close()
-    return data
+    points = np.array(points)
+    body_markers = np.mean(np.array(body_markers), axis=0)  # Return average marker position over time.
+
+    return points, body_markers
 
 
 def plot_3d(array3d, title='', ax=None, line=False):
@@ -332,12 +332,9 @@ def meshify(points, n_surfaces=None):
 
 
 if __name__ == '__main__':
-    # Run the specified function from the command line. Format: arena_scanner function_name file_name
-    data = scan()
 
-    ## IMPORT DATA ##
-    # Put values of data dictionary into numpy arrays.
-    points, markers = np.array(data['markerPos']), np.array(data['body_markers'])
+    # Start scan process and collect calibreation data
+    points, markers = scan()
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
     points -= np.mean(markers, axis=0)
@@ -347,8 +344,6 @@ if __name__ == '__main__':
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=None)
     vertices = {wall: fan_triangulate(reorder_vertices(verts)) for wall, verts in vertices.items()}  # Triangulate
-
-
 
     ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
     filename = None
@@ -362,6 +357,5 @@ if __name__ == '__main__':
     for idx, verts in vertices.items():
         vert_loop = np.vstack((verts, verts[0,:]))  # so the line reconnects with the first point to show a complete outline
         ax = plot_3d(vert_loop, ax=ax, title='Triangulated Model', line=True)
-        plot_3d()
 
 
