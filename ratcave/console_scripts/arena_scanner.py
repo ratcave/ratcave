@@ -56,10 +56,14 @@ def scan(optitrack_ip="127.0.0.1", rigid_body_name='Arena', pointwidth=.06, poin
         if tracker.iFrame != old_frame:
             old_frame = tracker.iFrame
             points.extend([marker.position for marker in tracker.unidentified_markers])
-            body_markers.append(np.array([marker.position for marker in body.markers]))
+            if len(body.markers) > 3:
+                if (len(body_markers) == 0) or (len(body.markers) == len(body_markers[-1])):
+                    body_markers.append(np.array([marker.position for marker in body.markers]))
 
     window.close()
+    assert(len(points)>100), "Only {} points detected.  Tracker is not detecting enough points to model".format(len(points))
     points = np.array(points)
+    assert(len(body_markers)>2), "No markers found in Rigid Body. This bug happens sporadically sometimes, please try again."
     body_markers = np.mean(np.array(body_markers), axis=0)  # Return average marker position over time.
     return points, body_markers
 
