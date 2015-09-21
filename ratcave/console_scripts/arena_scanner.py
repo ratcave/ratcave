@@ -77,6 +77,27 @@ def plot_3d(array3d, title='', ax=None, line=False):
     plt.title(title)
     return ax
 
+def rotate_to_var(markers):
+    """Returns degrees to rotate about y axis so greatest marker variance points in +X direction"""
+    # Vector in +X direction
+    base_vec = np.array([1, 0])
+
+    # Vector in direction of greatest variance
+    coeff_vec = PCA(n_components=1).fit(markers[:, [0, 2]]).components_
+    marker_var = markers[markers[:,2].argsort(), 2]  # Check variance along component to determine whether to flip.
+    winlen = len(marker_var)/2+1  # Window length for moving mean (two steps, with slight overlap)
+    var_means = np.array([marker_var[:winlen], marker_var[-winlen:]]).mean(axis=1)
+    coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec
+
+    # Rotation amount, in radians
+    msin, mcos = np.cross(coeff_vec, base_vec)[0], np.dot(coeff_vec, base_vec)[0]
+    return np.degrees(np.arctan2(msin, mcos))
+
+def y_rotation_matrix(angle):
+    """Returns a 3x3 rotation matrix for rotating angle amount (degrees) about the Y axis"""
+    angle = np.radians(angle)
+    msin, mcos = np.sin(angle), np.cos(angle)
+    return np.array([[mcos, 0, msin], [0, 1, 0], [-msin, 0, mcos]])
 
 def hist_mask(data, threshold=.95, keep='lower'):
     """
@@ -267,7 +288,12 @@ def meshify(data, filename):
 
     ## IMPORT DATA ##
     # Put values of data dictionary into numpy arrays.
-    body_rot, body_pos, points = np.array(data['bodyRot']), np.array(data['bodyPos']), np.array(data['markerPos'])
+    points, markers = np.array(data['markerPos']), np.array(data['body_markers'])
+
+    # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
+    points -= np.mean(markers, axis=0)
+    rot_angle = rotate_to_var(markers)
+    points = np.dot(points,  y_rotation_matrix(rot_angle))
 
     # Remove Obviously Bad Points according to how far away from main cluster they are
     histmask = np.ones(points.shape[0], dtype=bool)  # Initializing mask with all True values
@@ -313,6 +339,6 @@ if __name__ == '__main__':
     print("Starting the Scan Process...")
     data = scan()
     print("Analyzing and Saving to {0}".format(ratcave.data_dir))
-    meshify(data, filename=os.path.join(ratcave.data_dir, 'arena_unprocessed.obj'))
+    meshify(data, filename=os.path.join(ratcave.data_dir, 'arena.obj'))
     print("Save done.  Please import file into blender and export as arena.obj before using in experiments!")
 
