@@ -1,31 +1,18 @@
 __author__ = 'nickdg'
 
-import os
-import time
 import numpy as np
-from scipy import stats
-import pdb
-
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from sklearn.neighbors import NearestNeighbors
 from sklearn.decomposition import PCA
-from sklearn import mixture
-from psychopy import event, core
-import pandas as pd
-from scipy import spatial
-
-import ratcave
-from ratcave.devices.trackers.optitrack import Optitrack
-from ratcave.graphics import *
-from ratcave.graphics.core import utils
 
 np.set_printoptions(precision=3, suppress=True)
+
 
 def scan(optitrack_ip="127.0.0.1", rigid_body_name='Arena', pointwidth=.06, pointspeed=3.):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
 
+    from ratcave import graphics
+    from ratcave.devices.trackers.optitrack import Optitrack
+    from psychopy import event, core
 
     # Get Tracker and Arena Rigid Body
     tracker = Optitrack(client_ip=optitrack_ip)
@@ -33,15 +20,15 @@ def scan(optitrack_ip="127.0.0.1", rigid_body_name='Arena', pointwidth=.06, poin
     body = tracker.rigid_bodies['Arena']
 
     # Initialize Calibration Point Grid.
-    wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
+    wavefront_reader = graphics.WavefrontReader(ratcave.graphics.resources.obj_primitives)
     mesh = wavefront_reader.get_mesh('Grid', centered=True, lighting=False, scale=1.5, drawstyle='point', point_size=12)
     mesh.material.diffuse.rgb = 1, 1, 1
     mesh.world.position=[0, 0, -1]
 
-    scene = Scene([mesh])
+    scene = graphics.Scene([mesh])
     scene.camera.ortho_mode = True
 
-    window = Window(scene, screen=1, fullscr=True)
+    window = graphics.Window(scene, screen=1, fullscr=True)
 
     # Main Loop
     old_frame, clock, points, body_markers = tracker.iFrame, core.CountdownTimer(3.), [], []
@@ -68,8 +55,25 @@ def scan(optitrack_ip="127.0.0.1", rigid_body_name='Arena', pointwidth=.06, poin
     return points, body_markers
 
 
-def plot_3d(array3d, title='', ax=None, line=False, color=None, square_axis=False):
-    """make 3D scatterplot that plots the x, y, and z columns in a dataframe. Returns figure."""
+def plot_3d(array3d, title='', ax=None, line=False, color='', square_axis=False, show=False):
+    """
+    Make 3D scatterplot that plots the x, y, and z columns in a dataframe. Returns figure.
+
+    Args:
+        -array3d (Nx3 Numpy Array): data to plot.
+        -ax (PyPlot Axis Object=None): Axis object to use.
+        -line (bool=True):Whether to plot with lines instead of just points
+        -color (str=''): the color to set.
+        -square_axis (bool=False): Whether to square the axes to fit the data.
+        -show (bool=False): Whether to immediately show the figure.  This is a blocking operation.
+
+    Returns:
+        -ax (PyPlot Axis Object): The Axis the data is plotted on.
+    """
+
+    from matplotlib import pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+
     if not ax:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
@@ -89,7 +93,13 @@ def plot_3d(array3d, title='', ax=None, line=False, color=None, square_axis=Fals
         plot_fun(array3d[:,0], array3d[:,2], array3d[:,1])
     plt.title(title)
     plt.xlabel('x'), plt.ylabel('z')
+
+    # Immediately display figure is show is True
+    if show:
+        plt.show()
+
     return ax
+
 
 def rotate_to_var(markers):
     """Returns degrees to rotate about y axis so greatest marker variance points in +X direction"""
@@ -107,11 +117,13 @@ def rotate_to_var(markers):
     msin, mcos = np.cross(coeff_vec, base_vec)[0], np.dot(coeff_vec, base_vec)[0]
     return np.degrees(np.arctan2(msin, mcos))
 
+
 def y_rotation_matrix(angle):
     """Returns a 3x3 rotation matrix for rotating angle amount (degrees) about the Y axis"""
     angle = np.radians(angle)
     msin, mcos = np.sin(angle), np.cos(angle)
     return np.array([[mcos, 0, msin], [0, 1, 0], [-msin, 0, mcos]])
+
 
 def hist_mask(data, threshold=.95, keep='lower'):
     """
@@ -151,6 +163,7 @@ def hist_mask(data, threshold=.95, keep='lower'):
 
 def normal_nearest_neighbors(data, n_neighbors=40):
     """Find the normal direction of a hopefully-planar cluster of n_neighbors"""
+    from sklearn.neighbors import NearestNeighbors
 
     # K-Nearest neighbors on whole dataset
     nbrs = NearestNeighbors(n_neighbors).fit(data)
@@ -172,16 +185,18 @@ def normal_nearest_neighbors(data, n_neighbors=40):
     # Convert to NumPy Array and return
     return np.array(normal_all), np.array(latent_all)
 
+
 def cluster_normals(normal_array, min_clusters=4, max_clusters=15):
     """Returns sklearn model from clustering an NxK array, comparing different numbers of clusters for a best fit."""
-    old_bic = 1e32
+    from sklearn import mixture
+
+    model, old_bic = None, 1e32
     for n_components in range(min_clusters, max_clusters):
         gmm = mixture.GMM(n_components=n_components) # Fit the filtered normal data using a gaussian classifier
         temp_model = gmm.fit(normal_array)
         temp_bic = temp_model.bic(normal_array)
         print("N Components: {}\tBIC: {}".format(n_components, temp_bic))
-        if temp_bic< old_bic:  # If the new model has a higher BIC than the old one, keep it as a better model.
-            model, old_bic = temp_model, temp_bic
+        model, old_bic = (temp_model, temp_bic) if temp_bic < old_bic else (model, old_bic)
 
     return model
 
@@ -189,6 +204,8 @@ def cluster_normals(normal_array, min_clusters=4, max_clusters=15):
 def get_vertices_at_intersections(normals, offsets, ceiling_height):
     """Returns a dict of vertices and normals for each surface intersecton of walls given by the Nx3 arrays of
     normals and offsets."""
+
+    from scipy import spatial
 
     # Calculate d in equation ax + by + cz = d
     dd = np.sum(normals * offsets, axis=1)
@@ -242,7 +259,7 @@ def reorder_vertices(vertices):
     for i, ray_i in enumerate(rays):
         for j, ray_j in enumerate(rays):
             cp = np.cross(ray_i, ray_j)
-            cross_mask[i, j] = np.dot(cp, [0, 1, 0]) >  0.
+            cross_mask[i, j] = np.dot(cp, [0, 1, 0]) > 0.
 
     # Apply the filter and reorder the vertices
     cov_filtered = cov * cross_mask
@@ -347,6 +364,9 @@ def meshify(points, n_surfaces=None):
 
 if __name__ == '__main__':
 
+    import ratcave
+    from os import path
+
     # Start scan process and collect calibreation data
     points, markers = scan()
 
@@ -361,7 +381,7 @@ if __name__ == '__main__':
 
     ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
     filename = None
-    filename = filename if filename else os.path.join(ratcave.data_dir, 'arena.obj')
+    filename = filename if filename else path.join(ratcave.data_dir, 'arena.obj')
     wave_str = data_to_wavefront('Arena', vertices, normals)
     with open(filename, 'wb') as wavfile:
         wavfile.write(wave_str)
@@ -370,7 +390,6 @@ if __name__ == '__main__':
     ax = plot_3d(points, square_axis=True)
     for idx, verts in vertices.items():
         vert_loop = np.vstack((verts, verts[0,:]))  # so the line reconnects with the first point to show a complete outline
-        ax = plot_3d(vert_loop, ax=ax, title='Triangulated Model', line=True)
-    plt.show()
+        ax = plot_3d(vert_loop, ax=ax, title='Triangulated Model', line=True, show=True)
 
 
