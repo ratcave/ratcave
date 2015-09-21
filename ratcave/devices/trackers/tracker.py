@@ -50,6 +50,7 @@ class RigidBody(object):
         self.seen = True  # Indicates that Tracking was successful this frame.
         self.offset = Position(*offset)
         self.__position, self.__rotation = None, None
+        self.__rotation_to_var = self.rotate_to_var()
 
     @property
     def position(self):
@@ -78,33 +79,25 @@ class RigidBody(object):
 
         return [math.degrees(angle) for angle in [attitude, heading, bank]]  # TODO: May need to change some things to negative to deal with left-handed coordinate system.
 
+    def rotate_to_var(self):
+        """Returns degrees to rotate about y axis so greatest marker variance points in +X direction"""
+        # Vector in +X direction
+        base_vec = np.array([1, 0])
 
-    def _calc_local_y_orientation_transform(self):
-        """
-        Calculate which direction the rigid body is facing, based on a PCA of the markers, rather than the Optitrack's
-        orientation report.  Useful for making a consistent orientation estimate when re-creating the same rigid body over
-        multiple sessions. By default, only performs PCA in two dimensions (x and z).
-        Returns nothing, but sets RigidBody._global_to_local_rotation_matrix
-        """
+        # Vector in direction of greatest variance
+        markers = np.array([marker.position for marker in self.markers])
+        coeff_vec = PCA(n_components=1).fit(markers[:, [0, 2]]).components_
+        marker_var = markers[markers[:,2].argsort(), 2]  # Check variance along component to determine whether to flip.
+        winlen = len(marker_var)/2+1  # Window length for moving mean (two steps, with slight overlap)
+        var_means = np.array([marker_var[:winlen], marker_var[-winlen:]]).mean(axis=1)
+        coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec
 
-        # Make an Nx3 array of marker positions
-        marker_positions = []
-        for marker in self.markers:
-            marker_positions.append(marker.position)
-        marker_positions = np.array(marker_positions)
+        # Rotation amount, in radians
+        msin, mcos = np.cross(coeff_vec, base_vec)[0], np.dot(coeff_vec, base_vec)[0]
+        return np.degrees(np.arctan2(msin, mcos))
 
-        # Get PCA Coefficients (Represent Direction Vector)
-        pdb.set_trace()
-        coeffs = PCA(n_components=2).fit(marker_positions).components_[0]
-        coeffs = -coeffs if coeffs[0] < 0 else coeffs  # Flip so that the first coord is always in positive direction
-
-        # Convert Quaternion to vector after rotating pos-X unit vector.
-        glob_vector = np.dot(np.array([1, 0, 0]).T, self.quaternion_to_rotation_matrix(*self.rotation_quaternion))
-
-        # Calculate Rotation Matrix about the Y Axis
-        ct, st = np.dot(coeffs, glob_vector), np.cross(coeffs, glob_vector)[1]
-        rot_matrix = np.array([[ct, 0, st], [0, 1, 0], [-st, 0, ct]])
-
-        # Set Matrix,
-        self._global_to_local_rotation_matrix = rot_matrix
+    @property
+    def rotation_pca_y(self):
+        """Return RotationEuler, compensated for the initialized PCA Y rotation angle.  Use for 3D-scanned objects."""
+        return RotationEuler(self.__rotation[0], self.__rotation[1]-self.__rotation_to_var, self.__rotation[2])
 
