@@ -21,12 +21,19 @@ np.set_printoptions(precision=3, suppress=True)
 
 vert_dist = 0.66667
 
-def scan(start_delay=5, trial_duration=10, optitrack_ip="127.0.0.1"):
-    """Start scan protocol for measuring projector position.  In this protocol, a single point if projected, and the
-    experimenter must move a piece of paper along the path of the point while Optitrack (in visible light mode) records
-    that point's position.  Periodically ('trial_duraction'), the point's position changes.  The data from this protocol
-     saved in file_name under three lists: Proj_x, Proj_y, and Point_position3d."""
 
+
+def scan(optitrack_ip="127.0.0.1"):
+
+    def slow_draw(window, tracker):
+        """Draws the window contents to screen, then blocks until tracker data updates."""
+        window.draw()
+        window.flip()
+
+        # Wait for tracker to update, just to be safe and align all data together.
+        old_frame = tracker.iFrame
+        while tracker.iFrame == old_frame:
+            pass
 
     # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
     tracker = Optitrack(client_ip=optitrack_ip)
@@ -41,48 +48,35 @@ def scan(start_delay=5, trial_duration=10, optitrack_ip="127.0.0.1"):
 
     window = Window(scene, screen=1, fullscr=True)
 
-    # Set positions
-    circle.last_position = [0., 0., 0.]
+    screenPos, pointPos = [], []
+    clock = core.CountdownTimer(15)
+    while (clock.getTime() > 0.) or (len(pointPos) > 50) or 'escape' in event.getKeys():
 
-    time.sleep(float(start_delay))
-
-    x_list = [0, -.3,  .3,   0,  0, -.6, .6,   0,  0, -.9, .9]
-    y_list = [0,   0,   0, -.25, .25,   0,  0, -.5, .5,   0,  0]
-
-    # Main Loop
-    data_list = []
-    for x, y in zip(x_list, y_list):
-
-        # Give a short pause between points, to keep from mixing the data between screen positions
-        circle.visible = False
-        window.draw()
-        window.flip()
-        time.sleep(.1)
-
-
-        # Set mesh position
-        circle.xy = x, y
+        # Update position of circle, and draw.
         circle.visible = True
+        circle.local.position[[0, 1]] = np.random.random(2)
+        slow_draw(window, tracker)
 
-        clock = core.CountdownTimer(trial_duration)
-        while clock.getTime() > 0:
-            # Get tracker point position
-            positions = tracker.get_unidentified_positions(1)
-            if positions and (positions[0][1] < circle.last_position[1] - .01 or positions[0][1] > circle.last_position[1] + .01):
-                circle.last_position = positions[0]
-                data_list.append([circle.x, circle.y, positions[0]])
+        # Try to isolate a single point.
+        search_clock = .1
+        while search_clock.getTime() > 0.:
+            markers = tracker.unidentified_markers
+            if len(markers) == 1:
+                screenPos.append(circle.local.position)
+                pointPos.append(markers[0])
+                break
+            print("Warning: No marker found for screen position {}".format(circle.local.position[[0, 1]]))
 
-            window.draw()
-            window.flip()
-
-            if 'escape' in event.getKeys():
-                window.close()
-                sys.exit()
+        # Hide circle, and wait again for a new update.
+        circle.visible = False
+        slow_draw(window, tracker)
 
 
-    # After program ends, return the collected data
     window.close()
-    return data_list
+    if len(pointPos) == 0:
+        raise IOError("Only {} Points collected. Please check camera settings and try for more points.".format(len(pointPos)))
+
+    return screenPos, pointPos
 
 
 def analyze(data):
