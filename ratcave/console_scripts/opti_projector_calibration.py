@@ -111,8 +111,7 @@ def calibrate(img_points, obj_points):
     posVec[1] *= -1  # Flip z-axis away # TODO: Check if everything needs to be flipped.
     rotVec = np.degrees(rotVec)  # TODO: Check what the rotation order is.
     # Return the position and rotation arrays for the camera.
-    return posVec, rotVec
-
+    return posVec.flatten(), rotVec.flatten()
 
 if __name__ == '__main__':
 
@@ -126,23 +125,41 @@ if __name__ == '__main__':
                         action='store',
                         dest='filename'
                         default=None
-                        help='Pickle file to store point data to.  Optional, as normally not needed.')
+                        help='Pickle file to store point data to, if desired.')
+
+    parser.add_argument('-t',
+                        action='store_true',
+                        dest='test_mode',
+                        default=False,
+                        help='If this flag is present, calibration results will be displayed, but not saved.')
+
 
     args = parser.parse_args()
 
     # Collect data
     screenPos, pointPos, winSize = scan()
 
-    # Either save the data or perform calibration
+    # Either save the data without calibrating or perform calibration
     if args.filename:
+        print('Saving Acquisition data to {}'.format(args.filename))
         with open(args.filename, 'wb') as myfile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, myfile)
 
-    else:
-        calibrate(screenPos, pointPos)
+    # Calibrate projector data
+    print('Estimating Extrinsic Camera Parameters...')
+    position, rotation = calibrate(screenPos, pointPos)
+    print('Estimated Projector Position:{}'.format(position))
+    print('Estimated Projector Rotation:{}'.format(rotation))
 
+    # Save Results to application data.
+    if not args.test_mode:
+        print('Saving Results...')
         # Save Data in format for putting into a ratcave.graphics.Camera
+        projector_data = {'position': position, 'rotation': rotation, 'fov_y': 41.2 / 1.47}
+        with open(os.path.join(ratcave.data_dir, 'projector_data.pickle'), "wb") as datafile:
+            pickle.dump(projector_data, datafile)
 
+    print('Calibration Complete!')
 
 
 
