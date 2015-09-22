@@ -104,7 +104,7 @@ def calibrate(img_points, obj_points):
     img_points, obj_points = img_points.astype('float32'), obj_points.astype('float32')
     window_size = (1,1)  # Currently a false size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
 
-    retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera(img_points, obj_points, window_size)
+    retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([img_points], [obj_points], window_size)
 
     # Change order of coordinates from cv2's camera-centered coordinates to Optitrack y-up coords.
     coord_order = [0,2,1]
@@ -124,8 +124,8 @@ if __name__ == '__main__':
 
     parser.add_argument('-f',
                         action='store',
-                        dest='filename'
-                        default=None
+                        dest='filename',
+                        default='',
                         help='Pickle file to store point data to, if desired.')
 
     parser.add_argument('-t',
