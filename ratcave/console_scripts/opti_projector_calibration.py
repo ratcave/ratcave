@@ -40,7 +40,7 @@ def scan(optitrack_ip="127.0.0.1"):
 
     # Setup graphics
     wavefront_reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.006)
+    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.006)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
     scene = Scene([circle])
@@ -51,21 +51,22 @@ def scan(optitrack_ip="127.0.0.1"):
     # Main Loop
     screenPos, pointPos = [], []
     clock = core.CountdownTimer(15)
-    while (clock.getTime() > 0.) or (len(pointPos) > 100) or 'escape' in event.getKeys():
+    while clock.getTime() > 0. and len(pointPos) < 150 and 'escape' not in event.getKeys():
 
         # Update position of circle, and draw.
         circle.visible = True
-        circle.local.position[[0, 1]] = np.random.random(2)
+        circle.local.position[[0, 1]] = np.random.random(2) - .5
         slow_draw(window, tracker)
 
         # Try to isolate a single point.
-        search_clock = .1
+        search_clock = core.CountdownTimer(.05)
         while search_clock.getTime() > 0.:
             markers = tracker.unidentified_markers
             if len(markers) == 1:
-                screenPos.append(circle.local.position)
-                pointPos.append(markers[0])
+                screenPos.append(circle.local.position[[0, 1]])
+                pointPos.append(markers[0].position)
                 break
+        else:
             print("Warning: No marker found for screen position {}".format(circle.local.position[[0, 1]]))
 
         # Hide circle, and wait again for a new update.

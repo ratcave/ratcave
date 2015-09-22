@@ -49,7 +49,7 @@ class Physical(object):
     @position.setter
     def position(self, value):
         assert len(value) == 3, "position must have three (x,y,z) coordinates."
-        self.__position = np.array(value)
+        self.__position = np.array(value, dtype=float)
 
     @property
     def rotation(self):
@@ -58,7 +58,7 @@ class Physical(object):
     @rotation.setter
     def rotation(self, value):
         assert len(value) == 3, "rotation must have three (x,y,z) coordinates"
-        self.__rotation = np.array(value)
+        self.__rotation = np.array(value, dtype=float)
 
 
     @property
