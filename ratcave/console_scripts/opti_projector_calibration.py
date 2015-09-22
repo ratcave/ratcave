@@ -125,9 +125,16 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Projector Calibration script. Projects a random dot pattern and calculates projector position.')
 
-    parser.add_argument('-f',
+    parser.add_argument('-i',
                         action='store',
-                        dest='filename',
+                        dest='load_filename',
+                        default='',
+                        help='Calibrate using this datafile instead of collecting data directly.  Should be a pickled file containing a '
+                             'single dictionary with two keys: imgPoints (Nx2 array) and objPoints (Nx3 array).')
+
+    parser.add_argument('-o',
+                        action='store',
+                        dest='save_filename',
                         default='',
                         help='Pickle file to store point data to, if desired.')
 
@@ -139,13 +146,20 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # Collect data
-    screenPos, pointPos, winSize = scan()
+    # Collect data or get data from file
+    if not args.load_filename:
+        screenPos, pointPos, winSize = scan()
+    else:
+        with open(args.load_filename) as datafile:
+            data = pickle.load(datafile)
+            assert isinstance(data, dict), "loaded datafile should contain a single dict!"
+            assert 'imgPoints' in data.keys() and 'objPoints' in data.keys(), "loaded datafile's dict has wrong keys."
+            screenPos, pointPos = data['imgPoints'], data['objPoints']
 
     # Either save the data without calibrating or perform calibration
-    if args.filename:
-        print('Saving Acquisition data to {}'.format(args.filename))
-        with open(args.filename, 'wb') as myfile:
+    if args.save_filename:
+        print('Saving Acquisition data to {}'.format(args.save_filename))
+        with open(args.save_filename, 'wb') as myfile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, myfile)
 
     # Calibrate projector data
