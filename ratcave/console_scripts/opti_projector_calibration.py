@@ -43,7 +43,7 @@ def scan(optitrack_ip="127.0.0.1"):
     circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0, 0, -1], scale=.006)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
-    scene = Scene(circle)
+    scene = Scene([circle])
     scene.camera.ortho_mode = True
 
     window = Window(scene, screen=1, fullscr=True)
@@ -101,8 +101,8 @@ if __name__ == '__main__':
 
     parser.add_argument('-f',
                         action='store',
-                        dest='filename'
-                        default=None
+                        dest='filename',
+                        default='',
                         help='Pickle file to store point data to.  Optional, as normally not needed.')
 
     args = parser.parse_args()
