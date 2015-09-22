@@ -1,20 +1,12 @@
 __author__ = 'nickdg'
 
-import itertools
 import numpy as np
-import time
 import os
-import pickle
-import sys
 
 from psychopy import event, core
-from matplotlib import pyplot as plt
-from statsmodels.formula.api import ols
 
 import ratcave
 from ratcave.devices import Optitrack
-from ratcave.devices.displays import propixx_utils
-from ratcave.graphics.core import utils
 from ratcave.graphics import *
 
 np.set_printoptions(precision=3, suppress=True)
@@ -104,8 +96,8 @@ def calibrate(img_points, obj_points):
     img_points, obj_points = img_points.astype('float32'), obj_points.astype('float32')
     window_size = (1,1)  # Currently a false size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
 
-    retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([img_points],
-                                                                                  [obj_points],
+    retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([obj_points],
+                                                                                  [img_points],
                                                                                   window_size,
                                                                                   flags=cv2.CALIB_USE_INTRINSIC_GUESS)
 
@@ -156,11 +148,15 @@ if __name__ == '__main__':
             assert 'imgPoints' in data.keys() and 'objPoints' in data.keys(), "loaded datafile's dict has wrong keys."
             screenPos, pointPos = data['imgPoints'], data['objPoints']
 
-    # Either save the data without calibrating or perform calibration
+    # If specified, save the data.
     if args.save_filename:
         print('Saving Acquisition data to {}'.format(args.save_filename))
         with open(args.save_filename, 'wb') as myfile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, myfile)
+
+    # Filter out points below floor surface (happens with reflections sometimes)
+    reflect_mask = np.where(pointPos[:, 1] > 0.)[0]
+    pointPos, screenPos = pointPos[reflect_mask, :], screenPos[reflect_mask, :]
 
     # Calibrate projector data
     print('Estimating Extrinsic Camera Parameters...')
