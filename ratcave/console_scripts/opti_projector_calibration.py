@@ -84,11 +84,34 @@ def scan(optitrack_ip="127.0.0.1"):
     return np.array(screenPos), np.array(pointPos), window.size
 
 
-def calibrate(screenPos, pointPos):
-    """Does camera cliabration using OpenCV's camera calibration function."""
-    raise NotImplementedError("Still Figuring out how to get data into correct format for OpenCV")
+def calibrate(img_points, obj_points):
+    """
+    Returns position and rotation arrays by using OpenCV's camera calibration function on image calibration data.
+
+    Args:
+        -img_points (Nx2 NumPy Array): the location (-.5 - .5) of the center of the point that was projected on the
+            projected image.
+        -obj_points (Nx3 NumPy Array): the location (x,y,z) in real space where the projected point was measured.
+            Note: Y-axis is currently hardcoded to represent the 'up' direction.
+
+    Returns:
+        -posVec (NumPy Array): The X,Y,Z position of the projector
+        -rotVec (NumPy Array): The Euler3D rotation of the projector (in degrees).
+    """
     import cv2
-    retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera(pointPos, screenPos, winSize)
+
+    img_points, obj_points = img_points.astype('float32'), obj_points.astype('float32')
+    window_size = (1,1)  # Currently a false size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
+
+    retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera(img_points, obj_points, window_size)
+
+    # Change order of coordinates from cv2's camera-centered coordinates to Optitrack y-up coords.
+    coord_order = [0,2,1]
+    posVec, rotVec = posVec[0][coord_order], rotVec[0][coord_order]
+    posVec[1] *= -1  # Flip z-axis away # TODO: Check if everything needs to be flipped.
+    rotVec = np.degrees(rotVec)  # TODO: Check what the rotation order is.
+    # Return the position and rotation arrays for the camera.
+    return posVec, rotVec
 
 
 if __name__ == '__main__':
