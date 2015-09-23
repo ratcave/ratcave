@@ -412,8 +412,6 @@ class Optitrack(object):
             body.position = x, y, z
             body.rotation = qx, qy, qz, qw
 
-
-
             # Get body's markers' information
             body.markers = []  # That's right.  Reset the whole damn marker list.
             for el2 in range(unpack('i', data.read(4))[0]):  # nRigidMarkers
@@ -504,21 +502,6 @@ class Optitrack(object):
         end_params = unpack('h', data.read(2))[0]
         self.is_recording = bool(end_params & 0x01)  # Motive is Recording
         self.tracked_models_changed = bool( end_params & 0x02)
-
-    def get_unidentified_positions(self, exact=None):
-        """Returns the list of positions of all unidentified markers.  If an 'exact' number is set, will return None if
-        that number of markers doesn't match the data."""
-        positions = []
-        if exact and len(self.unidentified_markers) != exact:
-            if len(self.unidentified_markers) == 0:
-                warnings.warn("No unidentified markers detected.")
-            else:
-                warnings.warn("{0} unidentified markers detected. Returning None of them, since {0} were requested.".format(exact))
-            return None
-        else:
-            for marker in self.unidentified_markers:
-                positions.append(marker.position)
-            return positions
 
     def wait_for_recording_start(self):
         """Halts script until recording begins."""
