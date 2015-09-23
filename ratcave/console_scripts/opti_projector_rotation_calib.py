@@ -26,6 +26,7 @@ def display(optitrack_ip="127.0.0.1"):
     # Create Scene and Window
     scene = Scene([arena, cube])
     scene.camera = projector
+    #scene.camera.rotation *= -1
 
     window = Window(scene, screen=1, fullscr=True)
 

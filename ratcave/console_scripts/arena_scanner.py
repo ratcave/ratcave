@@ -402,7 +402,7 @@ if __name__ == '__main__':
         wavfile.write(wave_str)
 
     # Show resulting plot with points and model in same place.
-    ax = plot_3d(points, square_axis=True)
+    ax = plot_3d(points[::15, :], square_axis=True)
     for idx, verts in vertices.items():
         vert_loop = np.vstack((verts, verts[0,:]))  # so the line reconnects with the first point to show a complete outline
         show = True if idx == len(vertices)-1 else False

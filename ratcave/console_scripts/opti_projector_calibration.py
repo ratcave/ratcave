@@ -8,6 +8,7 @@ from psychopy import event, core
 import ratcave
 from ratcave.devices import Optitrack
 import ratcave.graphics as gg
+import cv2
 
 np.set_printoptions(precision=3, suppress=True)
 
@@ -151,27 +152,34 @@ def calibrate(img_points, obj_points):
         -posVec (NumPy Array): The X,Y,Z position of the projector
         -rotVec (NumPy Array): The Euler3D rotation of the projector (in degrees).
     """
-    import cv2
+
 
     img_points, obj_points = img_points.astype('float32'), obj_points.astype('float32')
-    window_size = (1000,1000)  # Currently a false size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
+    window_size = (1,1)  # Currently a false size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
 
     retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([obj_points],
                                                                                   [img_points],
                                                                                   window_size,
                                                                                   flags=cv2.CALIB_USE_INTRINSIC_GUESS |  # Estimates camera matrix without a guess given.
                                                                                         cv2.CALIB_FIX_PRINCIPAL_POINT |  # Assumes 0 lens shift
-                                                                                        cv2.CALIB_FIX_ASPECT_RATIO  # Assumees equal height/width aspect ratio
+                                                                                        cv2.CALIB_FIX_ASPECT_RATIO | # Assumes equal height/width aspect ratio
+                                                                                        cv2.CALIB_ZERO_TANGENT_DIST | # Assumes zero tangential distortion
+                                                                                        cv2.CALIB_FIX_K1 |  # Assumes 0 radial distortion for each K coefficient (6 in total)
+                                                                                        cv2.CALIB_FIX_K2 |
+                                                                                        cv2.CALIB_FIX_K3 |
+                                                                                        cv2.CALIB_FIX_K4 |
+                                                                                        cv2.CALIB_FIX_K5 |
+                                                                                        cv2.CALIB_FIX_K6
                                                                                   )
 
     # Change order of coordinates from cv2's camera-centered coordinates to Optitrack y-up coords.
-    coord_order = [0,2,1]
-    posVec, rotVec = posVec[0][coord_order], rotVec[0][coord_order]
-    assert posVec[1] > 0, "Projector height estimated to be below floor.  Please make sure projector is set to front-projection mode and try again."
-    rotVec = np.degrees(rotVec)  # TODO: Check what the rotation order is.
+    position = np.dot(cv2.Rodrigues(rotVec[0])[0], posVec[0])  # Invert the position by the rotation to be back in world coordinates
+    position *= -1 # Invert position to account for different principal point directions in real camera (which cv2 models) and OpenGL camera.
+    rotation = np.degrees(np.dot(cv2.Rodrigues(rotVec[0])[0], rotVec[0]))
     print("cameraMatrix is: {}".format(cameraMatrix))
+
     # Return the position and rotation arrays for the camera.
-    return posVec.flatten(), rotVec.flatten()
+    return position.flatten(), rotation.flatten()
 
 if __name__ == '__main__':
 
@@ -228,23 +236,19 @@ if __name__ == '__main__':
     print('Estimated Projector Position:{}'.format(position))
     print('Estimated Projector Rotation:{}'.format(rotation))
 
-    # Estimate vector direction camera is pointing when rotated from -Z vector (default OpenGL direction)
-    rot_vec, rot_fun = np.array([[0,0,-1]]).T, gg._transformations.rotation_matrix
-    rot_vec = np.dot(rot_fun(np.radians(rotation[2]), [0, 0, 1])[:3,:3], rot_vec)
-    rot_vec = np.dot(rot_fun(np.radians(rotation[1]), [0, 1, 0])[:3,:3], rot_vec)
-    rot_vec = np.dot(rot_fun(np.radians(rotation[0]), [1, 0, 0])[:3,:3], rot_vec)
+    # Check position
+    #assert position[1] > 0., "Projector height estimated to be below floor.  Please make sure projector is set to front-projection mode and try again."
 
     # Check that vector direction is generally correct, and give a tip if not to change ceiling-mount mode on the projector.
-    cam_dir = rot_vec.flatten() / np.linalg.norm(rot_vec.flatten())
+    cam_dir = np.dot(cv2.Rodrigues(np.radians(rotation))[0], np.array([[0,0,-1]]).T).flatten()  # Rotate from -Z vector (default OpenGL camera direction)
     data_dir = np.mean(pointPos, axis=0) - position
     data_dir /= np.linalg.norm(data_dir)
-    if np.dot(cam_dir, data_dir) < .5:
+    if np.dot(cam_dir, data_dir) < .4:
         print("Warning: Estimated Projector Rotation not pointing in right direction.\n\t"
               "Please try to change the projector's 'ceiling mount mode' and try again.")
 
 
-    rot_vec = np.vstack((position, position+rot_vec.flatten()))
-
+    rot_vec = np.vstack((position, position+cam_dir))
     ax = plot_3d(pointPos, square_axis=True)
     plot_3d(rot_vec, ax=ax, color='r', line=True)
     plot_3d(np.array([position]), ax=ax, color='g', show=True)
