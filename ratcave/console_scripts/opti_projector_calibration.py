@@ -234,13 +234,7 @@ if __name__ == '__main__':
 
     # Collect data and save to app directory or get data from file
     if not args.load_filename and not args.debug_mode:
-        all_positions = []
-        for idx in range(4):
-            screenPos, pointPos, winSize = scan(n_points=100) # Collect data
-            position, rotation = calibrate(screenPos, pointPos)
-            all_positions.append(position)
-        all_positions = np.array(all_positions)
-        plot_3d(all_positions, show=True)
+        screenPos, pointPos, winSize = scan(n_points=250) # Collect data
         with open(os.path.join(ratcave.data_dir, 'projector_data_points.pickle'), "wb") as datafile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, datafile)  # Save data
     else:
