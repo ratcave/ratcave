@@ -26,7 +26,7 @@ def display(optitrack_ip="127.0.0.1"):
     # Create Scene and Window
     scene = Scene([arena, cube])
     scene.camera = projector
-    #scene.camera.rotation *= -1
+    scene.camera.position
 
     window = Window(scene, screen=1, fullscr=True)
 
@@ -37,7 +37,6 @@ def display(optitrack_ip="127.0.0.1"):
         arena.local.rotation = np.array(tracker.rigid_bodies['Arena'].rotation_pca_y[:])
 
         #cube.position = tracker.rigid_bodies['CalibWand'].position
-        scene.light.position = scene.camera.position
 
         # Re-Draw Everything
         window.draw()

@@ -155,6 +155,7 @@ def calibrate(img_points, obj_points):
 
 
     img_points, obj_points = img_points.astype('float32'), obj_points.astype('float32')
+    img_points[:,1] *= -1  # V-axis is downward in image coordinates
     window_size = (1,1)  # Currently a false size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
 
     retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([obj_points],
@@ -174,7 +175,7 @@ def calibrate(img_points, obj_points):
 
     # Change order of coordinates from cv2's camera-centered coordinates to Optitrack y-up coords.
     position = np.dot(cv2.Rodrigues(rotVec[0])[0], posVec[0])  # Invert the position by the rotation to be back in world coordinates
-    position *= -1 # Invert position to account for different principal point directions in real camera (which cv2 models) and OpenGL camera.
+    #position *= -1 # Invert position to account for different principal point directions in real camera (which cv2 models) and OpenGL camera.
     rotation = np.degrees(np.dot(cv2.Rodrigues(rotVec[0])[0], rotVec[0]))
     print("cameraMatrix is: {}".format(cameraMatrix))
 
@@ -208,13 +209,22 @@ if __name__ == '__main__':
                         default=False,
                         help='If this flag is present, calibration results will be displayed, but not saved.')
 
+    parser.add_argument('-d',
+                        action='store_true',
+                        dest='debug_mode',
+                        default=False,
+                        help='If this flag is present, no scanning will occur, but the last collected data will be used for calibration.')
+
     args = parser.parse_args()
 
-    # Collect data or get data from file
-    if not args.load_filename:
-        screenPos, pointPos, winSize = scan()
+    # Collect data and save to app directory or get data from file
+    if not args.load_filename and not args.debug_mode:
+        screenPos, pointPos, winSize = scan() # Collect data
+        with open(os.path.join(ratcave.data_dir, 'projector_data_points.pickle'), "wb") as datafile:
+            pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, datafile)  # Save data
     else:
-        with open(args.load_filename) as datafile:
+        filename = os.path.join(ratcave.data_dir, 'projector_data_points.pickle') if args.debug_mode else args.load_filename
+        with open(filename) as datafile:
             data = pickle.load(datafile)
             assert isinstance(data, dict), "loaded datafile should contain a single dict!"
             assert 'imgPoints' in data.keys() and 'objPoints' in data.keys(), "loaded datafile's dict has wrong keys."
@@ -231,30 +241,26 @@ if __name__ == '__main__':
     pointPos, screenPos = pointPos[reflect_mask, :], screenPos[reflect_mask, :]
 
     # Calibrate projector data
-    print('Estimating Extrinsic Camera Parameters...')
     position, rotation = calibrate(screenPos, pointPos)
-    print('Estimated Projector Position:{}'.format(position))
-    print('Estimated Projector Rotation:{}'.format(rotation))
+    print('Estimated Projector Position:{}\nEstimated Projector Rotation:{}'.format(position, rotation))
 
-    # Check position
-    #assert position[1] > 0., "Projector height estimated to be below floor.  Please make sure projector is set to front-projection mode and try again."
-
-    # Check that vector direction is generally correct, and give a tip if not to change ceiling-mount mode on the projector.
+    # Check that vector position and direction is generally correct, and give tips if not.
     cam_dir = np.dot(cv2.Rodrigues(np.radians(rotation))[0], np.array([[0,0,-1]]).T).flatten()  # Rotate from -Z vector (default OpenGL camera direction)
     data_dir = np.mean(pointPos, axis=0) - position
     data_dir /= np.linalg.norm(data_dir)
-    if np.dot(cam_dir, data_dir) < .4:
-        print("Warning: Estimated Projector Rotation not pointing in right direction.\n\t"
-              "Please try to change the projector's 'ceiling mount mode' and try again.")
+    if np.dot(cam_dir, data_dir) < .4 or position[1] < 0.:
+        print("Warning: Estimated Projector Position and/or Rotation not pointing in right direction.\n\t"
+              "Please try to change the projector's 'ceiling mount mode' to off and try again.\n"
+              "ex) Propixx VPutil Command: cmm off\n"
+              "Also, could be the projection front/rear mode.  Normally should be set to front projection, but if\n "
+              "reflecting off of a mirror, should be set to rear projection.\n"
+              "ex) Propixx VPutil Command: pm r")
 
-
+    # Plot Estimated camera position and rotation.
     rot_vec = np.vstack((position, position+cam_dir))
     ax = plot_3d(pointPos, square_axis=True)
     plot_3d(rot_vec, ax=ax, color='r', line=True)
     plot_3d(np.array([position]), ax=ax, color='g', show=True)
-
-
-
 
     # Save Results to application data.
     if not args.test_mode:
@@ -263,7 +269,4 @@ if __name__ == '__main__':
         projector_data = {'position': position, 'rotation': rotation, 'fov_y': 41.2 / 1.47}
         with open(os.path.join(ratcave.data_dir, 'projector_data.pickle'), "wb") as datafile:
             pickle.dump(projector_data, datafile)
-
-    print('Calibration Complete!')
-
 
