@@ -10,6 +10,8 @@ import copy
 from os import path
 import numpy as np
 
+np.set_printoptions(precision=2, suppress=True)
+
 def display(optitrack_ip="127.0.0.1"):
 
     # Connect to Optitrack
@@ -17,7 +19,7 @@ def display(optitrack_ip="127.0.0.1"):
 
     # Create Arena and cube
     reader = WavefrontReader(ratcave.graphics.resources.obj_arena)
-    arena = reader.get_mesh('Arena', lighting=True, centered=True)
+    arena = reader.get_mesh('Arena', lighting=True, centered=False)
     arena.load_texture(ratcave.graphics.resources.img_colorgrid)
 
     reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
@@ -26,7 +28,7 @@ def display(optitrack_ip="127.0.0.1"):
     # Create Scene and Window
     scene = Scene([arena, cube])
     scene.camera = projector
-    scene.camera.position
+    scene.light.position = scene.camera.position
 
     window = Window(scene, screen=1, fullscr=True)
 
@@ -35,14 +37,15 @@ def display(optitrack_ip="127.0.0.1"):
         # Update Everything's Position
         arena.local.position = tracker.rigid_bodies['Arena'].position
         arena.local.rotation = np.array(tracker.rigid_bodies['Arena'].rotation_pca_y[:])
+        #arena.local.rotation[1] *= -1
 
-        #cube.position = tracker.rigid_bodies['CalibWand'].position
+        cube.local.position = tracker.rigid_bodies['CalibWand'].position
 
         # Re-Draw Everything
         window.draw()
         window.flip()
 
-        # Check if keyboard pressed, and update camera parameters according to key pressed.
+        # Check if keyboard pfffffffffffffffffressed, and update camera parameters according to key pressed.
         keylist = event.getKeys()
         if len(keylist) > 0:
             if 'up' in keylist:

@@ -345,7 +345,7 @@ def meshify(points, n_surfaces=None):
     # Fit the filtered normal data using a gaussian classifier.
     min_clusters = n_surfaces if n_surfaces else 4
     max_clusters = n_surfaces+1 if n_surfaces else 15
-    model = cluster_normals(normals_ff, min_clusters=4, max_clusters=15)
+    model = cluster_normals(normals_ff, min_clusters=min_clusters, max_clusters=max_clusters)
 
     # Get normals from model means
     surface_normals = model.means_  # n_components x 3 normals array, giving mean normal for each surface.
@@ -370,11 +370,11 @@ if __name__ == '__main__':
 
     # Get command line inputs
     parser = argparse.ArgumentParser(description="This is the RatCAVE arena scanner script.  It projects a dot pattern and collects the positions of the dots.")
-    parser.add_argument('-f',
+    parser.add_argument('-o',
                         action='store',
-                        dest='filename',
-                        default=path.join(ratcave.data_dir, 'arena.obj'),
-                        help='Wavefront .obj File to save Arena to.')
+                        dest='save_filename',
+                        default='',
+                        help='Additional Filename to save Arena Wavefront .obj data to.')
     parser.add_argument('-n',
                         action='store',
                         dest='n_sides',
@@ -390,6 +390,7 @@ if __name__ == '__main__':
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
     points -= np.mean(markers, axis=0)
     rot_angle = rotate_to_var(markers)
+    print("Rotation Angle: {}".format(rot_angle))
     points = np.dot(points,  y_rotation_matrix(rot_angle))
 
     # Get vertex positions and normal directions from the collected data.
@@ -398,11 +399,16 @@ if __name__ == '__main__':
 
     ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
     wave_str = data_to_wavefront('Arena', vertices, normals)
-    with open(args.filename, 'wb') as wavfile:
+    # Write to app data directory
+    with open(path.join(ratcave.data_dir, 'arena.obj'), 'wb') as wavfile:
         wavfile.write(wave_str)
+    # If specified, optionally also save .obj file to another directory.
+    if args.save_filename:
+        with open(args.save_filename, 'wb') as wavfile:
+            wavfile.write(wave_str)
 
     # Show resulting plot with points and model in same place.
-    ax = plot_3d(points[::15, :], square_axis=True)
+    ax = plot_3d(points[::8, :], square_axis=True)
     for idx, verts in vertices.items():
         vert_loop = np.vstack((verts, verts[0,:]))  # so the line reconnects with the first point to show a complete outline
         show = True if idx == len(vertices)-1 else False
