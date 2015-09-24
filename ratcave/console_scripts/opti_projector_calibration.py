@@ -255,6 +255,14 @@ if __name__ == '__main__':
     reflect_mask = np.where(pointPos[:, 1] > 0.)[0]
     pointPos, screenPos = pointPos[reflect_mask, :], screenPos[reflect_mask, :]
 
+    # Check for correlation between data--if it's very low, then it's an indication that the data is just noise.
+    """
+    maxcorr = np.max([(np.abs(np.corrcoef(pointPos[:,0], screenPos[:,el]))) for el in range(3)])
+    print("Max Correlation between image data and tracked data: r={}".format(maxcorr))
+    if maxcorr < .4:
+        print("Warning, low correlation between image data and tracker data.  \nPossible issue is the presence of rigid bodies--please delete any rigid bodies that aren't in the trackable area during calibration.")
+    """
+
     # Calibrate projector data
     position, rotation = calibrate(screenPos, pointPos)
     print('Estimated Projector Position:{}\nEstimated Projector Rotation:{}'.format(position, rotation))
