@@ -1,9 +1,6 @@
-ratcave.devices package
-=======================
+ratcave.devices
+===============
 
-
-Module contents
----------------
 
 .. automodule:: ratcave.devices
     :members:
