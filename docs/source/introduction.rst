@@ -1,3 +1,10 @@
+
+.. image:: ../images/ratcave_example.png
+    :align: center
+    :width: 220px
+    :height: 220px
+
+
 Introduction
 ============
 
@@ -6,5 +13,4 @@ ratCAVE was created to be an API for doing behavioral experiments with animals i
 What we've found is that ratCAVE makes for a succinct 3D graphics engine, even for simple tasks, and so development effort is put into overall performance for projects even beyond the VR projects in our lab.
 
 While Python is not typically the language thought of when looking for high-performance graphics, the maturity of modern OpenGL means that very little of the graphics rendering needs to be done in Python at all.  While we are still at an early stage of development with ratCAVE, we've already reached the requirements listed above, with a goal of continually refactoring and adding features to make ratCAVE the mature backend it has the potential to be.  If you are interested in aiding the development of ratCAVE, either through contributions on GitHub, bug reporting, or even simply testing it out yourself and giving us feedback, we hope you'll get involved and help us develop this little project into something wonderful!
-
 
