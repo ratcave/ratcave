@@ -34,9 +34,9 @@ class Physical(object):
         """XYZ Position, Scale and XYZEuler Rotation Class.
 
         Args:
-            position (tuple): (x, y, z) translation values.
-            rotation (tuple): (x, y, z) rotation values
-            scale (float): uniform scale factor. 1. = no scaling.
+            position (NumPy Array): (x, y, z) translation values.
+            rotation (NNumPy Array): (x, y, z) rotation values
+            scale (float): uniform scale factor. 1 = no scaling.
         """
         self.__position = np.array(position)
         self.rotation = np.array(rotation)

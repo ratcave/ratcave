@@ -1,5 +1,7 @@
 __author__ = 'ratcave'
 
+"""The grapihcs module."""
+
 # First import pyglet and turn off the debug_gl option.  This is great for performance!
 import pyglet
 pyglet.options['debug_gl'] = False
@@ -8,7 +10,7 @@ from .core import utils
 import resources
 from .core import utils
 from .core.camera import Camera
-from .core.mesh import Mesh
+from .core.mesh import Mesh, MeshData, Material
 from .core.scene import Scene
 from .core.window import Window
 from .core.wavefront import WavefrontReader
@@ -37,5 +39,5 @@ projector = __build_projector()
 
 
 
-__all__ = ['Camera', 'Mesh', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'projector']
+__all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'projector']
 

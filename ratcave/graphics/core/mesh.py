@@ -98,6 +98,9 @@ class Mesh(object):
             rotation (tuple): the local (x,y,z) rotation of the Mesh, in degrees (default 0,0,0)
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
 
+        Attributes:
+            local (:py:class:`.Physical`): The local position and rotation of the Mesh.  This shift is done first, so should be used for general positioning.  If *centered* is set to False, the local position will be set as the mean vertex coordinates from :py:class:`.MeshData`, so Mesh will appear in the same location as the Mesh's original position in its file.
+            world (:py:class:`.Physical`): The world position and rotation of the Mesh.  World position is used for moving an object about another point, so that multiple objects can be moved at once and retain their inter-object distances and orientations.  By default, set to the origin.
         Returns:
             Mesh instance
         """
@@ -110,7 +113,7 @@ class Mesh(object):
         vertex_mean = np.mean(self.data.vertices, axis=0)
         self.data.vertices -= vertex_mean
         world_position = (0., 0., 0.) if centered else tuple(vertex_mean)
-        #: World Mesh coordinates (Physical type)
+        #: :py:class:`.Physical`, World Mesh coordinates
         self.world = mixins.Physical(position=world_position)
         #: Local Mesh coordinates (Physical type)
         self.local = mixins.Physical(position=position, rotation=rotation, scale=scale)
@@ -132,7 +135,6 @@ class Mesh(object):
 
 
     def __repr__(self):
-        """Called when print() or str() commands are used on object."""
         return "Mesh: {0}".format(self.data.name)
 
     def load_texture(self, file_name):
@@ -174,7 +176,9 @@ class Mesh(object):
         gl.glBindVertexArray(0)
 
         self.__loaded = True
+    
     def manually_set_mats(self):
+        """Resets the model and normal matrices used internally for positioning and shading."""
         self._modelmat_preset = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
         self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
 

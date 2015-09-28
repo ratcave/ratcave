@@ -171,13 +171,19 @@ class Optitrack(object):
 
     def __init__(self, client_ip=CLIENT_ADDRESS, data_port=PORT_DATA, comm_port=PORT_COMMAND, read_rate=400):
         """
-        The Optitrack NatNet Interface.
+        The Optitrack NatNet Interface.  When initialized, starts a background thread that automatically updates data.
+
+        The Optitrack object is the main object for acquiring 3D marker data from the Motive NatNet Streaming.  It uses their depaketezation example to parse the data packet, and it does so in a background thread.  :py:class:`.NatDataSocket` and :py:class:`.NatCommSocket` are automatically created and wrapped by the Optitrack object, and several other convenence functions have been added.
 
         Args:
-            client_ip (str): The Motive server ip address
+            client_ip (str): The Motive server ip address.  If running on the same PC as Motive, both IP settings should be set to 'Local Loopback', which is '127.0.0.1'.  
+            data_port (int): The NatNet Data Socket port number.  Should match the settings in the Streaming pane in Motive.
+            comm_port (int): The NatNet Command Socket port number.  Should match the settings in the Streaming pane in Motive.
+            read_rate (int): How often the thread should loop, in frames per second.  Should be set faster than the camera framerate, or the data acquired will be laggy as the buffer fills.
         """
 
         # Initialize data structures
+        #: A list of Markers that are unassociated with a RigidBody.
         self.unidentified_markers = []
         self.labeled_markers = dict()
         #self.labeled_markers = dict()  # Removed because of non-uniqueness of id and duplication of data. Now, labeled marker data goes into rigid body markers.
@@ -254,29 +260,43 @@ class Optitrack(object):
         self.comm_sock.send(2, "SetRecordTakeName," + file_name)
 
     def start_recording(self, n_attempts=3):
-        """Sends the 'StartRecording' command over the NatNet Command Port to Motive."""
+        """
+        Sends the 'StartRecording' command over the NatNet Command Port to Motive.
+
+        Args:
+            n_attempts (int): How many times to attempt before raising a RunTimeError
+        """
 
         # Make sure that a recording hasn't already begun, by checking data on Data Port.
         self.get_data()
-        if self.is_recording == True:
-            raise NatBaseError("Cannot Start New Recording, as recording is already in progress.")
+        if self.is_recording:
+            raise RuntimeError("Cannot Start New Recording, as recording is already in progress.")
 
         # Send "StartRecording" command to NatNet via a NATREQUEST command
         for attempt in range(n_attempts):
-            self.comm_sock.send(2, "StartRecording")  # Using comm_sock.get_data sometimes gets annoying non-blocking error.
-
+            # Using comm_sock.get_data() sometimes gets annoying non-blocking error.
+            self.comm_sock.send(2, "StartRecording")
+                
             # Check if successful, by getting new data packet.
             self.get_data()
             if self.is_recording:
-                print("Recording Started Successfully")
-                return
-            else:
-                print("Recording failed on attempt number {0}.  Trying again...".format(attempt))
-
-        raise NatBaseError("Recording Not Started Successfully, for unknown reasons.")
+                break
+        else:    
+            raise RuntimeError("Recording failed after {0} attempts.".format(attempt))
 
     def stop_recording(self, n_attempts=3):
+        """
+        Sends the 'StopRecording' command over the NatNet Command Port to Motive. 
 
+        .. warning:: This method isn't working at the moment, for reasons not yet uncovered.  Still, will raise an error if unsuccessful, so this method is safe to test on your system.
+
+        Args:
+            n_attempts (int): Number of times to attempt before raising a RunTimeError.
+
+        Raises:
+            RuntimeError: If recording is already stopped when called, or if fails to stop after being called.
+
+        """
         self.get_data()
         if self.is_recording == False:
             raise NatBaseError("Cannot Stop Recording, as no recording is currently happening!")

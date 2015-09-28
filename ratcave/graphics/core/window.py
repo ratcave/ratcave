@@ -14,21 +14,21 @@ from . import utils
 shader_path = join(split(__file__)[0], 'shaders')
 
 
-class Window(visual.Window):
-    """Subclass of Pyglet window, with some defaults set to simplify ratCAVE script creation."""
-
     # General, Normal Shader
-    genShader = Shader(open(join(shader_path, 'combShader.vert')).read(),
-                       open(join(shader_path, 'combShader.frag')).read())
+genShader = Shader(open(join(shader_path, 'combShader.vert')).read(),
+                   open(join(shader_path, 'combShader.frag')).read())
 
-    shadowShader = Shader(open(join(shader_path, 'shadowShader.vert')).read(),
-                          open(join(shader_path, 'shadowShader.frag')).read())
+shadowShader = Shader(open(join(shader_path, 'shadowShader.vert')).read(),
+                      open(join(shader_path, 'shadowShader.frag')).read())
 
-    aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
-                      open(join(shader_path, 'antialiasShader.frag')).read())
+aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
+                  open(join(shader_path, 'antialiasShader.frag')).read())
+
+class Window(visual.Window):
 
     def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=2048, autoCam=False, *args, **kwargs):
-
+        """Subclass of Pyglet window, with some defaults set to simplify ratCAVE script creation."""
+    
         # Set default Window values for making sure Psychopy windows work with it.
         kwargs['allowStencil'] = False
         super(Window, self).__init__(*args, **kwargs)
@@ -78,11 +78,11 @@ class Window(visual.Window):
         fbo = self.fbos['shadow'] if scene == self.active_scene else self.fbos['vrshadow']
         with utils.render_to_fbo(self, fbo):
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-            Window.shadowShader.bind()
-            Window.shadowShader.uniform_matrixf('view_matrix', scene.light.view_matrix.T.ravel())
-            Window.shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
-            [mesh.render(Window.shadowShader) for mesh in scene.meshes if mesh.visible]
-            Window.shadowShader.unbind()
+            shadowShader.bind()
+            shadowShader.uniform_matrixf('view_matrix', scene.light.view_matrix.T.ravel())
+            shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
+            [mesh.render(shadowShader) for mesh in scene.meshes if mesh.visible]
+            shadowShader.unbind()
 
 
     def render_to_cubemap(self, scene):
@@ -96,25 +96,25 @@ class Window(visual.Window):
                 gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
                                              gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                                              self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
-                self._draw(scene, Window.genShader, send_light_and_camera_intrinsics=(face==0))  # Render
+                self._draw(scene, genShader, send_light_and_camera_intrinsics=(face==0))  # Render
 
     def render_to_antialias(self, scene):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
         # First Render the scene to the antialias texture
         with utils.render_to_fbo(self, self.fbos['antialias']):
-            self._draw(scene, Window.genShader)
+            self._draw(scene, genShader)
 
         #Then, Render the antialias texture to the screen on a fullscreen quad mesh.
         gl.glClearColor(.5, .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        Window.aaShader.bind()
-        Window.aaShader.uniformf('frameBufSize', *self.size)
-        Window.aaShader.uniformi('image_texture', 0)
-        Window.aaShader.uniformi('grayscale', int(self.grayscale))
+        aaShader.bind()
+        aaShader.uniformf('frameBufSize', *self.size)
+        aaShader.uniformi('image_texture', 0)
+        aaShader.uniformi('grayscale', int(self.grayscale))
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.fbos['antialias'].texture)
 
-        self.fullscreen_quad.render(Window.aaShader)
-        Window.aaShader.unbind()
+        self.fullscreen_quad.render(aaShader)
+        aaShader.unbind()
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
 
@@ -152,7 +152,7 @@ class Window(visual.Window):
             self.render_shadow(self.active_scene)
 
         self.render_to_antialias(self.active_scene)
-        #self._draw(self.active_scene, Window.genShader)
+        #self._draw(self.active_scene, genShader)
 
 
     def _draw(self, scene, shader, send_light_and_camera_intrinsics=True):
