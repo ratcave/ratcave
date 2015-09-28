@@ -125,7 +125,7 @@ Now, we'll animate the Meshes by changing their position and rotation attributes
 
   theta = 0
   while True:
-      keys_pressed = events.getKeys()
+      keys_pressed = events.getKeys()  # getKeys() will empty list each time it returns, so save it to reference it multiple times.
       if 'escape' in keys_pressed:
           window.close()
           break
@@ -141,6 +141,14 @@ Now, we'll animate the Meshes by changing their position and rotation attributes
       window.flip()
 
  
+Modifying Scene's Background Color
+----------------------------------
+
+Scenes also have a background color, saved as an RGB array in the Scene.bgColor attribute::
+
+  scene1.bgColor = 1, 0, 0
+  scene2.bgColor = 0, 1, 1
+      
 Changing the Active Scene
 -------------------------
 
@@ -155,4 +163,57 @@ Let's also modify which object is being moved based on the Meshes listed in Scen
 
   window.active_scene.meshes[0].local.position = math.sin(aa), 0, -2
   window.active_scene.meshes[1].local.rotation = (aa  * 3), 0, 0
+
+
+Summary
+-------
+
+Here's the full code from Tutorial 2::
+
+  from ratcave import graphics
+  from psychopy import events
+  import math
+
+  # Insert filename into WavefrontReader.
+  obj_filename = graphics.resources.obj_primitives
+  obj_reader = graphics.WavefrontReader(obj_filename)
+  
+  # Create Meshes from WavefrontReader
+  monkey = obj_reader.get_mesh("Monkey", centered=True, position=(0, 0, -1.5))
+  cube = obj_reader.get_mesh("Cube", centered=True, position=(1, 0, -1.5), scale=.2)
+  torus = obj_reader.get_mesh("Torus", centered=True, position=(-1, 0, -1.5), scale=.2)
+  wire_monkey = obj_reader.get_mesh("Monkey", centered=True, drawstyle='lines', position=(0, 0, -2)
+
+  # Create Scenes with Meshes.  
+  scene1 = graphics.Scene([monkey, cube])
+  scene2 = graphics.Scene([wire_monkey, torus])
+  window = graphics.Window(Scene)
+
+  # Main Loop
+  theta = 0
+  while True:
+
+      keys_pressed = events.getKeys()  # getKeys() will empty list each time it returns, so save it to reference it multiple times.
+
+      # End program and close window if escape key is pressed.
+      if 'escape' in keys_pressed:
+          window.close()
+          break
+
+      #  Switch active scene if left or right arrow keys are pressed.
+      if 'left' in keys_pressed:
+          window.active_scene = scene1
+      elif 'right' in keys_pressed:
+          window.active_scene = scene2
+      
+      
+      # Animate
+      aa += .05
+      window.active_scene.meshes[0].local.position = math.sin(aa), 0, -2
+      window.active_scene.meshes[1].local.rotation = (aa  * 3), 0, 0
+
+      # Draw
+      window.draw()
+      window.flip()
+
 
