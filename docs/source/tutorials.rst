@@ -7,10 +7,10 @@ Example 1: Displaying a 3D Object
 +++++++++++++++++++++++++++++++++
 
 This tutorial will show the process of displaying a 3D object onscreen. This will be done in four steps:
-  - We'll open a file containing 3D objects--a Wavefront .obj file containing basic 3D primitives that comes with ratCAVE (although you can use any .obj file outputted by 3D modeling software), 
-  - We then retrieve a Mesh object from the file. Mesh objects contain all information about the object, including its position (inside its Local and World attributes), color (inside its Material attribute), and even the vertex data itself (inside its Data attribute).
-  - We'll put the Mesh inside a Scene object, which is a container class that holds all meshes visible at one time, a Camera object, and a Light source object. Multiple Scenes can be created, even ones that contain the same Meshes, and rendering one vs another one is as simple as changing which Scene is the active one inside the Window.
-  - Finally, we'll put the Scene inside a Window object, and render it by calling its draw() and flip() methods.
+  - We'll open a file containing 3D objects--a Wavefront .obj file containing basic 3D primitives that comes with ratCAVE (although you can use any .obj file outputted by 3D modeling software), using the :py:class:`ratcave.graphics.WavefrontReader` class.
+  - We then retrieve a :py:class:`ratcave.graphics.Mesh` object from the file. Mesh objects contain all information about the object, including its position (inside its Local and World attributes, which are :py:class:`ratcave.graphics.mixins.Physical` objects), color (inside its Material attribute, which are of the :py:class:`ratcave.graphics.Material` class), and even the vertex data itself (inside its Data attribute, which is a :py:class:`ratcave.graphics.MeshData` object).
+  - We'll put the Mesh inside a :py:class:`ratcave.graphics.Scene` object, which is a container class that holds :py:class:`ratcave.graphics.Mesh` objects, a :py:class:`ratcave.graphics.Camera` object, and a :py:class:`ratcave.graphics.Light` object, along with an RGB background color. Multiple Scenes can be created, even ones that contain the same Meshes, and rendering one vs another one is as simple as changing which Scene is the active one inside the :py:class:`ratcave.graphics.Window`.
+  - Finally, we'll put the Scene inside a :py:class:`ratcave.graphics.Window` object, and render it by calling its :py:meth:`ratcave.graphics.Window.draw` and :py:meth:`ratcave.graphics.Window.flip`  methods.
 
 
 
