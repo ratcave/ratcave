@@ -20,13 +20,6 @@ Table of Contents:
    tutorials
    ratcave
 
-
-
-
-Indices and tables
-++++++++++++++++++
-
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 
