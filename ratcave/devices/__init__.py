@@ -1,6 +1,6 @@
 """This is the devices package __init__.py docstring.
 
-.. todo:: Fix the sphinx autodocs (or the way imports are handled), so the devices are properly documented.
+.. todo:: Fix the sphinx autodocs (or the way imports are handled), so the devices are properly documented, okay?
 """
 
 __author__ = 'ratcave'
@@ -18,3 +18,5 @@ try:
 except ImportError:
     print("Warning: USB_TTL device not imported.")
 
+
+__all__ = ['Optitrack', 'NatDataSocket', 'NatCommSocket', 'USB_TTL', 'propixx_utils']
