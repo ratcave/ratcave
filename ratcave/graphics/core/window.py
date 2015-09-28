@@ -25,9 +25,24 @@ aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                   open(join(shader_path, 'antialiasShader.frag')).read())
 
 class Window(visual.Window):
-
+    
     def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=2048, autoCam=False, *args, **kwargs):
-        """Subclass of Pyglet window, with some defaults set to simplify ratCAVE script creation."""
+        """
+        The Window that everything gets drawn in.  
+
+        Args:
+            active_scene (:py:class:`.Scene`): The scene that is rendered onto the Window.
+            virtual_scene (:py:class:`.Scene`): Used for VR, the scene that gets rendered onto :py:class:`.Mesh` objects that have :py:attr:`.Mesh.cubemap` set to True (usually the 3d-modeled arena).
+            grayscale (bool): Whether to render in grayscale or not--has some slight performance advantages, with more being planned in the future.
+            shadow_rendering (bool): Whether to render shadows from the Scenes' :py:class:`.Light` position.
+            shadow_fov_y (float): How wide an area to render shadows--too small and their may be weird squares projected, but larger numbers result in lower quality shadows.
+            texture_size (int): How big the shadow and cube textures should be on a side.  For performance reasons, should be set to a value that is a power of two.
+            autoCam (bool):
+            fullscr (bool): Defaults to False, allows a full screen to be used.
+            screen (int): Which number screen to place the window on.
+            size (tuple): Size of the window in pixels (X, Y). Defaults to (800, 600)
+            pos (None or (x,y)): 
+        """
     
         # Set default Window values for making sure Psychopy windows work with it.
         kwargs['allowStencil'] = False
@@ -224,3 +239,7 @@ class Window(visual.Window):
     def flip(self, *args, **kwargs):
         """Sends the framebuffer contents to the display.  Call each frame after the draw method!"""
         super(Window, self).flip(*args, **kwargs)
+
+    def close():
+        """Closes the window."""
+        super(Window, self).close()
