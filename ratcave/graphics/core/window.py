@@ -220,3 +220,7 @@ class Window(visual.Window):
 
         # Unbind Shader
         shader.unbind()
+
+    def flip(self, *args, **kwargs):
+        """Sends the framebuffer contents to the display.  Call each frame after the draw method!"""
+        super(Window, self).flip(*args, **kwargs)
