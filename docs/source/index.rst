@@ -21,5 +21,4 @@ Table of Contents:
    ratcave
 
 * :ref:`genindex`
-* :ref:`search`
 
