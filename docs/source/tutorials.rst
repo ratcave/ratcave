@@ -95,7 +95,7 @@ That's it!  Here's the final script, in one place.  This script wll be modified 
 Tutorial 2: Animating a Scene with Multiple Meshes, and using Multiple Scenes
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This tutorial will build on the previous one by adding some more interesting elements.  We'll allow the user to switch between two different scenes by pressing a key, and have multiple meshes in each scenethat move.
+This tutorial will build on the previous one by adding some more interesting elements.  We'll allow the user to switch between two different :py:class:`.Scene` objects by pressing a key, and have multiple meshes in each scene that move.
 
 Scenes Hold Lists of Meshes
 ---------------------------
