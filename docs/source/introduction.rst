@@ -1,14 +1,8 @@
 
-.. image:: ../images/ratcave_example.png
-    :align: center
-    :width: 220px
-    :height: 220px
-
-
 Introduction
 ============
 
-ratCAVE was created to be an API for doing behavioral experiments with animals in a freely-moving virtual reality environment.  While there are many game engines on the market that could support this application, they tended to be very elaborate pieces of software that were really meant for the video game market, and features like *high-tempporal performance* (our goal was <3 msecs movement-to-photon lag), *Cubemapping Support* (most game engines required users to dig in pretty deep into a large API toreach this level), and *ease of use* (most game engines were written in low-level programming languages and steep learning curves) weren't easily reachable, and *open-source*.  Pyglet and Psychopy, on the other hand, had these features in the bag, but they didn't explicitly support 3D graphics, so the approach we decided on in the end was to build on that platform.  
+ratCAVE was created to be an API for doing behavioral experiments with animals in a freely-moving virtual reality environment.  While there are many game engines on the market that could support this application, they tended to be very elaborate pieces of software that were really meant for the video game market, and features like *high-temporal performance* (our goal was <3 msecs movement-to-photon lag), *Cubemapping Support* (most game engines required users to dig in pretty deep into a large API toreach this level), and *ease of use* (most game engines were written in low-level programming languages and steep learning curves) weren't easily reachable, and *open-source*.  Pyglet and Psychopy, on the other hand, had these features in the bag, but they didn't explicitly support 3D graphics, so the approach we decided on in the end was to build on that platform.  
 
 What we've found is that ratCAVE makes for a succinct 3D graphics engine, even for simple tasks, and so development effort is put into overall performance for projects even beyond the VR projects in our lab.
 
