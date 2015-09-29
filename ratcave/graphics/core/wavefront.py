@@ -86,8 +86,7 @@ class WavefrontReader(object):
             :py:class:`.Scene`
         """
         names = include if include else self.mesh_names
-        names = [name for name in include if not in exclude]
-        meshes = [self.get_mesh(name) for name in self.mesh_names]
+        meshes = [self.get_mesh(name) for name in names if name not in exclude]
         return Scene(meshes)
 
     def _build_mesh(self, props, name):
