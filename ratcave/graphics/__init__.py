@@ -39,5 +39,5 @@ projector = __build_projector()
 
 
 
-__all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'projector']
+__all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'projector', 'resources']
 

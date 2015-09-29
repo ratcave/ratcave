@@ -3,7 +3,7 @@ import copy
 import numpy as np
 
 from ratcave.graphics.core.mesh import MeshData, Mesh, Material
-
+from ratcave.graphics.core.scene import Scene
 
 class WavefrontReader(object):
 
@@ -74,7 +74,21 @@ class WavefrontReader(object):
 
                     props['f'] = []
 
+    def get_scene(self, include=[], exclude=[]):
+        """
+        Return a Scene object containing the Meshes in the file.
 
+        Args:
+            include (list): mesh names to only include. 
+            exclude (list): mesh names to exclude.
+
+        Returns:
+            :py:class:`.Scene`
+        """
+        names = include if include else self.mesh_names
+        names = [name for name in include if not in exclude]
+        meshes = [self.get_mesh(name) for name in self.mesh_names]
+        return Scene(meshes)
 
     def _build_mesh(self, props, name):
 

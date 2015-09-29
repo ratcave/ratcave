@@ -6,7 +6,7 @@ from . import mixins
 class Camera(mixins.Physical):
     """A convenient object for controlling the scene viewing angle."""
 
-    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), fov_y=60., aspect=16. / 9., z_near=.01, z_far=4.5,
+    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), fov_y=60., aspect=1.778, z_near=.01, z_far=4.5,
                  x_shift=0., y_shift=0., ortho_mode=False):
         """
         My camera class.

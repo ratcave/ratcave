@@ -1,5 +1,5 @@
 Tutorial 1: Displaying a 3D Object
-+++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++
 
 This tutorial will show the process of displaying a 3D object onscreen. This will be done in four steps:
   - We'll open a file containing 3D objects--a Wavefront .obj file containing basic 3D primitives that comes with ratCAVE (although you can use any .obj file outputted by 3D modeling software), using the :py:class:`.WavefrontReader` class.
@@ -12,7 +12,8 @@ This tutorial will show the process of displaying a 3D object onscreen. This wil
 Reading a Wavefront .obj file
 -----------------------------
 
-Wavefront files can be exported from Blender, and they usually come in pairs-- a .obj file contianing the spatial vertex data for each mesh, and a .mtl file containing the coloring data for each mesh.  In ratCAVE, .obj files are summarized in the :py:class:`.MeshData` class and .mtl files are summarized in the :py:class:`.Material` class.  :py:class:`Mesh` classes wrap both of these, plus containing a bit of extra functionality for dealing with these meshes as a whole (like moving the whole thing around, rotating it, or giving it certain image textures, things like that.).  Custom :py:class:`.MeshData` and :py:class:`.Material` objects can be created, but often it is just easier to import them together in Wavefront files as :py:class:`.Mesh` objects.  This is the purpose of the :py:class:`.WavefrontReader` class.  We've included some files with primitive shapes with ratCAVE, whose paths you can find in the :py:module:`graphics.resources` module, to get you started::
+Wavefront files can be exported from Blender, and they usually come in pairs-- a .obj file contianing the spatial vertex data for each mesh, and a .mtl file containing the coloring data for each mesh.  In ratCAVE, .obj files are summarized in the :py:class:`.MeshData` class and .mtl files are summarized in the :py:class:`.Material` class.  :py:class:`Mesh` classes wrap both of these, plus containing a bit of extra functionality for dealing with these meshes as a whole (like moving the whole thing around, rotating it, or giving it certain image textures, things like that.).  Custom :py:class:`.MeshData` and :py:class:`.Material` objects can be created, but often it is just easier to import them together in Wavefront files as :py:class:`.Mesh` objects.  This is the purpose of the :py:class:`.WavefrontReader` class.  We've included some files with primitive shapes with ratCAVE, whose paths you can find under :py:attr:`.graphics.resources`, to get you started::
+
 
   from ratcave import graphics
 
