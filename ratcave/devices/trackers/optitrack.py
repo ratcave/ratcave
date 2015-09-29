@@ -101,14 +101,17 @@ class NatCommSocket(NatSocket):
         """
         Send an integer command to NatNet Server, usually as a request for some packet type on the command socket.
 
-        Values Available, along with value to expect in NatPacket.iMessage when receiving the response:
-            NAT_PING  					= 0,   NAT_PINGRESPONSE			= 1
-            NAT_REQUEST					= 2,   NAT_RESPONSE				= 3
-            NAT_REQUEST_MODELDEF		= 4,   NAT_MODELDEF				= 5
-            NAT_REQUEST_FRAMEOFDATA		= 6,   NAT_FRAMEOFDATA			= 7
-            NAT_MESSAGESTRING			= 8
-
-        If sending a NAT_REQUEST, must also send a message string along with it.
+        .. note:: Values Available, along with value to expect in NatPacket.iMessage when receiving the response:
+          - 0 = NAT_PING
+          - 1 = NAT_PINGRESPONSE
+          - 2 = NAT_REQUEST  (must also send a message string.)
+          3 = NAT_RESPONSE
+          4 = NAT_REQUEST_MODELDEF		
+          5 = NAT_MODELDEF
+          6 = NAT_REQUEST_FRAMEOFDATA
+          7 = NAT_FRAMEOFDATA
+          8 = NAT_MESSAGESTRIN
+        
         """
         message_len = len(message)
 
