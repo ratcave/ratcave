@@ -1,1 +1,1 @@
-sphinxcontrib-napoleons
+sphinxcontrib-napoleon
