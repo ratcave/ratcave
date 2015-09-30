@@ -24,6 +24,7 @@ setup(name='ratcave',
                'ratcave/console_scripts/opti_projector_rotation_calib.py',
                'ratcave/console_scripts/test_ratcave.py'
                 ],
-      ext_modules=[Extension('ratcave.graphics.core._transformations', sources=['ratcave/c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
+      #ext_modules=[Extension('ratcave.graphics.core._transformations', sources=['ratcave/c_sources/transformations.c'],
+      #                       include_dirs=[numpy.get_include()])]
       )
 
