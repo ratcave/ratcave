@@ -1,3 +1,2 @@
 sphinxcontrib-napoleon
-sphinx.ext.todo
 sphinx.ext.autodoc
