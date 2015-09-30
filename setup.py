@@ -1,7 +1,7 @@
 __author__ = 'ratcave'
 
 from setuptools import setup, find_packages, Extension
-import numpy
+#import numpy
 
 
 
