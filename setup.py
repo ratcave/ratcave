@@ -16,7 +16,8 @@ setup(name='ratcave',
                         ['graphics/core/shaders/*'+el for el in ['vert', 'frag']] +
                         ['arduino_programs/s*']
                     },
-      install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs', 'pandas', 'sklearn'],
+      install_requires=['pyglet', 'appdirs'],
+      #install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs', 'pandas', 'sklearn'],
       scripts=['ratcave/console_scripts/arena_scanner.py',
                'ratcave/console_scripts/newexp.py',
                'ratcave/console_scripts/opti_projector_calibration.py',
