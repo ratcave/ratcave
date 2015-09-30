@@ -72,9 +72,9 @@ class Material(object):
         return "Material: self.name. Diffuse: {0}".format(self.diffuse.rgba)
 
 
+drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS
+        }
 class Mesh(object):
-
-    drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
 
     def __init__(self, mesh_data, material=None, scale=1.0, centered=False, lighting=True,
                  drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
@@ -131,7 +131,7 @@ class Mesh(object):
         self.visible = visible
         self.__loaded = False  # If mesh data is loaded into OpenGL yet.
         self._normalmat_preset, self._modelmat_preset = None, None
-        self.manually_set_mats()
+        self._manually_set_mats()
 
 
     def __repr__(self):
@@ -177,7 +177,7 @@ class Mesh(object):
 
         self.__loaded = True
     
-    def manually_set_mats(self):
+    def _manually_set_mats(self):
         """Resets the model and normal matrices used internally for positioning and shading."""
         self._modelmat_preset = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
         self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
@@ -201,7 +201,7 @@ class Mesh(object):
         gl.glBindVertexArray(self.vao)
 
 
-        gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
+        gl.glDrawArrays(drawstyle[self.drawstyle], 0, self.data.vertices.size)
 
         if self.drawstyle == 'point':
             gl.glDisable(gl.GL_POINT_SMOOTH)

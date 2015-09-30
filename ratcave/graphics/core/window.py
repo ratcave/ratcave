@@ -141,14 +141,14 @@ class Window(visual.Window):
         # Pre-set model and normal matrices to increase draw time performance
         self.active_scene.camera.preset_mats()
         for mesh in self.active_scene.meshes:
-            mesh.manually_set_mats()
+            mesh._manually_set_mats()
 
         if self.virtual_scene:
 
             # Pre-set model and normal matrices to increase draw time performance
             self.virtual_scene.camera.preset_mats()
             for mesh in self.virtual_scene.meshes:
-                mesh.manually_set_mats()
+                mesh._manually_set_mats()
 
             if self.autoCam:
                 # Put virtual scene's light in active scene's camera position before rendering.
