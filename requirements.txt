@@ -1,2 +1,2 @@
 sphinxcontrib-napoleon
-numpy
+python-numpy
