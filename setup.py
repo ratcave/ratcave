@@ -1,7 +1,7 @@
 __author__ = 'ratcave'
 
 from setuptools import setup, find_packages, Extension
-#import numpy
+import numpy
 
 
 
@@ -16,13 +16,13 @@ setup(name='ratcave',
                         ['graphics/core/shaders/*'+el for el in ['vert', 'frag']] +
                         ['arduino_programs/s*']
                     },
-      install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs', 'pandas', 'sklearn'],
+      install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs', 'sklearn'],
       scripts=['ratcave/console_scripts/arena_scanner.py',
                'ratcave/console_scripts/newexp.py',
                'ratcave/console_scripts/opti_projector_calibration.py',
                'ratcave/console_scripts/opti_projector_rotation_calib.py',
                'ratcave/console_scripts/test_ratcave.py'
                 ],
-      #ext_modules=[Extension('ratcave.graphics.core._transformations', sources=['ratcave/c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
+      ext_modules=[Extension('ratcave.graphics.core._transformations', sources=['ratcave/c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
       )
 
