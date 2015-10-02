@@ -29,7 +29,7 @@ def setup_projcal_window():
 
     # Setup graphics
     wavefront_reader = gg.WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.01)
+    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.005)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
     scene = gg.Scene([circle])
@@ -55,7 +55,7 @@ def scan(n_points=300, window=None, keep_open=False):
 
     # Main Loop
     screenPos, pointPos = [], []
-    clock = core.CountdownTimer(60)
+    clock = core.CountdownTimer(400)
     collect_fmt, missed_fmt, missed_cnt = ", Points Collected: ", ", Points Missed: ", 0
     pbar = pb.ProgressBar(widgets=[pb.Bar(), pb.ETA(), collect_fmt +'0', missed_fmt+'0'], maxval=n_points)
     pbar.start()
@@ -68,9 +68,10 @@ def scan(n_points=300, window=None, keep_open=False):
 
         # Try to isolate a single point.
         search_clock = core.CountdownTimer(.05)
+        import copy
         while search_clock.getTime() > 0.:
-            markers = tracker.unidentified_markers
-            if len(markers) == 1:
+            markers = copy.deepcopy(tracker.unidentified_markers)
+            if len(markers) == 1 and markers[0][1] > 0.:
                 screenPos.append(circle.local.position[[0, 1]])
                 # Updatae Progress Bar
                 pointPos.append(markers[0].position)
@@ -229,11 +230,18 @@ if __name__ == '__main__':
                         default=False,
                         help='If this flag is present, no scanning will occur, but the last collected data will be used for calibration.')
 
+    parser.add_argument('-n',
+                        action='store',
+                        type=int,
+                        dest='n_points',
+                        default=300,
+                        help='Number of Data Points to Collect.')
+
     args = parser.parse_args()
 
     # Collect data and save to app directory or get data from file
     if not args.load_filename and not args.debug_mode:
-        screenPos, pointPos, winSize = scan(n_points=250) # Collect data
+        screenPos, pointPos, winSize = scan(n_points=args.n_points) # Collect data
         with open(os.path.join(ratcave.data_dir, 'projector_data_points.pickle'), "wb") as datafile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, datafile)  # Save data
     else:
@@ -246,21 +254,10 @@ if __name__ == '__main__':
 
     # If specified, save the data.
     if args.save_filename:
+        args.save_filename = args.save_filename + '.pickle' if not os.path.splitext(args.save_filename)[1] else args.save_filename
         print('Saving Acquisition data to {}'.format(args.save_filename))
         with open(args.save_filename, 'wb') as myfile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, myfile)
-
-    # Filter out points below floor surface (happens with reflections sometimes)
-    reflect_mask = np.where(pointPos[:, 1] > 0.)[0]
-    pointPos, screenPos = pointPos[reflect_mask, :], screenPos[reflect_mask, :]
-
-    # Check for correlation between data--if it's very low, then it's an indication that the data is just noise.
-    """
-    maxcorr = np.max([(np.abs(np.corrcoef(pointPos[:,0], screenPos[:,el]))) for el in range(3)])
-    print("Max Correlation between image data and tracked data: r={}".format(maxcorr))
-    if maxcorr < .4:
-        print("Warning, low correlation between image data and tracker data.  \nPossible issue is the presence of rigid bodies--please delete any rigid bodies that aren't in the trackable area during calibration.")
-    """
 
     # Calibrate projector data
     position, rotation = calibrate(screenPos, pointPos)
