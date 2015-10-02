@@ -72,7 +72,7 @@ def scan(n_points=300, window=None, keep_open=False):
         import copy
         while search_clock.getTime() > 0.:
             markers = copy.deepcopy(tracker.unidentified_markers)
-            if len(markers) == 1:
+            if len(markers) == 1 and markers[0][1] > 0.:
                 screenPos.append(circle.local.position[[0, 1]])
                 # Updatae Progress Bar
                 pointPos.append(markers[0].position)
@@ -259,18 +259,6 @@ if __name__ == '__main__':
         print('Saving Acquisition data to {}'.format(args.save_filename))
         with open(args.save_filename, 'wb') as myfile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, myfile)
-
-    # Filter out points below floor surface (happens with reflections sometimes)
-    reflect_mask = np.where(pointPos[:, 1] > 0.)[0]
-    pointPos, screenPos = pointPos[reflect_mask, :], screenPos[reflect_mask, :]
-
-    # Check for correlation between data--if it's very low, then it's an indication that the data is just noise.
-    """
-    maxcorr = np.max([(np.abs(np.corrcoef(pointPos[:,0], screenPos[:,el]))) for el in range(3)])
-    print("Max Correlation between image data and tracked data: r={}".format(maxcorr))
-    if maxcorr < .4:
-        print("Warning, low correlation between image data and tracker data.  \nPossible issue is the presence of rigid bodies--please delete any rigid bodies that aren't in the trackable area during calibration.")
-    """
 
     # Calibrate projector data
     position, rotation = calibrate(screenPos, pointPos)
