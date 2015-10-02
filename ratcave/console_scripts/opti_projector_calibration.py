@@ -34,7 +34,6 @@ def setup_projcal_window():
 
     scene = gg.Scene([circle])
     scene.camera.ortho_mode = True
-
     window = gg.Window(scene, screen=1, fullscr=True)
 
     return window
