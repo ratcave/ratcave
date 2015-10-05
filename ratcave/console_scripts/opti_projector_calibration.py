@@ -123,8 +123,8 @@ def scan(n_points=300, window=None, keep_open=False):
     optitrack_ip = "127.0.0.1"
     tracker = Optitrack(client_ip=optitrack_ip)
 
-    #screenPos, pointPos = random_scan(window, tracker, n_points=n_points)
-    screenPos, pointPos = ray_scan(window, tracker)
+    screenPos, pointPos = random_scan(window, tracker, n_points=n_points)
+    #screenPos, pointPos = ray_scan(window, tracker)
 
     # screenPos.extend(screenPos2)
     # pointPos.extend(pointPos2)
