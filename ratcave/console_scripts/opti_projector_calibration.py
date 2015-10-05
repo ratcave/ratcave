@@ -28,7 +28,7 @@ def slow_draw(window, tracker):
         while tracker.iFrame == old_frame:
             pass
 
-        time.sleep(.02)
+        #time.sleep(.02)
 
 def setup_projcal_window():
     """Returns Window with everything needed for doing projector calibration."""
@@ -52,11 +52,10 @@ def random_scan(window, tracker, n_points=300):
 
     circle = window.active_scene.meshes[0]
     screenPos, pointPos = [], []
-    clock = core.CountdownTimer(400)
     collect_fmt, missed_fmt, missed_cnt = ", Points Collected: ", ", Points Missed: ", 0
     pbar = pb.ProgressBar(widgets=[pb.Bar(), pb.ETA(), collect_fmt +'0', missed_fmt+'0'], maxval=n_points)
     pbar.start()
-    while clock.getTime() > 0. and len(pointPos) < n_points and 'escape' not in event.getKeys():
+    while len(pointPos) < n_points and 'escape' not in event.getKeys():
 
         # Update position of circle, and draw.
         circle.visible = True
@@ -92,7 +91,7 @@ def ray_scan(window, tracker):
     pointPos, screenPos = [], []
 
     # Do some non-random points to so human can change height range.
-    point_positions = [(0,0), (.8, 0), (-.8, 0), (0, .4), (0, -.4)]
+    point_positions = [(0,0)]#, (.8, 0), (-.8, 0), (0, .4), (0, -.4)]
     circle.visible = True
 
     for pp in point_positions:
@@ -124,11 +123,10 @@ def scan(n_points=300, window=None, keep_open=False):
     tracker = Optitrack(client_ip=optitrack_ip)
 
     screenPos, pointPos = random_scan(window, tracker, n_points=n_points)
-    #screenPos, pointPos = ray_scan(window, tracker)
+    sp2, pp2 = ray_scan(window, tracker)
 
-    # screenPos.extend(screenPos2)
-    # pointPos.extend(pointPos2)
-
+    screenPos.extend(sp2)
+    pointPos.extend(pp2)
 
     # Close Window
     if not keep_open:
@@ -208,15 +206,9 @@ def calibrate(img_points, obj_points):
         -rotVec (NumPy Array): The Euler3D rotation of the projector (in degrees).
     """
 
-
-    img_points, obj_points = img_points.astype('float32'), obj_points.astype('float32')
-    img_points[:,1] *= -1  # V-axis is downward in image coordinates
-    #img_points -= 0.5
-    window_size = (1,1)  # Currently a false size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
-
-    retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([obj_points],
-                                                                                  [img_points],
-                                                                                  window_size,
+    retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([obj_points.astype('float32')],
+                                                                                  [-img_points.astype('float32')],  # V-axis is downward in image coordinates.  Maybe U axisu should be, too?
+                                                                                  (1,1),  # Currently a false window size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
                                                                                   flags=cv2.CALIB_USE_INTRINSIC_GUESS |  # Estimates camera matrix without a guess given.
                                                                                         cv2.CALIB_FIX_PRINCIPAL_POINT |  # Assumes 0 lens shift
                                                                                         cv2.CALIB_FIX_ASPECT_RATIO | # Assumes equal height/width aspect ratio
@@ -229,19 +221,15 @@ def calibrate(img_points, obj_points):
                                                                                         cv2.CALIB_FIX_K6
                                                                                   )
 
+
     # Change order of coordinates from cv2's camera-centered coordinates to Optitrack y-up coords.
-    print('Position Before Rodrigues: {}'.format(posVec[0].flatten()))
-    position = np.dot(cv2.Rodrigues(rotVec[0])[0], posVec[0])  # Invert the position by the rotation to be back in world coordinates
-    print('Position After Rodrigues: {}'.format(position.flatten()))
-    rotation = np.degrees(np.dot(cv2.Rodrigues(rotVec[0])[0], rotVec[0]))
+    position = -np.dot(posVec[0].T, cv2.Rodrigues(rotVec[0])[0])  # Invert the position by the rotation to be back in world coordinates
+    rotation = np.degrees(-np.dot(cv2.Rodrigues(rotVec[0])[0], rotVec[0]))
 
     # Return the position and rotation arrays for the camera.
     return position.flatten(), rotation.flatten()
 
 
-def calibrate_gradient_descent():
-    """Runs both the scan and calibrate functions to estimate solution being approached to determine when data is finished."""
-    pass
 
 if __name__ == '__main__':
 
