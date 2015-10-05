@@ -88,26 +88,23 @@ def random_scan(window, tracker, n_points=300):
 def ray_scan(window, tracker):
 
     circle = window.active_scene.meshes[0]
+    circle.visible = True
     pointPos, screenPos = [], []
 
     # Do some non-random points to so human can change height range.
-    point_positions = [(0,0)]#, (.8, 0), (-.8, 0), (0, .4), (0, -.4)]
-    circle.visible = True
-
-    for pp in point_positions:
-        circle.local.position[[0, 1]] = pp
-        window.draw()
-        window.flip()
-        old_frame = tracker.iFrame
-        clock = core.CountdownTimer(5)
-        while clock.getTime() > 0.:
-            markers = copy.deepcopy(tracker.unidentified_markers)
-            if tracker.iFrame > old_frame + 5 and len(markers) == 1:
-                if markers[0].position[1] > 0.3:
-                    if abs(markers[0].position[0]) < .4 and abs(markers[0].position[2]) < .4:
-                        screenPos.append(circle.local.position[[0, 1]])
-                        pointPos.append(markers[0].position)
-                        old_frame = tracker.iFrame
+    circle.local.position[[0, 1]] = 0,0
+    window.draw()
+    window.flip()
+    old_frame = tracker.iFrame
+    clock = core.CountdownTimer(5)
+    while clock.getTime() > 0.:
+        markers = copy.deepcopy(tracker.unidentified_markers)
+        if tracker.iFrame > old_frame + 5 and len(markers) == 1:
+            if markers[0].position[1] > 0.3:
+                if abs(markers[0].position[0]) < .4 and abs(markers[0].position[2]) < .4:
+                    screenPos.append(circle.local.position[[0, 1]])
+                    pointPos.append(markers[0].position)
+                    old_frame = tracker.iFrame
 
     return screenPos, pointPos
 
@@ -205,9 +202,9 @@ def calibrate(img_points, obj_points):
         -posVec (NumPy Array): The X,Y,Z position of the projector
         -rotVec (NumPy Array): The Euler3D rotation of the projector (in degrees).
     """
-
+    img_points *= -1
     retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([obj_points.astype('float32')],
-                                                                                  [-img_points.astype('float32')],  # V-axis is downward in image coordinates.  Maybe U axisu should be, too?
+                                                                                  [img_points.astype('float32')],  # V-axis is downward in image coordinates.  Maybe U axisu should be, too?
                                                                                   (1,1),  # Currently a false window size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
                                                                                   flags=cv2.CALIB_USE_INTRINSIC_GUESS |  # Estimates camera matrix without a guess given.
                                                                                         cv2.CALIB_FIX_PRINCIPAL_POINT |  # Assumes 0 lens shift

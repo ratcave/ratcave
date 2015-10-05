@@ -103,8 +103,6 @@ def plot_3d(array3d, title='', ax=None, line=False, color='', square_axis=False,
 
 def rotate_to_var(markers):
     """Returns degrees to rotate about y axis so greatest marker variance points in +X direction"""
-    # Vector in +X direction
-    base_vec = np.array([1, 0])
 
     # Vector in direction of greatest variance
     coeff_vec = PCA(n_components=1).fit(markers[:, [0, 2]]).components_
@@ -114,6 +112,7 @@ def rotate_to_var(markers):
     coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec
 
     # Rotation amount, in radians
+    base_vec = np.array([1, 0])  # Vector in +X direction
     msin, mcos = np.cross(coeff_vec, base_vec)[0], np.dot(coeff_vec, base_vec)[0]
     return np.degrees(np.arctan2(msin, mcos))
 
