@@ -9,8 +9,12 @@ import ratcave
 from ratcave.devices import Optitrack
 import ratcave.graphics as gg
 import cv2
+from ratcave.devices import propixx_utils
 
 np.set_printoptions(precision=3, suppress=True)
+import time
+import progressbar as pb
+import copy
 
 vert_dist = 0.66667
 
@@ -24,12 +28,15 @@ def slow_draw(window, tracker):
         while tracker.iFrame == old_frame:
             pass
 
+        time.sleep(.02)
+
 def setup_projcal_window():
     """Returns Window with everything needed for doing projector calibration."""
 
     # Setup graphics
+    propixx_utils.start_frame_sync_signal()
     wavefront_reader = gg.WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.005)
+    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.004)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
     scene = gg.Scene([circle])
@@ -37,24 +44,13 @@ def setup_projcal_window():
 
     window = gg.Window(scene, screen=1, fullscr=True)
 
+    time.sleep(2)
+
     return window
 
+def random_scan(window, tracker, n_points=300):
 
-def scan(n_points=300, window=None, keep_open=False):
-
-    import progressbar as pb
-
-    # Setup Graphics
-    if window is None:
-        window = setup_projcal_window()
     circle = window.active_scene.meshes[0]
-
-    # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
-    optitrack_ip = "127.0.0.1"
-    tracker = Optitrack(client_ip=optitrack_ip)
-
-
-    # Main Loop
     screenPos, pointPos = [], []
     clock = core.CountdownTimer(400)
     collect_fmt, missed_fmt, missed_cnt = ", Points Collected: ", ", Points Missed: ", 0
@@ -69,10 +65,9 @@ def scan(n_points=300, window=None, keep_open=False):
 
         # Try to isolate a single point.
         search_clock = core.CountdownTimer(.05)
-        import copy
         while search_clock.getTime() > 0.:
             markers = copy.deepcopy(tracker.unidentified_markers)
-            if len(markers) == 1 and markers[0][1] > 0.:
+            if len(markers) == 1 and markers[0].position[1] > 0.:
                 screenPos.append(circle.local.position[[0, 1]])
                 # Updatae Progress Bar
                 pointPos.append(markers[0].position)
@@ -87,6 +82,53 @@ def scan(n_points=300, window=None, keep_open=False):
         # Hide circle, and wait again for a new update.
         circle.visible = False
         slow_draw(window, tracker)
+
+    return screenPos, pointPos
+
+
+def ray_scan(window, tracker):
+
+    circle = window.active_scene.meshes[0]
+    pointPos, screenPos = [], []
+
+    # Do some non-random points to so human can change height range.
+    point_positions = [(0,0), (.8, 0), (-.8, 0), (0, .4), (0, -.4)]
+    circle.visible = True
+
+    for pp in point_positions:
+        circle.local.position[[0, 1]] = pp
+        window.draw()
+        window.flip()
+        old_frame = tracker.iFrame
+        clock = core.CountdownTimer(5)
+        while clock.getTime() > 0.:
+            markers = copy.deepcopy(tracker.unidentified_markers)
+            if tracker.iFrame > old_frame + 5 and len(markers) == 1:
+                if markers[0].position[1] > 0.3:
+                    if abs(markers[0].position[0]) < .4 and abs(markers[0].position[2]) < .4:
+                        screenPos.append(circle.local.position[[0, 1]])
+                        pointPos.append(markers[0].position)
+                        old_frame = tracker.iFrame
+
+    return screenPos, pointPos
+
+def scan(n_points=300, window=None, keep_open=False):
+
+
+    # Setup Graphics
+    if window is None:
+        window = setup_projcal_window()
+
+    # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
+    optitrack_ip = "127.0.0.1"
+    tracker = Optitrack(client_ip=optitrack_ip)
+
+    #screenPos, pointPos = random_scan(window, tracker, n_points=n_points)
+    screenPos, pointPos = ray_scan(window, tracker)
+
+    # screenPos.extend(screenPos2)
+    # pointPos.extend(pointPos2)
+
 
     # Close Window
     if not keep_open:
@@ -169,6 +211,7 @@ def calibrate(img_points, obj_points):
 
     img_points, obj_points = img_points.astype('float32'), obj_points.astype('float32')
     img_points[:,1] *= -1  # V-axis is downward in image coordinates
+    #img_points -= 0.5
     window_size = (1,1)  # Currently a false size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
 
     retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([obj_points],
@@ -187,7 +230,9 @@ def calibrate(img_points, obj_points):
                                                                                   )
 
     # Change order of coordinates from cv2's camera-centered coordinates to Optitrack y-up coords.
+    print('Position Before Rodrigues: {}'.format(posVec[0].flatten()))
     position = np.dot(cv2.Rodrigues(rotVec[0])[0], posVec[0])  # Invert the position by the rotation to be back in world coordinates
+    print('Position After Rodrigues: {}'.format(position.flatten()))
     rotation = np.degrees(np.dot(cv2.Rodrigues(rotVec[0])[0], rotVec[0]))
 
     # Return the position and rotation arrays for the camera.
@@ -280,6 +325,7 @@ if __name__ == '__main__':
     rot_vec = np.vstack((position, position+cam_dir))
     ax = plot_3d(pointPos, square_axis=True)
     plot_3d(rot_vec, ax=ax, color='r', line=True)
+
     plot_3d(np.array([position]), ax=ax, color='g', show=True)
 
     # Save Results to application data.
