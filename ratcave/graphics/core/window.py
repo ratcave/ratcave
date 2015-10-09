@@ -51,6 +51,7 @@ class Window(visual.Window):
 
         # Assign data to window after OpenGL context initialization
         self.active_scene = active_scene  # For normal rendering.
+        self.active_scene.camera.aspect = float(self.size[0]) / self.size[1]  # Camera aspect ratio should match screen size, at least for the active scene.
         self.virtual_scene = virtual_scene  # For dynamic cubemapping.
         if self.virtual_scene:
             self.virtual_scene.camera.fov_y = 90.
