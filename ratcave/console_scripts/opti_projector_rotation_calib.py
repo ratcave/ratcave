@@ -22,7 +22,7 @@ def display(optitrack_ip="127.0.0.1"):
     arena = reader.get_mesh('Arena', lighting=True, centered=False)
     arena.load_texture(ratcave.graphics.resources.img_colorgrid)
 
-    arena.world.position[[0,2]] *= -1 #arena.world.position[[2,0]]
+    #arena.world.position[[0,2]] *= -1 #arena.world.position[[2,0]]
     #arena.world.rotation[1] = 180
 
     reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
@@ -39,9 +39,9 @@ def display(optitrack_ip="127.0.0.1"):
     while True:
 
         # Update Everything's Position
-        arena.local.position = tracker.rigid_bodies['Arena'].position
-        arena.local.rotation = np.array(tracker.rigid_bodies['Arena'].rotation_pca_y[:])
-        arena.local.rotation[1] += 180
+        #arena.local.position = tracker.rigid_bodies['Arena'].position
+        #arena.local.rotation = np.array(tracker.rigid_bodies['Arena'].rotation_pca_y[:])
+        #arena.local.rotation[1] += 180
 
         cube.local.position = tracker.rigid_bodies['CalibWand'].position
 

@@ -381,16 +381,30 @@ if __name__ == '__main__':
                         type=int,
                         help='Number of Sides the Arena has. (If none given, will automatically search for best fit.')
 
+    parser.add_argument('-p',
+                        action='store_true',
+                        dest='pca_rotate',
+                        default=False,
+                        help='If this flag is present, there will be a pca rotation of the mesh based on its markers.')
+
+    parser.add_argument('-m',
+                        action='store_true',
+                        dest='mean_center',
+                        default=False,
+                        help='If this flag is present, the arena will be offset by its mean marker position.')
+
     args = parser.parse_args()
 
     # Start scan process and collect calibreation data
     points, markers = scan()
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
-    points -= np.mean(markers, axis=0)
-    rot_angle = rotate_to_var(markers)
-    print("Rotation Angle: {}".format(rot_angle))
-    points = np.dot(points,  y_rotation_matrix(rot_angle))
+    if args.mean_center:
+        points -= np.mean(markers, axis=0)
+    if args.pca_rotate:
+        rot_angle = rotate_to_var(markers)
+        print("Rotation Angle: {}".format(rot_angle))
+        points = np.dot(points,  y_rotation_matrix(rot_angle))
 
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=args.n_sides)
