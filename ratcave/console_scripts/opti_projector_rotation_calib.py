@@ -48,7 +48,8 @@ def display(optitrack_ip="127.0.0.1"):
         # Update Everything's Position
         arena.local.position = tracker.rigid_bodies['Arena'].position
         arena.local.rotation = np.array(tracker.rigid_bodies['Arena'].rotation_pca_y[:])
-        arena.local.rotation[1] += 180
+        arena.local.rotation -= 37.6
+        #arena.local.rotation[1] += 180
 
         cube.local.position = tracker.rigid_bodies['CalibWand'].position
 

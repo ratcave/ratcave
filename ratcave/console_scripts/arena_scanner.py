@@ -119,9 +119,8 @@ def rotate_to_var(markers):
 
 def y_rotation_matrix(angle):
     """Returns a 3x3 rotation matrix for rotating angle amount (degrees) about the Y axis"""
-    angle = np.radians(angle)
-    msin, mcos = np.sin(angle), np.cos(angle)
-    return np.array([[mcos, 0, msin], [0, 1, 0], [-msin, 0, mcos]])
+    from ratcave.graphics.core import _transformations as trans
+    return trans.rotation_matrix(angle, [0, 1, 0])[:3, :3]
 
 
 def hist_mask(data, threshold=.95, keep='lower'):
@@ -357,7 +356,7 @@ def meshify(points, n_surfaces=None):
     assert not np.isnan(surface_offsets.sum()), "Incorrect model: No Points found to assign to at least one wall for intersection calculation."
 
     ## CALCULATE PLANE INTERSECTIONS TO GET VERTICES ##
-    vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max()+.1)
+    vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max()+.005)
     return vertices, normals
 
 
