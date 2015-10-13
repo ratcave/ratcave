@@ -357,7 +357,7 @@ def meshify(points, n_surfaces=None):
     assert not np.isnan(surface_offsets.sum()), "Incorrect model: No Points found to assign to at least one wall for intersection calculation."
 
     ## CALCULATE PLANE INTERSECTIONS TO GET VERTICES ##
-    vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max())
+    vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max()+.1)
     return vertices, normals
 
 

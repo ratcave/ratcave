@@ -31,6 +31,13 @@ def display(optitrack_ip="127.0.0.1"):
     # Create Scene and Window
     scene = Scene([arena, cube])
     scene.camera = projector
+    scene.camera.fov_y = 41.2 / 1.47
+
+    #scene.camera.rotation = -90, 0, 0
+    # scene.camera.rotation[0] *= -1
+    #scene.camera.rotation[1], scene.camera.rotation[2] = scene.camera.rotation[2], scene.camera.rotation[1]
+    #scene.camera.rotation[2] = 0
+
     scene.light.position = scene.camera.position
 
     window = Window(scene, screen=1, fullscr=True)
@@ -39,9 +46,9 @@ def display(optitrack_ip="127.0.0.1"):
     while True:
 
         # Update Everything's Position
-        #arena.local.position = tracker.rigid_bodies['Arena'].position
-        #arena.local.rotation = np.array(tracker.rigid_bodies['Arena'].rotation_pca_y[:])
-        #arena.local.rotation[1] += 180
+        arena.local.position = tracker.rigid_bodies['Arena'].position
+        arena.local.rotation = np.array(tracker.rigid_bodies['Arena'].rotation_pca_y[:])
+        arena.local.rotation[1] += 180
 
         cube.local.position = tracker.rigid_bodies['CalibWand'].position
 
@@ -86,7 +93,7 @@ def display(optitrack_ip="127.0.0.1"):
 
 
             # Print the Following every time a key is detected:
-            print "Camera settings:\n -shift: {0}, {1}\n -position: {2}\n -fov_y: {3}\n -rotation: {4}\n\n".format(
+            print "Camera settings:\n -shift: {0}, {1}\n -position: {2}\n -fov_y(xz): {3}\n -rotation: {4}\n\n".format(
                 scene.camera.x_shift, scene.camera.y_shift, scene.camera.position, scene.camera.fov_y, scene.camera.rotation)
             print "Arena settings:\n -local\n\tPosition: {}\n\tRotation: {}\n -world\n\tPosition: {}\n\tRotation: {}".format(
                 arena.local.position, arena.local.rotation, arena.world.position, arena.world.rotation)
