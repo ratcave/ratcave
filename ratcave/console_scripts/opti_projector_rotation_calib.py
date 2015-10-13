@@ -43,13 +43,14 @@ def display(optitrack_ip="127.0.0.1"):
     window = Window(scene, screen=1, fullscr=True)
 
     aa = 0
+    rot_correct = -45
     while True:
 
         # Update Everything's Position
         arena.local.position = tracker.rigid_bodies['Arena'].position
-        arena.local.rotation = np.array(tracker.rigid_bodies['Arena'].rotation_pca_y[:])
-        arena.local.rotation -= 37.6
-        #arena.local.rotation[1] += 180
+        arena.local.rotation = tracker.rigid_bodies['Arena'].rotation #_pca_y
+        #arena.local.rotation[1] += rot_correct
+        arena.local.rotation[1] += 180
 
         cube.local.position = tracker.rigid_bodies['CalibWand'].position
 
@@ -88,6 +89,10 @@ def display(optitrack_ip="127.0.0.1"):
                 scene.camera.rotation[1] += .1
             elif 'r' in keylist:
                 scene.camera.rotation[1] -= .1
+            elif 't' in keylist:
+                rot_correct -= 1
+            elif 'y' in keylist:
+                rot_correct += 1
             elif 'escape' in keylist:
                 window.close()
                 break

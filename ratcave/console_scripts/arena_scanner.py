@@ -2,6 +2,8 @@ __author__ = 'nickdg'
 
 import numpy as np
 from sklearn.decomposition import PCA
+from ratcave.devices.trackers import utils
+from ratcave.graphics.core._transformations import rotation_matrix
 
 np.set_printoptions(precision=3, suppress=True)
 
@@ -99,28 +101,6 @@ def plot_3d(array3d, title='', ax=None, line=False, color='', square_axis=False,
         plt.show()
 
     return ax
-
-
-def rotate_to_var(markers):
-    """Returns degrees to rotate about y axis so greatest marker variance points in +X direction"""
-
-    # Vector in direction of greatest variance
-    coeff_vec = PCA(n_components=1).fit(markers[:, [0, 2]]).components_
-    marker_var = markers[markers[:,2].argsort(), 2]  # Check variance along component to determine whether to flip.
-    winlen = int(len(marker_var)/2+1)  # Window length for moving mean (two steps, with slight overlap)
-    var_means = np.array([marker_var[:winlen], marker_var[-winlen:]]).mean(axis=1)
-    coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec
-
-    # Rotation amount, in radians
-    base_vec = np.array([1, 0])  # Vector in +X direction
-    msin, mcos = np.cross(coeff_vec, base_vec)[0], np.dot(coeff_vec, base_vec)[0]
-    return np.degrees(np.arctan2(msin, mcos))
-
-
-def y_rotation_matrix(angle):
-    """Returns a 3x3 rotation matrix for rotating angle amount (degrees) about the Y axis"""
-    from ratcave.graphics.core import _transformations as trans
-    return trans.rotation_matrix(angle, [0, 1, 0])[:3, :3]
 
 
 def hist_mask(data, threshold=.95, keep='lower'):
@@ -401,9 +381,9 @@ if __name__ == '__main__':
     if args.mean_center:
         points -= np.mean(markers, axis=0)
     if args.pca_rotate:
-        rot_angle = rotate_to_var(markers)
+        rot_angle = utils.rotate_to_var(markers)
         print("Rotation Angle: {}".format(rot_angle))
-        points = np.dot(points,  y_rotation_matrix(rot_angle))
+        points = np.dot(points,  rotation_matrix(np.radians(rot_angle), [0,1,0])[:3, :3])
 
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=args.n_sides)
