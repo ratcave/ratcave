@@ -272,7 +272,7 @@ def data_to_wavefront(mesh_name, vert_dict, normal_dict):
         for vert in vert_dict[wall]:
             wavefront_str += "v {0} {1} {2}\n".format(*vert)
 
-    # Write (false) UV data
+    # Write (false) UV Texture data
     wavefront_str += "vt 1.0 1.0\n"
 
     # Write Normal data from normal_dict
@@ -294,7 +294,7 @@ def data_to_wavefront(mesh_name, vert_dict, normal_dict):
 
 
 def meshify(points, n_surfaces=None):
-    """Returns vertex and normal coordinates for a 3D mmesh model from an Nx3 array of points after filtering.
+    """Returns vertex and normal coordinates for a 3D mesh model from an Nx3 array of points after filtering.
 
     Args:
         -points (Nx3 Numpy Array): Data to be fit to a model.
