@@ -112,11 +112,11 @@ class Mesh(object):
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.data.vertices, axis=0)
         self.data.vertices -= vertex_mean
-        world_position = (0., 0., 0.) if centered else tuple(vertex_mean)
+        local_position = (0., 0., 0.) if centered else tuple(vertex_mean)
         #: :py:class:`.Physical`, World Mesh coordinates
-        self.world = mixins.Physical(position=world_position)
+        self.world = mixins.Physical(position=(0., 0., 0.))
         #: Local Mesh coordinates (Physical type)
-        self.local = mixins.Physical(position=position, rotation=rotation, scale=scale)
+        self.local = mixins.Physical(position=local_position, rotation=rotation, scale=scale)
 
         self.material = material if isinstance(material, Material) else Material()
 
