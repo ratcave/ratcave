@@ -2,6 +2,8 @@ __author__ = 'nickdg'
 
 import numpy as np
 from sklearn.decomposition import PCA
+from ratcave.devices.trackers import utils
+from ratcave.graphics.core._transformations import rotation_matrix
 
 np.set_printoptions(precision=3, suppress=True)
 
@@ -99,30 +101,6 @@ def plot_3d(array3d, title='', ax=None, line=False, color='', square_axis=False,
         plt.show()
 
     return ax
-
-
-def rotate_to_var(markers):
-    """Returns degrees to rotate about y axis so greatest marker variance points in +X direction"""
-    # Vector in +X direction
-    base_vec = np.array([1, 0])
-
-    # Vector in direction of greatest variance
-    coeff_vec = PCA(n_components=1).fit(markers[:, [0, 2]]).components_
-    marker_var = markers[markers[:,2].argsort(), 2]  # Check variance along component to determine whether to flip.
-    winlen = int(len(marker_var)/2+1)  # Window length for moving mean (two steps, with slight overlap)
-    var_means = np.array([marker_var[:winlen], marker_var[-winlen:]]).mean(axis=1)
-    coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec
-
-    # Rotation amount, in radians
-    msin, mcos = np.cross(coeff_vec, base_vec)[0], np.dot(coeff_vec, base_vec)[0]
-    return np.degrees(np.arctan2(msin, mcos))
-
-
-def y_rotation_matrix(angle):
-    """Returns a 3x3 rotation matrix for rotating angle amount (degrees) about the Y axis"""
-    angle = np.radians(angle)
-    msin, mcos = np.sin(angle), np.cos(angle)
-    return np.array([[mcos, 0, msin], [0, 1, 0], [-msin, 0, mcos]])
 
 
 def hist_mask(data, threshold=.95, keep='lower'):
@@ -294,7 +272,7 @@ def data_to_wavefront(mesh_name, vert_dict, normal_dict):
         for vert in vert_dict[wall]:
             wavefront_str += "v {0} {1} {2}\n".format(*vert)
 
-    # Write (false) UV data
+    # Write (false) UV Texture data
     wavefront_str += "vt 1.0 1.0\n"
 
     # Write Normal data from normal_dict
@@ -316,7 +294,7 @@ def data_to_wavefront(mesh_name, vert_dict, normal_dict):
 
 
 def meshify(points, n_surfaces=None):
-    """Returns vertex and normal coordinates for a 3D mmesh model from an Nx3 array of points after filtering.
+    """Returns vertex and normal coordinates for a 3D mesh model from an Nx3 array of points after filtering.
 
     Args:
         -points (Nx3 Numpy Array): Data to be fit to a model.
@@ -358,7 +336,7 @@ def meshify(points, n_surfaces=None):
     assert not np.isnan(surface_offsets.sum()), "Incorrect model: No Points found to assign to at least one wall for intersection calculation."
 
     ## CALCULATE PLANE INTERSECTIONS TO GET VERTICES ##
-    vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max())
+    vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max()+.005)
     return vertices, normals
 
 
@@ -382,16 +360,30 @@ if __name__ == '__main__':
                         type=int,
                         help='Number of Sides the Arena has. (If none given, will automatically search for best fit.')
 
+    parser.add_argument('-p',
+                        action='store_true',
+                        dest='pca_rotate',
+                        default=False,
+                        help='If this flag is present, there will be a pca rotation of the mesh based on its markers.')
+
+    parser.add_argument('-m',
+                        action='store_true',
+                        dest='mean_center',
+                        default=False,
+                        help='If this flag is present, the arena will be offset by its mean marker position.')
+
     args = parser.parse_args()
 
     # Start scan process and collect calibreation data
     points, markers = scan()
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
-    points -= np.mean(markers, axis=0)
-    rot_angle = rotate_to_var(markers)
-    print("Rotation Angle: {}".format(rot_angle))
-    points = np.dot(points,  y_rotation_matrix(rot_angle))
+    if args.mean_center:
+        points -= np.mean(markers, axis=0)
+    if args.pca_rotate:
+        rot_angle = utils.rotate_to_var(markers)
+        print("Rotation Angle: {}".format(rot_angle))
+        points = np.dot(points,  rotation_matrix(np.radians(rot_angle), [0,1,0])[:3, :3])
 
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=args.n_sides)

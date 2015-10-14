@@ -51,6 +51,7 @@ class Window(visual.Window):
 
         # Assign data to window after OpenGL context initialization
         self.active_scene = active_scene  # For normal rendering.
+        self.active_scene.camera.aspect = float(self.size[0]) / self.size[1]  # Camera aspect ratio should match screen size, at least for the active scene.
         self.virtual_scene = virtual_scene  # For dynamic cubemapping.
         if self.virtual_scene:
             self.virtual_scene.camera.fov_y = 90.
@@ -89,7 +90,7 @@ class Window(visual.Window):
 
     def render_shadow(self, scene):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
-        scene.light.rotation[:] = scene.camera.rotation[:]  # only works while spotlights aren't implemented, otherwise may have to be careful.
+        #scene.light.rotation[:] = scene.camera.rotation[:]  # only works while spotlights aren't implemented, otherwise may have to be careful.
         fbo = self.fbos['shadow'] if scene == self.active_scene else self.fbos['vrshadow']
         with utils.render_to_fbo(self, fbo):
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)

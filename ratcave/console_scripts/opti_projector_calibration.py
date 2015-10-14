@@ -87,30 +87,27 @@ def random_scan(window, tracker, n_points=300):
 def ray_scan(window, tracker):
 
     circle = window.active_scene.meshes[0]
+    circle.visible = True
     pointPos, screenPos = [], []
 
     # Do some non-random points to so human can change height range.
-    point_positions = [(0,0)]#, (.8, 0), (-.8, 0), (0, .4), (0, -.4)]
-    circle.visible = True
-
-    for pp in point_positions:
-        circle.local.position[[0, 1]] = pp
-        window.draw()
-        window.flip()
-        old_frame = tracker.iFrame
-        clock = core.CountdownTimer(5)
-        while clock.getTime() > 0.:
-            markers = copy.deepcopy(tracker.unidentified_markers)
-            if tracker.iFrame > old_frame + 5 and len(markers) == 1:
-                if markers[0].position[1] > 0.3:
-                    if abs(markers[0].position[0]) < .4 and abs(markers[0].position[2]) < .4:
-                        screenPos.append(circle.local.position[[0, 1]])
-                        pointPos.append(markers[0].position)
-                        old_frame = tracker.iFrame
+    circle.local.position[[0, 1]] = 0,0
+    window.draw()
+    window.flip()
+    old_frame = tracker.iFrame
+    clock = core.CountdownTimer(5)
+    while clock.getTime() > 0.:
+        markers = copy.deepcopy(tracker.unidentified_markers)
+        if tracker.iFrame > old_frame + 5 and len(markers) == 1:
+            if markers[0].position[1] > 0.3:
+                #if abs(markers[0].position[0]) < .4 and abs(markers[0].position[2]) < .4:
+                screenPos.append(circle.local.position[[0, 1]])
+                pointPos.append(markers[0].position)
+                old_frame = tracker.iFrame
 
     return screenPos, pointPos
 
-def scan(n_points=300, window=None, keep_open=False):
+def scan(n_points=300, window=None, keep_open=False, ray_on=False):
 
 
     # Setup Graphics
@@ -121,11 +118,13 @@ def scan(n_points=300, window=None, keep_open=False):
     optitrack_ip = "127.0.0.1"
     tracker = Optitrack(client_ip=optitrack_ip)
 
-    screenPos, pointPos = random_scan(window, tracker, n_points=n_points)
-    sp2, pp2 = ray_scan(window, tracker)
 
-    screenPos.extend(sp2)
-    pointPos.extend(pp2)
+    screenPos, pointPos = random_scan(window, tracker, n_points=n_points)
+
+    if ray_on:
+        sp2, pp2 = ray_scan(window, tracker)
+        screenPos.extend(sp2)
+        pointPos.extend(pp2)
 
     # Close Window
     if not keep_open:
@@ -204,9 +203,9 @@ def calibrate(img_points, obj_points):
         -posVec (NumPy Array): The X,Y,Z position of the projector
         -rotVec (NumPy Array): The Euler3D rotation of the projector (in degrees).
     """
-
+    img_points *= -1
     retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([obj_points.astype('float32')],
-                                                                                  [-img_points.astype('float32')],  # V-axis is downward in image coordinates.  Maybe U axisu should be, too?
+                                                                                  [img_points.astype('float32')],  # V-axis is downward in image coordinates.  Maybe U axisu should be, too?
                                                                                   (1,1),  # Currently a false window size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
                                                                                   flags=cv2.CALIB_USE_INTRINSIC_GUESS |  # Estimates camera matrix without a guess given.
                                                                                         cv2.CALIB_FIX_PRINCIPAL_POINT |  # Assumes 0 lens shift
@@ -222,11 +221,20 @@ def calibrate(img_points, obj_points):
 
 
     # Change order of coordinates from cv2's camera-centered coordinates to Optitrack y-up coords.
-    position = -np.dot(posVec[0].T, cv2.Rodrigues(rotVec[0])[0])  # Invert the position by the rotation to be back in world coordinates
-    rotation = np.degrees(-np.dot(cv2.Rodrigues(rotVec[0])[0], rotVec[0]))
+    pV, rV = posVec[0], rotVec[0]
+
+
+    position = -np.dot(pV.T, cv2.Rodrigues(rV)[0])  # Invert the position by the rotation to be back in world coordinates
+
+    from ratcave.devices.trackers import eulerangles
+    # rotation = eulerangles.mat2euler(cv2.Rodrigues(rV)[0])
+    #rotation = -np.dot(rV.T, cv2.Rodrigues(rV)[0])
+    # rotation = np.degrees(rotation)
+
+    rotation = cv2.Rodrigues(rV)[0]
 
     # Return the position and rotation arrays for the camera.
-    return position.flatten(), rotation.flatten()
+    return position.flatten(), rotation
 
 
 
@@ -270,11 +278,17 @@ if __name__ == '__main__':
                         default=300,
                         help='Number of Data Points to Collect.')
 
+    parser.add_argument('-v',
+                        action='store_true',
+                        dest='human_scan',
+                        default=False,
+                        help='This flag adds an extra stationary step where the experimenter can add a vertical line of points to check the projector estimate.')
+
     args = parser.parse_args()
 
     # Collect data and save to app directory or get data from file
     if not args.load_filename and not args.debug_mode:
-        screenPos, pointPos, winSize = scan(n_points=args.n_points) # Collect data
+        screenPos, pointPos, winSize = scan(n_points=args.n_points, ray_on=args.human_scan) # Collect data
         with open(os.path.join(ratcave.data_dir, 'projector_data_points.pickle'), "wb") as datafile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, datafile)  # Save data
     else:
@@ -297,21 +311,24 @@ if __name__ == '__main__':
     print('Estimated Projector Position:{}\nEstimated Projector Rotation:{}'.format(position, rotation))
 
     # Check that vector position and direction is generally correct, and give tips if not.
-    cam_dir = np.dot(cv2.Rodrigues(np.radians(rotation))[0], np.array([[0,0,-1]]).T).flatten()  # Rotate from -Z vector (default OpenGL camera direction)
+    #cam_dir = np.dot(cv2.Rodrigues(np.radians(rotation))[0], np.array([[0,0,-1]]).T).flatten()  # Rotate from -Z vector (default OpenGL camera direction)
+    from ratcave.devices.trackers import eulerangles
+    #cam_dir = np.dot(eulerangles.euler2mat(np.radians(rotation)), np.array([[0,0,-1]])).flatten()
     data_dir = np.mean(pointPos, axis=0) - position
     data_dir /= np.linalg.norm(data_dir)
-    if np.dot(cam_dir, data_dir) < .4 or position[1] < 0.:
-        print("Warning: Estimated Projector Position and/or Rotation not pointing in right direction.\n\t"
-              "Please try to change the projector's 'ceiling mount mode' to off and try again.\n"
-              "ex) Propixx VPutil Command: cmm off\n"
-              "Also, could be the projection front/rear mode.  Normally should be set to front projection, but if\n "
-              "reflecting off of a mirror, should be set to rear projection.\n"
-              "ex) Propixx VPutil Command: pm r")
+    # if np.dot(cam_dir, data_dir) < .4 or position[1] < 0.:
+    #     print("Warning: Estimated Projector Position and/or Rotation not pointing in right direction.\n\t"
+    #           "Please try to change the projector's 'ceiling mount mode' to off and try again.\n"
+    #           "ex) Propixx VPutil Command: cmm off\n"
+    #           "Also, could be the projection front/rear mode.  Normally should be set to front projection, but if\n "
+    #           "reflecting off of a mirror, should be set to rear projection.\n"
+    #           "ex) Propixx VPutil Command: pm r")
 
-    # Plot Estimated camera position and rotation.
-    rot_vec = np.vstack((position, position+cam_dir))
+    # # Plot Estimated camera position and rotation.
     ax = plot_3d(pointPos, square_axis=True)
-    plot_3d(rot_vec, ax=ax, color='r', line=True)
+
+    # rot_vec = np.vstack((position, position+cam_dir))
+    # plot_3d(rot_vec, ax=ax, color='r', line=True)
 
     plot_3d(np.array([position]), ax=ax, color='g', show=True)
 
