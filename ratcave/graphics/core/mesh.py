@@ -185,8 +185,8 @@ class Mesh(object):
         #self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
 
         # Local then world
-        self._modelmat_preset = np.dot(self.local.model_matrix, self.world.model_matrix).T.ravel()
-        self._normalmat_preset = np.dot(self.local.normal_matrix, self.world.normal_matrix).T.ravel()
+        self._modelmat_preset = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
+        self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
 
 
     def render(self, shader):
