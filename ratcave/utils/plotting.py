@@ -1,4 +1,5 @@
 __author__ = 'nickdg'
+import numpy as np
 
 def plot_3d(array3d, title='', ax=None, line=False, color='', square_axis=False, show=False):
     """

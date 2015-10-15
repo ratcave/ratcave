@@ -1,7 +1,9 @@
 __author__ = 'nickdg'
 
 import numpy as np
+from sklearn import mixture
 from sklearn.decomposition import PCA
+
 from ratcave.devices import trackers
 from ratcave.graphics.core._transformations import rotation_matrix
 from ratcave.devices.trackers.optitrack import Optitrack
@@ -109,11 +111,11 @@ def normal_nearest_neighbors(data, n_neighbors=40):
 
 def cluster_normals(normal_array, min_clusters=4, max_clusters=15):
     """Returns sklearn model from clustering an NxK array, comparing different numbers of clusters for a best fit."""
-    import sklearn
 
     model, old_bic = None, 1e32
     for n_components in range(min_clusters, max_clusters):
-        gmm = sklearn.mixture.GMM(n_components=n_components) # Fit the filtered normal data using a gaussian classifier
+
+        gmm = mixture.GMM(n_components=n_components) # Fit the filtered normal data using a gaussian classifier
         temp_model = gmm.fit(normal_array)
         temp_bic = temp_model.bic(normal_array)
         print("N Components: {}\tBIC: {}".format(n_components, temp_bic))
@@ -306,24 +308,26 @@ if __name__ == '__main__':
 
     # Start scan process and collect calibration data
     tracker = Optitrack(client_ip="127.0.0.1")
+    tracker.get_data()
 
     # Select Rigid Body to track.
     try:
         if not args.rigid_body_name:
             assert len(tracker.rigid_bodies) == 1, "Only one rigid body should be present for auto-selection. Please use the -r flag to specify a rigid body name to track for the arena."
-        arena_name = args.rigid_body_name if args.rigid_body_name in tracker.rigid_bodies else tracker.rigid_bodies[tracker.rigid_bodies.keys()[0]]
+        arena_name = args.rigid_body_name if args.rigid_body_name in tracker.rigid_bodies else tracker.rigid_bodies.keys()[0]
     except IndexError:
         raise AssertionError("No Rigid Bodies found in Optitrack tracker.")
     except KeyError:
         raise KeyError("Rigid Body '{}' not found in list of Optitrack Rigid Bodies.".format(arena_name))
 
+    print('Arena Name: {}. N Markers: {}'.format(arena_name, len(tracker.rigid_bodies[arena_name].markers)))
     assert len(tracker.rigid_bodies[arena_name].markers) > 5, "At least 6 markers in the arena's rigid body is required"
 
     # Scan points
     points = scan(tracker)
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
-    markers = tracker.rigid_bodies[arena_name].markers
+    markers = np.array([marker.position for marker in tracker.rigid_bodies[arena_name].markers])
     points = points - np.mean(markers, axis=0) if args.mean_center else points
     points = np.dot(points,  rotation_matrix(np.radians(trackers.utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points
 
@@ -346,6 +350,10 @@ if __name__ == '__main__':
     ax = utils.plot_3d(points[::8, :], square_axis=True)
     for idx, verts in vertices.items():
         show = True if idx == len(vertices)-1 else False  # Only make the plot appear after the last face is drawn.
-        ax = utils.plot_3d(np.vstack((verts, verts[0, :])), ax=ax, title='Triangulated Model', line=True, show=show)
+        try:
+            ax = utils.plot_3d(np.vstack((verts, verts[0, :])), ax=ax, title='Triangulated Model', line=True, show=show)
+        except:
+            import pdb
+            pdb.set_trace()
 
 
