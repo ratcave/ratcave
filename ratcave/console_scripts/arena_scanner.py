@@ -20,33 +20,48 @@ def autoset_rigid_body_name(tracker, name=''):
     return name
 
 
+def countdown_timer(total_secs, stop_iteration=False):
+    """Generates an iterator that returns the time remaining from total_time (secs). Returns 0.0 when time is up, unless
+    stop_iteration is True."""
+
+    import time
+    end_secs = time.time() + total_secs
+    while True:
+        remaining_secs = end_secs - time.time()
+        if remaining_secs > 0.:
+            yield remaining_secs
+        else:
+            if stop_iteration:
+                raise StopIteration("Time is up!")
+            else:
+                yield 0.0  # Don't raise a StopIteration error, just return 0
+
+
 def scan(tracker, rigid_body_name, pointwidth=.06, pointspeed=3.):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
 
     from ratcave import graphics
-    from psychopy import event, core
+    from psychopy import event
 
     # Initialize Calibration Point Grid.
     wavefront_reader = graphics.WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    mesh = wavefront_reader.get_mesh('Grid', centered=True, lighting=False, scale=1.5, drawstyle='point', point_size=12)
+    mesh = wavefront_reader.get_mesh('Grid', centered=True, lighting=False, scale=1.5, drawstyle='point', point_size=12, position=(0,0,-1))
     mesh.material.diffuse.rgb = 1, 1, 1
-    mesh.world.position=[0, 0, -1]
 
     scene = graphics.Scene([mesh])
     scene.camera.ortho_mode = True
-
     window = graphics.Window(scene, screen=1, fullscr=True)
 
     # Get Tracker and Arena Rigid Body
     body = tracker.rigid_bodies[rigid_body_name]
 
     # Main Loop
-    old_frame, clock, points, body_markers = tracker.iFrame, core.CountdownTimer(3.), [], []
-    while ('escape' not in event.getKeys()) and clock.getTime() > 0:
+    old_frame, clock, points, body_markers = tracker.iFrame, countdown_timer(3.), [], []
+    while ('escape' not in event.getKeys()) and clock.next() > 0:
 
         # Update Calibration Grid
-        scene.camera.position[:2] = (pointwidth * np.sin(clock.getTime() * pointspeed)), (pointwidth * np.cos(clock.getTime() * pointspeed))
+        scene.camera.position[:2] = (pointwidth * np.sin(clock.next() * pointspeed)), (pointwidth * np.cos(clock.next() * pointspeed))
         window.draw()
         window.flip()
 
