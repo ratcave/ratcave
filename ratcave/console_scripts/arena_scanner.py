@@ -270,11 +270,7 @@ def reorder_vertices(vertices):
 
 def fan_triangulate(vertices):
     """Return an array of vertices in triangular order using a fan triangulation algorithm."""
-    new_verts, vert0 = [], vertices[0]
-    for ii, jj in zip(vertices[1:-1], vertices[2:]):
-        new_verts.extend([vert0, ii, jj])
-    return np.array(new_verts)
-
+    return np.array([[vertices[0], ii, jj] for (ii, jj) in zip(vertices[1:-1], vertices[2:])])
 
 def data_to_wavefront(mesh_name, vert_dict, normal_dict):
     """Returns a wavefront .obj string using pre-triangulated vertex dict and normal dict as reference."""
