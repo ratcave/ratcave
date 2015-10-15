@@ -10,9 +10,9 @@ import progressbar as pb
 import ratcave
 import ratcave.graphics as gg
 from ratcave.devices import Optitrack
-from ratcave.utils import plot_3d
+from ratcave.utils import plot_3d, timers
 
-from psychopy import event, core
+from psychopy import event
 
 np.set_printoptions(precision=3, suppress=True)
 
@@ -66,8 +66,7 @@ def random_scan(window, tracker, n_points=300, sleep_mode=False):
         slow_draw(window, tracker, sleep_mode=sleep_mode)
 
         # Try to isolate a single point.
-        search_clock = core.CountdownTimer(.05)
-        while search_clock.getTime() > 0.:
+        for _ in timers.countdown_timer(.05, stop_iteration=True):
             markers = copy.deepcopy(tracker.unidentified_markers)
             if len(markers) == 1 and markers[0].position[1] > 0.:
                 screenPos.append(circle.local.position[[0, 1]])
@@ -99,8 +98,7 @@ def ray_scan(window, tracker):
     window.draw()
     window.flip()
     old_frame = tracker.iFrame
-    clock = core.CountdownTimer(5)
-    while clock.getTime() > 0.:
+    for _ in timers.countdown_timer(5, stop_iteration=True):
         markers = copy.deepcopy(tracker.unidentified_markers)
         if tracker.iFrame > old_frame + 5 and len(markers) == 1:
             if markers[0].position[1] > 0.3:
