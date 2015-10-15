@@ -22,9 +22,6 @@ def display(optitrack_ip="127.0.0.1"):
     arena = reader.get_mesh('Arena', lighting=True, centered=False)
     arena.load_texture(ratcave.graphics.resources.img_colorgrid)
 
-    rot_mod = tracker.rigid_bodies['Arena'].rotation[1] - tracker.rigid_bodies['Arena'].rotation_pca_y[1]
-    arena.world.rotation[1] = -rot_mod
-
     reader = WavefrontReader(ratcave.graphics.resources.obj_primitives)
     cube = reader.get_mesh('Sphere', lighting=True, scale=.02, centered=True)
 
@@ -46,13 +43,11 @@ def display(optitrack_ip="127.0.0.1"):
     while True:
 
         # Update Everything's Position
+        rot_mod = tracker.rigid_bodies['Arena'].rotation[1] - tracker.rigid_bodies['Arena'].rotation_pca_y[1]
 
-
-        arena.local.position = tracker.rigid_bodies['Arena'].position
-        arena.local.rotation = tracker.rigid_bodies['Arena'].rotation
-
-
-
+        arena.world.position = tracker.rigid_bodies['Arena'].position
+        arena.world.rotation = tracker.rigid_bodies['Arena'].rotation_pca_y
+        arena.world.rotation[1] += aa
 
         #arena.local.rotation[1] = tracker.rigid_bodies['Arena'].rotation_pca_y[1]
         #arena.local.rotation[1] += 180
@@ -63,40 +58,31 @@ def display(optitrack_ip="127.0.0.1"):
         window.draw()
         window.flip()
 
-        # Check if keyboard pfffffffffffffffffressed, and update camera parameters according to key pressed.
+        # Check if keyboard pressed, and update camera parameters according to key pressed.
+        key_dict = {'up': [scene.camera.position[2], .003],
+                    'down': [scene.camera.position[2], -.003],
+                    'left': [scene.camera.position[0], .003],
+                    'right': [scene.camera.position[0], -.003],
+                    'pageup': [scene.camera.position[1], .003],
+                    'pagedown': [scene.camera.position[1], -.003],
+                    'x': [scene.camera.fov_y, .05],
+                    'z': [scene.camera.fov_y, -.05],
+                    'w': [scene.camera.rotation[0], .1],
+                    's': [scene.camera.rotation[0], -.1],
+                    'd': [scene.camera.rotation[2], .1],
+                    'a': [scene.camera.rotation[2], -.1],
+                    'f': [scene.camera.rotation[1], .1],
+                    'r': [scene.camera.rotation[1], -.1],
+                    'j': [aa, .1],
+                    'k': [aa, -.1]}
+
         keylist = event.getKeys()
-        if len(keylist) > 0:
-            if 'up' in keylist:
-                scene.camera.position[2] += .003
-            elif 'down' in keylist:
-                scene.camera.position[2] -= .003
-            elif 'left' in keylist:
-                scene.camera.position[0] += .003
-            elif 'right' in keylist:
-                scene.camera.position[0] -= .003
-            elif 'pageup' in keylist:
-                scene.camera.position[1] += .003
-            elif 'pagedown' in keylist:
-                scene.camera.position[1] -= .01
-            elif 'x' in keylist:
-                scene.camera.fov_y += .05
-            elif 'z' in keylist:
-                scene.camera.fov_y -= .05
-            elif 'w' in keylist:
-                scene.camera.rotation[0] += .1
-            elif 's' in keylist:
-                scene.camera.rotation[0] -= .1
-            elif 'd' in keylist:
-                scene.camera.rotation[2] += .1
-            elif 'a' in keylist:
-                scene.camera.rotation[2] -= .1
-            elif 'f' in keylist:
-                scene.camera.rotation[1] += .1
-            elif 'r' in keylist:
-                scene.camera.rotation[1] -= .1
-            elif 'escape' in keylist:
+        for key in keylist:
+            if key == 'escape':
                 window.close()
                 break
+            elif key in key_dict:
+                key_dict[key][0] += key_dict[key][1]
 
 
             # Print the Following every time a key is detected:
