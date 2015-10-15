@@ -200,42 +200,23 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Projector Calibration script. Projects a random dot pattern and calculates projector position.')
 
-    parser.add_argument('-i',
-                        action='store',
-                        dest='load_filename',
-                        default='',
+    parser.add_argument('-i', action='store', dest='load_filename', default='',
                         help='Calibrate using this datafile instead of collecting data directly.  Should be a pickled file containing a '
                              'single dictionary with two keys: imgPoints (Nx2 array) and objPoints (Nx3 array).')
 
-    parser.add_argument('-o',
-                        action='store',
-                        dest='save_filename',
-                        default='',
+    parser.add_argument('-o', action='store', dest='save_filename', default='',
                         help='Pickle file to store point data to, if desired.')
 
-    parser.add_argument('-t',
-                        action='store_true',
-                        dest='test_mode',
-                        default=False,
+    parser.add_argument('-t', action='store_true', dest='test_mode', default=False,
                         help='If this flag is present, calibration results will be displayed, but not saved.')
 
-    parser.add_argument('-d',
-                        action='store_true',
-                        dest='debug_mode',
-                        default=False,
+    parser.add_argument('-d', action='store_true', dest='debug_mode', default=False,
                         help='If this flag is present, no scanning will occur, but the last collected data will be used for calibration.')
 
-    parser.add_argument('-n',
-                        action='store',
-                        type=int,
-                        dest='n_points',
-                        default=300,
+    parser.add_argument('-n', action='store', type=int, dest='n_points', default=300,
                         help='Number of Data Points to Collect.')
 
-    parser.add_argument('-v',
-                        action='store_true',
-                        dest='human_scan',
-                        default=False,
+    parser.add_argument('-v', action='store_true', dest='human_scan', default=False,
                         help='This flag adds an extra stationary step where the experimenter can add a vertical line of points to check the projector estimate.')
 
     args = parser.parse_args()
@@ -294,3 +275,5 @@ if __name__ == '__main__':
         with open(os.path.join(ratcave.data_dir, 'projector_data.pickle'), "wb") as datafile:
             pickle.dump(projector_data, datafile)
 
+import pdb
+pdb.set_trace()
