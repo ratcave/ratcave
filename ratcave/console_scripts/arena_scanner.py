@@ -326,6 +326,9 @@ if __name__ == '__main__':
     print('Arena Name: {}. N Markers: {}'.format(arena_name, len(tracker.rigid_bodies[arena_name].markers)))
     assert len(tracker.rigid_bodies[arena_name].markers) > 5, "At least 6 markers in the arena's rigid body is required"
 
+    # TODO: Fix bug that requires scanning be done in original orientation (doesn't affect later recreation, luckily.)
+    assert sum(np.abs(tracker.rigid_bodies[arena_name].rotation)) < 1., "Please reset rigid body's orientation to 0,0,0 before scanning.  (Current bug, planned to be fixed!!)"
+
     # Scan points
     points = scan(tracker)
 
