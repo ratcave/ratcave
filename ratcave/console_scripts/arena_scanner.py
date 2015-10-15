@@ -106,9 +106,9 @@ def plot_3d(array3d, title='', ax=None, line=False, color='', square_axis=False,
 
     plot_fun = ax.plot if line else ax.scatter
     if color:
-        plot_fun(array3d[:,0], array3d[:,2], array3d[:,1], color=color)
+        plot_fun(array3d[:, 0], array3d[:, 2], array3d[:, 1], color=color)
     else:
-        plot_fun(array3d[:,0], array3d[:,2], array3d[:,1])
+        plot_fun(array3d[:, 0], array3d[:, 2], array3d[:, 1])
     plt.title(title)
     plt.xlabel('x'), plt.ylabel('z')
 
@@ -130,7 +130,7 @@ def hist_mask(data, threshold=.95, keep='lower'):
                      and a single cluster is searched out.
     """
 
-    bins = len(data)/100 if keep.lower()=='middle' else len(data)/2
+    bins = len(data)/100 if keep.lower() == 'middle' else len(data) / 2
     freq, val = np.histogram(data, bins=bins)
     freq = freq / np.sum(freq).astype(float)  # Normalize frequency data
 
@@ -167,7 +167,7 @@ def normal_nearest_neighbors(data, n_neighbors=40):
     latent_all, normal_all = [], []
     for idx_array in indices:
 
-        pp = PCA(n_components=3).fit(data[idx_array, :]) # Perform PCA
+        pp = PCA(n_components=3).fit(data[idx_array, :])  # Perform PCA
 
         # Get the percent variance of each component
         latent_all.append(pp.explained_variance_ratio_)
@@ -205,7 +205,7 @@ def get_vertices_at_intersections(normals, offsets, ceiling_height):
     dd = np.sum(normals * offsets, axis=1)
 
     # Automatically Separate out the floor from the walls.
-    floor_idx = normals[:,1].argsort()[-1]
+    floor_idx = normals[:, 1].argsort()[-1]
     wall_normals, wall_d = np.delete(normals, floor_idx, axis=0), np.delete(dd, floor_idx)
     floor_normal, floor_d = normals[floor_idx, :], dd[floor_idx]
 
@@ -230,7 +230,7 @@ def get_vertices_at_intersections(normals, offsets, ceiling_height):
 
     # Convert vertex lists to dict of NumPy arrays
     vertices = {key: np.array(value) for key, value in vertices.items()}
-    vertices[len(vertices)] =  np.array(floor_verts)
+    vertices[len(vertices)] = np.array(floor_verts)
 
     norms = {key: np.array(value) for key, value in enumerate(wall_normals)}
     norms[len(norms)] = np.array(floor_normal)
@@ -240,6 +240,7 @@ def get_vertices_at_intersections(normals, offsets, ceiling_height):
 
 def reorder_vertices(vertices):
     """Takes an unordered Nx3 vertex array and reorders them so the resulting face's normal vector faces upwards."""
+
     # Turn the vertex positions to unit-length rays from the mean position (assumes coplanarity)
     vertices = np.array(vertices)
     rays = vertices - np.mean(vertices, axis=0)
@@ -271,6 +272,7 @@ def reorder_vertices(vertices):
 def fan_triangulate(vertices):
     """Return an array of vertices in triangular order using a fan triangulation algorithm."""
     return np.array([[vertices[0], ii, jj] for (ii, jj) in zip(vertices[1:-1], vertices[2:])])
+
 
 def data_to_wavefront(mesh_name, vert_dict, normal_dict):
     """Returns a wavefront .obj string using pre-triangulated vertex dict and normal dict as reference."""
@@ -315,7 +317,6 @@ def meshify(points, n_surfaces=None):
         -vertices
         -normals
     """
-
 
     # Remove Obviously Bad Points according to how far away from main cluster they are
     histmask = np.ones(points.shape[0], dtype=bool)  # Initializing mask with all True values
@@ -399,8 +400,9 @@ if __name__ == '__main__':
     vertices, normals = meshify(points, n_surfaces=args.n_sides)
     vertices = {wall: fan_triangulate(reorder_vertices(verts)) for wall, verts in vertices.items()}  # Triangulate
 
-    ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
+    # Write wavefront .obj file to app data directory and user-specified directory for importing into Blender.
     wave_str = data_to_wavefront(arena_name, vertices, normals)
+
     # Write to app data directory
     with open(path.join(ratcave.data_dir, 'arena.obj'), 'wb') as wavfile:
         wavfile.write(wave_str)
@@ -412,8 +414,7 @@ if __name__ == '__main__':
     # Show resulting plot with points and model in same place.
     ax = plot_3d(points[::8, :], square_axis=True)
     for idx, verts in vertices.items():
-        vert_loop = np.vstack((verts, verts[0,:]))  # so the line reconnects with the first point to show a complete outline
-        show = True if idx == len(vertices)-1 else False
-        ax = plot_3d(vert_loop, ax=ax, title='Triangulated Model', line=True, show=show)
+        show = True if idx == len(vertices)-1 else False  # Only make the plot appear after the last face is drawn.
+        ax = plot_3d(np.vstack((verts, verts[0, :])), ax=ax, title='Triangulated Model', line=True, show=show)
 
 
