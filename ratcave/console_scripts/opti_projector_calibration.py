@@ -45,8 +45,6 @@ def setup_projcal_window():
     scene.camera.ortho_mode = True
     window = gg.Window(scene, screen=1, fullscr=True)
 
-    time.sleep(2)
-
     return window
 
 
@@ -102,7 +100,6 @@ def ray_scan(window, tracker):
             markers = tracker.unidentified_markers[:]
             if tracker.iFrame > old_frame + 5 and len(markers) == 1:
                 if markers[0].position[1] > 0.3:
-                    #if abs(markers[0].position[0]) < .4 and abs(markers[0].position[2]) < .4:
                     screenPos.append(circle.local.position[[0, 1]])
                     pointPos.append(markers[0].position)
                     old_frame = tracker.iFrame
@@ -121,6 +118,8 @@ def scan(n_points=300, window=None, keep_open=False, ray_on=False, sleep_mode=Fa
     optitrack_ip = "127.0.0.1"
     tracker = Optitrack(client_ip=optitrack_ip)
 
+    if ray_on:
+        time.sleep(4)
 
     screenPos, pointPos = random_scan(window, tracker, n_points=n_points, sleep_mode=sleep_mode)
 
@@ -245,28 +244,6 @@ if __name__ == '__main__':
     position, rotation = calibrate(screenPos, pointPos)
     print('Estimated Projector Position:{}\nEstimated Projector Rotation:{}'.format(position, rotation))
 
-    # Check that vector position and direction is generally correct, and give tips if not.
-    #cam_dir = np.dot(cv2.Rodrigues(np.radians(rotation))[0], np.array([[0,0,-1]]).T).flatten()  # Rotate from -Z vector (default OpenGL camera direction)
-    from ratcave.devices.trackers import eulerangles
-    #cam_dir = np.dot(eulerangles.euler2mat(np.radians(rotation)), np.array([[0,0,-1]])).flatten()
-    data_dir = np.mean(pointPos, axis=0) - position
-    data_dir /= np.linalg.norm(data_dir)
-    # if np.dot(cam_dir, data_dir) < .4 or position[1] < 0.:
-    #     print("Warning: Estimated Projector Position and/or Rotation not pointing in right direction.\n\t"
-    #           "Please try to change the projector's 'ceiling mount mode' to off and try again.\n"
-    #           "ex) Propixx VPutil Command: cmm off\n"
-    #           "Also, could be the projection front/rear mode.  Normally should be set to front projection, but if\n "
-    #           "reflecting off of a mirror, should be set to rear projection.\n"
-    #           "ex) Propixx VPutil Command: pm r")
-
-    # # Plot Estimated camera position and rotation.
-    ax = plot_3d(pointPos, square_axis=True)
-
-    # rot_vec = np.vstack((position, position+cam_dir))
-    # plot_3d(rot_vec, ax=ax, color='r', line=True)
-
-    plot_3d(np.array([position]), ax=ax, color='g', show=True)
-
     # Save Results to application data.
     if not args.test_mode:
         print('Saving Results...')
@@ -275,5 +252,21 @@ if __name__ == '__main__':
         with open(os.path.join(ratcave.data_dir, 'projector_data.pickle'), "wb") as datafile:
             pickle.dump(projector_data, datafile)
 
-import pdb
-pdb.set_trace()
+    # # Plot Data
+    ax = plot_3d(pointPos, square_axis=True)
+
+    # Plot and Check that vector position and direction is generally correct, and give tips if not.
+    cam_dir = np.dot(rotation, [0, 0, -1]) # Rotate from -Z vector (default OpenGL camera direction)
+    data_dir = np.mean(pointPos, axis=0) - position
+    data_dir /= np.linalg.norm(data_dir)
+    if np.dot(cam_dir, data_dir) < .4 or position[1] < 0.:
+        print("Warning: Estimated Projector Position and/or Rotation not pointing in right direction.\n\t"
+              "Please try to change the projector's 'ceiling mount mode' to off and try again.\n"
+              "ex) Propixx VPutil Command: cmm off\n"
+              "Also, could be the projection front/rear mode.  Normally should be set to front projection, but if\n "
+              "reflecting off of a mirror, should be set to rear projection.\n"
+              "ex) Propixx VPutil Command: pm r")
+
+    rot_vec = np.vstack((position, position+cam_dir))
+    plot_3d(rot_vec, ax=ax, color='r', line=True)
+    plot_3d(np.array([position]), ax=ax, color='g', show=True)
