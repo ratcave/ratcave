@@ -160,38 +160,28 @@ def calibrate(img_points, obj_points):
         -rotVec (NumPy Array): The Euler3D rotation of the projector (in degrees).
     """
     img_points *= -1
-    retVal, cameraMatrix, distortion_coeffs, rotVec, posVec = cv2.calibrateCamera([obj_points.astype('float32')],
-                                                                                  [img_points.astype('float32')],  # V-axis is downward in image coordinates.  Maybe U axisu should be, too?
-                                                                                  (1,1),  # Currently a false window size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
-                                                                                  flags=cv2.CALIB_USE_INTRINSIC_GUESS |  # Estimates camera matrix without a guess given.
-                                                                                        cv2.CALIB_FIX_PRINCIPAL_POINT |  # Assumes 0 lens shift
-                                                                                        cv2.CALIB_FIX_ASPECT_RATIO | # Assumes equal height/width aspect ratio
-                                                                                        cv2.CALIB_ZERO_TANGENT_DIST | # Assumes zero tangential distortion
-                                                                                        cv2.CALIB_FIX_K1 |  # Assumes 0 radial distortion for each K coefficient (6 in total)
-                                                                                        cv2.CALIB_FIX_K2 |
-                                                                                        cv2.CALIB_FIX_K3 |
-                                                                                        cv2.CALIB_FIX_K4 |
-                                                                                        cv2.CALIB_FIX_K5 |
-                                                                                        cv2.CALIB_FIX_K6
-                                                                                  )
-
+    _, cam_mat, _, rotVec, posVec = cv2.calibrateCamera([obj_points.astype('float32')],
+                                                                            [img_points.astype('float32')],  # V-axis is downward in image coordinates.  Maybe U axisu should be, too?
+                                                                            (1,1),  # Currently a false window size. # TODO: Get cv2.calibrateCamera to return correct intrinsic parameters.
+                                                                            flags=cv2.CALIB_USE_INTRINSIC_GUESS |  # Estimates camera matrix without a guess given.
+                                                                                  cv2.CALIB_FIX_PRINCIPAL_POINT |  # Assumes 0 lens shift
+                                                                                  cv2.CALIB_FIX_ASPECT_RATIO | # Assumes equal height/width aspect ratio
+                                                                                  cv2.CALIB_ZERO_TANGENT_DIST | # Assumes zero tangential distortion
+                                                                                  cv2.CALIB_FIX_K1 |  # Assumes 0 radial distortion for each K coefficient (6 in total)
+                                                                                  cv2.CALIB_FIX_K2 |
+                                                                                  cv2.CALIB_FIX_K3 |
+                                                                                  cv2.CALIB_FIX_K4 |
+                                                                                  cv2.CALIB_FIX_K5 |
+                                                                                  cv2.CALIB_FIX_K6)
 
     # Change order of coordinates from cv2's camera-centered coordinates to Optitrack y-up coords.
     pV, rV = posVec[0], rotVec[0]
 
+    # Return the position array and rotation matrix for the camera.
+    position = -np.dot(pV.T, cv2.Rodrigues(rV)[0]).flatten()  # Invert the position by the rotation to be back in world coordinates
+    rotation_matrix = cv2.Rodrigues(rV)[0]
 
-    position = -np.dot(pV.T, cv2.Rodrigues(rV)[0])  # Invert the position by the rotation to be back in world coordinates
-
-    from ratcave.devices.trackers import eulerangles
-    # rotation = eulerangles.mat2euler(cv2.Rodrigues(rV)[0])
-    #rotation = -np.dot(rV.T, cv2.Rodrigues(rV)[0])
-    # rotation = np.degrees(rotation)
-
-    rotation = cv2.Rodrigues(rV)[0]
-
-    # Return the position and rotation arrays for the camera.
-    return position.flatten(), rotation
-
+    return position, rotation_matrix
 
 
 if __name__ == '__main__':
