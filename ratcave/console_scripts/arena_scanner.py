@@ -42,7 +42,6 @@ def scan(tracker, rigid_body_name, pointwidth=.06, pointspeed=3.):
     rigid body data into a pickled file."""
 
     from ratcave import graphics
-    from psychopy import event
 
     # Initialize Calibration Point Grid.
     wavefront_reader = graphics.WavefrontReader(ratcave.graphics.resources.obj_primitives)
@@ -58,7 +57,7 @@ def scan(tracker, rigid_body_name, pointwidth=.06, pointspeed=3.):
 
     # Main Loop
     old_frame, clock, points, body_markers = tracker.iFrame, countdown_timer(3.), [], []
-    while ('escape' not in event.getKeys()) and clock.next() > 0:
+    while clock.next() > 0:
 
         # Update Calibration Grid
         scene.camera.position[:2] = (pointwidth * np.sin(clock.next() * pointspeed)), (pointwidth * np.cos(clock.next() * pointspeed))
