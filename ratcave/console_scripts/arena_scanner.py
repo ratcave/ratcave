@@ -10,21 +10,7 @@ from ratcave import utils
 np.set_printoptions(precision=3, suppress=True)
 
 
-def countdown_timer(total_secs, stop_iteration=False):
-    """Generates an iterator that returns the time remaining from total_time (secs). Returns 0.0 when time is up, unless
-    stop_iteration is True."""
 
-    import time
-    end_secs = time.time() + total_secs
-    while True:
-        remaining_secs = end_secs - time.time()
-        if remaining_secs > 0.:
-            yield remaining_secs
-        else:
-            if stop_iteration:
-                raise StopIteration("Time is up!")
-            else:
-                yield 0.0  # Don't raise a StopIteration error, just return 0
 
 
 def scan(tracker, pointwidth=.06, pointspeed=3.):
@@ -43,7 +29,7 @@ def scan(tracker, pointwidth=.06, pointspeed=3.):
     window = graphics.Window(scene, screen=1, fullscr=True)
 
     # Main Loop
-    old_frame, clock, points = tracker.iFrame, countdown_timer(3.), []
+    old_frame, clock, points = tracker.iFrame, utils.timers.countdown_timer(3.), []
     while clock.next() > 0:
 
         # Update Calibration Grid
