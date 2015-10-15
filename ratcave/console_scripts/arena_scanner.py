@@ -9,17 +9,6 @@ from ratcave.devices.trackers.optitrack import Optitrack
 np.set_printoptions(precision=3, suppress=True)
 
 
-def autoset_rigid_body_name(tracker, name=''):
-    """Checks if rigid body name is being tracked, or auto-returns the only name that is tracked if there is only one."""
-    if name:
-        assert name in tracker.rigid_bodies, "Rigid Body '{}' not found.".format(name)
-    else:
-        assert len(tracker.rigid_bodies) == 1, "More than one rigid body found.  Please use the -r flag to specify a rigid body name to use for the arena."
-        name = tracker.rigid_bodies.keys()[0]  # Auto-Set rigid body name.
-
-    return name
-
-
 def countdown_timer(total_secs, stop_iteration=False):
     """Generates an iterator that returns the time remaining from total_time (secs). Returns 0.0 when time is up, unless
     stop_iteration is True."""
@@ -380,10 +369,19 @@ if __name__ == '__main__':
     # Start scan process and collect calibration data
     tracker = Optitrack(client_ip="127.0.0.1")
 
-    # Get Rigid Body information the arena point data will be linked to.
-    arena_name = autoset_rigid_body_name(tracker=tracker, name=args.rigid_body_name)
+    # Select Rigid Body to track.
+    try:
+        if not args.rigid_body_name:
+            assert len(tracker.rigid_bodies) == 1, "Only one rigid body should be present for auto-selection. Please use the -r flag to specify a rigid body name to track for the arena."
+        arena_name = args.rigid_body_name if args.rigid_body_name in tracker.rigid_bodies else tracker.rigid_bodies[tracker.rigid_bodies.keys()[0]]
+    except IndexError:
+        raise AssertionError("No Rigid Bodies found in Optitrack tracker.")
+    except KeyError:
+        raise KeyError("Rigid Body '{}' not found in list of Optitrack Rigid Bodies.".format(arena_name))
+
+
     markers = tracker.rigid_bodies[arena_name].markers
-    assert len(markers) > 5, "At least 6 markers in the arena's rigid body is required."
+    assert len(markers) > 5, "At least 6 markers in the arena's rigid body is required. '{}' only has {} markers".format(arena_name, len(markers))
 
     # Scan points
     points = scan(tracker)
