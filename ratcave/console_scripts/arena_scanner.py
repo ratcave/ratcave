@@ -355,11 +355,11 @@ if __name__ == '__main__':
     parser.add_argument('-n', action='store', dest='n_sides', default=0, type=int,
                         help='Number of Sides the Arena has. (If none given, will automatically search for best fit.')
 
-    parser.add_argument('-p', action='store_true', dest='pca_rotate', default=False,
-                        help='If this flag is present, there will be a pca rotation of the mesh based on its markers.')
+    parser.add_argument('-p', action='store_false', dest='pca_rotate', default=True,
+                        help='If this flag is present, there will NOT be a pca rotation of the mesh based on its markers.')
 
-    parser.add_argument('-m', action='store_true', dest='mean_center', default=False,
-                        help='If this flag is present, the arena will be offset by its mean marker position.')
+    parser.add_argument('-m', action='store_false', dest='mean_center', default=True,
+                        help='If this flag is present, the arena will be NOT offset by its mean marker position.')
 
     parser.add_argument('-r', action='store', dest='rigid_body_name', default='',
                         help='Name of the Arena rigid body. If only one rigid body is present, unnecessary--that one will be used automatically.')
@@ -379,20 +379,15 @@ if __name__ == '__main__':
     except KeyError:
         raise KeyError("Rigid Body '{}' not found in list of Optitrack Rigid Bodies.".format(arena_name))
 
-
-    markers = tracker.rigid_bodies[arena_name].markers
-    assert len(markers) > 5, "At least 6 markers in the arena's rigid body is required. '{}' only has {} markers".format(arena_name, len(markers))
+    assert len(tracker.rigid_bodies[arena_name].markers) > 5, "At least 6 markers in the arena's rigid body is required"
 
     # Scan points
     points = scan(tracker)
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
-    if args.mean_center:
-        points -= np.mean(markers, axis=0)
-    if args.pca_rotate:
-        rot_angle = utils.rotate_to_var(markers)
-        print("Rotation Angle: {}".format(rot_angle))
-        points = np.dot(points,  rotation_matrix(np.radians(rot_angle), [0,1,0])[:3, :3])
+    markers = tracker.rigid_bodies[arena_name].markers
+    points = points - np.mean(markers, axis=0) if args.mean_center else points
+    points = np.dot(points,  rotation_matrix(np.radians(utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points
 
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=args.n_sides)
