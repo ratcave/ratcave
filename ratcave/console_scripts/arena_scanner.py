@@ -10,9 +10,6 @@ from ratcave import utils
 np.set_printoptions(precision=3, suppress=True)
 
 
-
-
-
 def scan(tracker, pointwidth=.06, pointspeed=3.):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
