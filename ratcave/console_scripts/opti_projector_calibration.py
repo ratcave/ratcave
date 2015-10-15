@@ -129,8 +129,8 @@ def scan(n_points=300, window=None, keep_open=False, ray_on=False, sleep_mode=Fa
 
     if ray_on:
         sp2, pp2 = ray_scan(window, tracker)
-        screenPos.extend(sp2)
-        pointPos.extend(pp2)
+        # screenPos.extend(sp2)  # TODO: Figure out how to properly get human-scanned projector calibration data in so OpenCV gets better estimate.
+        # pointPos.extend(pp2)
 
     # Close Window
     if not keep_open:
@@ -184,10 +184,7 @@ def calibrate(img_points, obj_points):
     position = -np.dot(pV.T, cv2.Rodrigues(rV)[0]).flatten()  # Invert the position by the rotation to be back in world coordinates
     rotation_matrix = cv2.Rodrigues(rV)[0]
 
-    print('Early Position: {}'.format(position))
-
     return position, rotation_matrix
-
 
 
 if __name__ == '__main__':

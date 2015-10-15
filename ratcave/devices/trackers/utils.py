@@ -24,12 +24,12 @@ def rotate_to_var(markers):
     print("Angle within function: {}".format(angle))
     return angle
 
-def get_pca_rotation(markers):
-
-    markers_2d = markers[:, [0, 2]]
-    pca = PCA(n_components=1).fit(markers[:, [0, 2]])
-
-    coeff = pca.components_[0]
+# def get_pca_rotation(markers):
+#
+#     markers_2d = markers[:, [0, 2]]
+#     pca = PCA(n_components=1).fit(markers[:, [0, 2]])
+#
+#     coeff = pca.components_[0]
 
 
 

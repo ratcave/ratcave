@@ -261,9 +261,11 @@ def meshify(points, n_surfaces=None):
     points_ff = points_f[normfilter, :]
     normals_ff = normals_f[normfilter, :]
 
+    ceiling_height = points_ff[:, 1].max() + .005
+
     # Fit the filtered normal data using a gaussian classifier.
     min_clusters = n_surfaces if n_surfaces else 4
-    max_clusters = n_surfaces+1 if n_surfaces else 15
+    max_clusters = n_surfaces + 1 if n_surfaces else 15
     model = cluster_normals(normals_ff, min_clusters=min_clusters, max_clusters=max_clusters)
 
     # Get normals from model means
@@ -277,7 +279,7 @@ def meshify(points, n_surfaces=None):
     assert not np.isnan(surface_offsets.sum()), "Incorrect model: No Points found to assign to at least one wall for intersection calculation."
 
     ## CALCULATE PLANE INTERSECTIONS TO GET VERTICES ##
-    vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, points_ff[:,1].max()+.005)
+    vertices, normals = get_vertices_at_intersections(surface_normals, surface_offsets, ceiling_height)
     return vertices, normals
 
 
