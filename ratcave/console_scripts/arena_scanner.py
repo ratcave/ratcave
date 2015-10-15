@@ -37,7 +37,7 @@ def countdown_timer(total_secs, stop_iteration=False):
                 yield 0.0  # Don't raise a StopIteration error, just return 0
 
 
-def scan(tracker, rigid_body_name, pointwidth=.06, pointspeed=3.):
+def scan(tracker, pointwidth=.06, pointspeed=3.):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
 
@@ -52,15 +52,13 @@ def scan(tracker, rigid_body_name, pointwidth=.06, pointspeed=3.):
     scene.camera.ortho_mode = True
     window = graphics.Window(scene, screen=1, fullscr=True)
 
-    # Get Tracker and Arena Rigid Body
-    body = tracker.rigid_bodies[rigid_body_name]
-
     # Main Loop
-    old_frame, clock, points, body_markers = tracker.iFrame, countdown_timer(3.), [], []
+    old_frame, clock, points = tracker.iFrame, countdown_timer(3.), []
     while clock.next() > 0:
 
         # Update Calibration Grid
-        scene.camera.position[:2] = (pointwidth * np.sin(clock.next() * pointspeed)), (pointwidth * np.cos(clock.next() * pointspeed))
+        scene.camera.position[:2] = (pointwidth * np.sin(clock.next() * pointspeed)), \
+                                    (pointwidth * np.cos(clock.next() * pointspeed))
         window.draw()
         window.flip()
 
@@ -68,16 +66,11 @@ def scan(tracker, rigid_body_name, pointwidth=.06, pointspeed=3.):
         if tracker.iFrame != old_frame:
             old_frame = tracker.iFrame
             points.extend([marker.position for marker in tracker.unidentified_markers])
-            if len(body.markers) > 3:
-                if (len(body_markers) == 0) or (len(body.markers) == len(body_markers[-1])):
-                    body_markers.append(np.array([marker.position for marker in body.markers]))
 
     window.close()
+
     assert(len(points)>100), "Only {} points detected.  Tracker is not detecting enough points to model".format(len(points))
-    points = np.array(points)
-    assert(len(body_markers)>2), "No markers found in Rigid Body. This bug happens sporadically sometimes, please try again."
-    body_markers = np.mean(np.array(body_markers), axis=0)  # Return average marker position over time.
-    return points, body_markers
+    return np.array(points)
 
 
 def plot_3d(array3d, title='', ax=None, line=False, color='', square_axis=False, show=False):
@@ -390,8 +383,14 @@ if __name__ == '__main__':
 
     # Start scan process and collect calibration data
     tracker = Optitrack(client_ip="127.0.0.1")
+
+    # Get Rigid Body information the arena point data will be linked to.
     arena_name = autoset_rigid_body_name(tracker=tracker, name=args.rigid_body_name)
-    points, markers = scan(tracker, arena_name)
+    markers = tracker.rigid_bodies[arena_name].markers
+    assert len(markers) > 5, "At least 6 markers in the arena's rigid body is required."
+
+    # Scan points
+    points = scan(tracker)
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
     if args.mean_center:
