@@ -1,4 +1,5 @@
 *.pyc
+*.pyd
 *~
 _build
 _static
