@@ -2,9 +2,10 @@ __author__ = 'nickdg'
 
 import numpy as np
 from sklearn.decomposition import PCA
-from ratcave.devices.trackers import utils
+from ratcave.devices import trackers
 from ratcave.graphics.core._transformations import rotation_matrix
 from ratcave.devices.trackers.optitrack import Optitrack
+from ratcave import utils
 
 np.set_printoptions(precision=3, suppress=True)
 
@@ -60,52 +61,6 @@ def scan(tracker, pointwidth=.06, pointspeed=3.):
 
     assert(len(points)>100), "Only {} points detected.  Tracker is not detecting enough points to model".format(len(points))
     return np.array(points)
-
-
-def plot_3d(array3d, title='', ax=None, line=False, color='', square_axis=False, show=False):
-    """
-    Make 3D scatterplot that plots the x, y, and z columns in a dataframe. Returns figure.
-
-    Args:
-        -array3d (Nx3 Numpy Array): data to plot.
-        -ax (PyPlot Axis Object=None): Axis object to use.
-        -line (bool=True):Whether to plot with lines instead of just points
-        -color (str=''): the color to set.
-        -square_axis (bool=False): Whether to square the axes to fit the data.
-        -show (bool=False): Whether to immediately show the figure.  This is a blocking operation.
-
-    Returns:
-        -ax (PyPlot Axis Object): The Axis the data is plotted on.
-    """
-
-    from matplotlib import pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
-
-    if not ax:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-
-    if square_axis:
-        tot_range = (array3d.max(axis=0) - array3d.min(axis=0)).max() * .55
-        mn = array3d.mean(axis=0, keepdims=True) - tot_range
-        mx = array3d.mean(axis=0, keepdims=True) + tot_range
-        limits = np.vstack([mn, mx]).transpose()
-        for coord, idx in zip('xyz', range(3)):
-            getattr(ax, 'set_{0}lim3d'.format(coord))(limits[idx])
-
-    plot_fun = ax.plot if line else ax.scatter
-    if color:
-        plot_fun(array3d[:, 0], array3d[:, 2], array3d[:, 1], color=color)
-    else:
-        plot_fun(array3d[:, 0], array3d[:, 2], array3d[:, 1])
-    plt.title(title)
-    plt.xlabel('x'), plt.ylabel('z')
-
-    # Immediately display figure is show is True
-    if show:
-        plt.show()
-
-    return ax
 
 
 def hist_mask(data, threshold=.95, keep='lower'):
@@ -387,7 +342,7 @@ if __name__ == '__main__':
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
     markers = tracker.rigid_bodies[arena_name].markers
     points = points - np.mean(markers, axis=0) if args.mean_center else points
-    points = np.dot(points,  rotation_matrix(np.radians(utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points
+    points = np.dot(points,  rotation_matrix(np.radians(trackers.utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points
 
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=args.n_sides)
@@ -405,9 +360,9 @@ if __name__ == '__main__':
             wavfile.write(wave_str)
 
     # Show resulting plot with points and model in same place.
-    ax = plot_3d(points[::8, :], square_axis=True)
+    ax = utils.plot_3d(points[::8, :], square_axis=True)
     for idx, verts in vertices.items():
         show = True if idx == len(vertices)-1 else False  # Only make the plot appear after the last face is drawn.
-        ax = plot_3d(np.vstack((verts, verts[0, :])), ax=ax, title='Triangulated Model', line=True, show=show)
+        ax = utils.plot_3d(np.vstack((verts, verts[0, :])), ax=ax, title='Triangulated Model', line=True, show=show)
 
 
