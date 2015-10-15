@@ -49,6 +49,7 @@ def display(optitrack_ip="127.0.0.1", calib_object_name=''):
         # Update Everything's Position
         arena.world.position = tracker.rigid_bodies['Arena'].position
         arena.world.rotation = tracker.rigid_bodies['Arena'].rotation_pca_y
+        #aa += .5
         arena.world.rotation[1] += aa
 
 

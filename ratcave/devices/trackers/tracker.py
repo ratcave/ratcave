@@ -54,6 +54,14 @@ class RigidBody(object):
         self.__rotation_to_var = None
 
     @property
+    def point_cloud_markers(self):
+        from ratcave.graphics.core._transformations import rotation_matrix
+        rot = np.radians(self.rotation)
+        rot_mat = np.dot(np.dot(rotation_matrix(rot[0], [1, 0, 0]), rotation_matrix(rot[1], [0, 1, 0])), rotation_matrix(rot[2], [0, 0, 2]))
+        mark_pos = np.array([marker.position for marker in self.markers])
+        return np.dot(mark_pos, rot_mat[:3, :3])
+
+    @property
     def position(self):
         return self.__position
 
@@ -84,7 +92,9 @@ class RigidBody(object):
     def rotation_pca_y(self):
         """Return RotationEuler, compensated for the initialized PCA Y rotation angle.  Use for 3D-scanned objects."""
         if self.__rotation_to_var is None and self.markers:
-            marker_pos = np.array([marker.position for marker in self.markers])
+            from ratcave.graphics.core._transformations import rotation_matrix
+            marker_pos = self.point_cloud_markers
             self.__rotation_to_var = utils.rotate_to_var(marker_pos)
+
         return RotationEuler(self.__rotation[0], self.__rotation[1] + self.__rotation_to_var, self.__rotation[2])
 

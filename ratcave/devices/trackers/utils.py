@@ -6,6 +6,9 @@ from sklearn.decomposition import PCA
 def rotate_to_var(markers):
     """Returns degrees to rotate about y axis so greatest marker variance points in +X direction"""
 
+    # Mean-Center
+    markers -= np.mean(markers, axis=0)
+
     # Vector in direction of greatest variance
     pca = PCA(n_components=1).fit(markers[:, [0, 2]])
     coeff_vec = pca.components_[0]

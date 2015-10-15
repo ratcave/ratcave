@@ -330,6 +330,7 @@ if __name__ == '__main__':
     points = scan(tracker)
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
+    #markers = tracker.rigid_bodies[arena_name].point_cloud_markers
     markers = np.array([marker.position for marker in tracker.rigid_bodies[arena_name].markers])
     points = points - np.mean(markers, axis=0) if args.mean_center else points
     points = np.dot(points,  rotation_matrix(np.radians(trackers.utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points
