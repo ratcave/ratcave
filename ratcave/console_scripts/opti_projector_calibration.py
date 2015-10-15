@@ -20,6 +20,9 @@ vert_dist = 0.66667
 
 def slow_draw(window, tracker, sleep_mode=False):
         """Draws the window contents to screen, then blocks until tracker data updates."""
+
+        time.sleep(.02)
+
         window.draw()
         window.flip()
 
@@ -30,6 +33,7 @@ def slow_draw(window, tracker, sleep_mode=False):
 
         if sleep_mode:
             time.sleep(.02)
+        time.sleep(.02)
 
 
 def setup_projcal_window():
@@ -180,7 +184,10 @@ def calibrate(img_points, obj_points):
     position = -np.dot(pV.T, cv2.Rodrigues(rV)[0]).flatten()  # Invert the position by the rotation to be back in world coordinates
     rotation_matrix = cv2.Rodrigues(rV)[0]
 
+    print('Early Position: {}'.format(position))
+
     return position, rotation_matrix
+
 
 
 if __name__ == '__main__':
@@ -215,6 +222,7 @@ if __name__ == '__main__':
     try:
         from ratcave.devices import propixx_utils
         propixx_utils.start_frame_sync_signal()
+        print("Using ProPixx Frame Synchronization.")
         sleep_mode = False
     except ImportError:
         print("Warning: No frame-sync method detected (only propixx currently supported.  Using time delays between frames to ensure tracker-display synchronization (a slower method)")
@@ -256,15 +264,15 @@ if __name__ == '__main__':
     ax = plot_3d(pointPos, square_axis=True)
 
     # Plot and Check that vector position and direction is generally correct, and give tips if not.
-    cam_dir = np.dot(rotation, [0, 0, -1]) # Rotate from -Z vector (default OpenGL camera direction)
+    cam_dir = np.dot([0, 0, -1], rotation) # Rotate from -Z vector (default OpenGL camera direction)
     data_dir = np.mean(pointPos, axis=0) - position
     data_dir /= np.linalg.norm(data_dir)
     if np.dot(cam_dir, data_dir) < .4 or position[1] < 0.:
         print("Warning: Estimated Projector Position and/or Rotation not pointing in right direction.\n\t"
-              "Please try to change the projector's 'ceiling mount mode' to off and try again.\n"
-              "ex) Propixx VPutil Command: cmm off\n"
-              "Also, could be the projection front/rear mode.  Normally should be set to front projection, but if\n "
-              "reflecting off of a mirror, should be set to rear projection.\n"
+              "Please try to change the projector's 'ceiling mount mode' to off and try again.\n\t"
+              "ex) Propixx VPutil Command: cmm off\n\t"
+              "Also, could be the projection front/rear mode.  Normally should be set to front projection, but if\n\t "
+              "reflecting off of a mirror, should be set to rear projection.\n\t"
               "ex) Propixx VPutil Command: pm r")
 
     rot_vec = np.vstack((position, position+cam_dir))

@@ -43,11 +43,13 @@ def display(optitrack_ip="127.0.0.1", calib_object_name=''):
     print "Arena settings:\n -local\n\tPosition: {}\n\tRotation: {}\n -world\n\tPosition: {}\n\tRotation: {}".format(
         arena.local.position, arena.local.rotation, arena.world.position, arena.world.rotation)
 
+    aa = 0
     while True:
 
         # Update Everything's Position
         arena.world.position = tracker.rigid_bodies['Arena'].position
         arena.world.rotation = tracker.rigid_bodies['Arena'].rotation_pca_y
+        arena.world.rotation[1] += aa
 
         # If there's another object to track, then track it.
         if calib_object_name:
@@ -67,6 +69,8 @@ def display(optitrack_ip="127.0.0.1", calib_object_name=''):
         elif 'down' in keys:
             scene.camera.fov_y -= .1
             print('fov_y: {}'.format(scene.camera.fov_y))
+        elif 'space' in keys:
+            aa += 180
 
 
 
