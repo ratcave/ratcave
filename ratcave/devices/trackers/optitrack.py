@@ -219,7 +219,7 @@ class Optitrack(object):
         self._data_thread.start()
 
         # Get first frame of data, and check to make sure no recordings are already in progress.
-        #self.get_data()
+        self.get_data()
 
         #assert not self.is_recording, "Motive is already recording!  Please stop recording and reconnect to continue."
 

@@ -86,5 +86,5 @@ class RigidBody(object):
         if self.__rotation_to_var is None and self.markers:
             marker_pos = np.array([marker.position for marker in self.markers])
             self.__rotation_to_var = utils.rotate_to_var(marker_pos)
-        return RotationEuler(self.__rotation[0], self.__rotation[1]+self.__rotation_to_var, self.__rotation[2])
+        return RotationEuler(self.__rotation[0], self.__rotation[1] + self.__rotation_to_var, self.__rotation[2])
 

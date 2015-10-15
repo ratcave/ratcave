@@ -51,6 +51,7 @@ def display(optitrack_ip="127.0.0.1", calib_object_name=''):
         arena.world.rotation = tracker.rigid_bodies['Arena'].rotation_pca_y
         arena.world.rotation[1] += aa
 
+
         # If there's another object to track, then track it.
         if calib_object_name:
             cube.local.position = tracker.rigid_bodies[calib_object_name].position
