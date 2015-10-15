@@ -1,25 +1,25 @@
 __author__ = 'nickdg'
-
-import numpy as np
 import os
+import cv2
+import copy
+
+import time
+import numpy as np
+import progressbar as pb
+
+import ratcave
+import ratcave.graphics as gg
+from ratcave.devices import Optitrack
+from ratcave.utils import plot_3d
 
 from psychopy import event, core
 
-import ratcave
-from ratcave.devices import Optitrack
-import ratcave.graphics as gg
-import cv2
-from ratcave.devices import propixx_utils
-
 np.set_printoptions(precision=3, suppress=True)
-import time
-import progressbar as pb
-import copy
-from ratcave.utils import plot_3d
 
 vert_dist = 0.66667
 
-def slow_draw(window, tracker):
+
+def slow_draw(window, tracker, sleep_mode=False):
         """Draws the window contents to screen, then blocks until tracker data updates."""
         window.draw()
         window.flip()
@@ -29,13 +29,15 @@ def slow_draw(window, tracker):
         while tracker.iFrame == old_frame:
             pass
 
-        #time.sleep(.02)
+        if sleep_mode:
+            time.sleep(.02)
+
 
 def setup_projcal_window():
     """Returns Window with everything needed for doing projector calibration."""
 
     # Setup graphics
-    propixx_utils.start_frame_sync_signal()
+
     wavefront_reader = gg.WavefrontReader(ratcave.graphics.resources.obj_primitives)
     circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.004)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
@@ -48,7 +50,8 @@ def setup_projcal_window():
 
     return window
 
-def random_scan(window, tracker, n_points=300):
+
+def random_scan(window, tracker, n_points=300, sleep_mode=False):
 
     circle = window.active_scene.meshes[0]
     screenPos, pointPos = [], []
@@ -60,7 +63,7 @@ def random_scan(window, tracker, n_points=300):
         # Update position of circle, and draw.
         circle.visible = True
         circle.local.position[[0, 1]] = np.random.random(2) - .5
-        slow_draw(window, tracker)
+        slow_draw(window, tracker, sleep_mode=sleep_mode)
 
         # Try to isolate a single point.
         search_clock = core.CountdownTimer(.05)
@@ -108,7 +111,8 @@ def ray_scan(window, tracker):
 
     return screenPos, pointPos
 
-def scan(n_points=300, window=None, keep_open=False, ray_on=False):
+
+def scan(n_points=300, window=None, keep_open=False, ray_on=False, sleep_mode=False):
 
 
     # Setup Graphics
@@ -120,7 +124,7 @@ def scan(n_points=300, window=None, keep_open=False, ray_on=False):
     tracker = Optitrack(client_ip=optitrack_ip)
 
 
-    screenPos, pointPos = random_scan(window, tracker, n_points=n_points)
+    screenPos, pointPos = random_scan(window, tracker, n_points=n_points, sleep_mode=sleep_mode)
 
     if ray_on:
         sp2, pp2 = ray_scan(window, tracker)
@@ -221,9 +225,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    try:
+        from ratcave.devices import propixx_utils
+        propixx_utils.start_frame_sync_signal()
+        sleep_mode = False
+    except ImportError:
+        print("Warning: No frame-sync method detected (only propixx currently supported.  Using time delays between frames to ensure tracker-display synchronization (a slower method)")
+        sleep_mode = True
+
     # Collect data and save to app directory or get data from file
     if not args.load_filename and not args.debug_mode:
-        screenPos, pointPos, winSize = scan(n_points=args.n_points, ray_on=args.human_scan) # Collect data
+        screenPos, pointPos, winSize = scan(n_points=args.n_points, ray_on=args.human_scan, sleep_mode=sleep_mode) # Collect data
         with open(os.path.join(ratcave.data_dir, 'projector_data_points.pickle'), "wb") as datafile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, datafile)  # Save data
     else:
