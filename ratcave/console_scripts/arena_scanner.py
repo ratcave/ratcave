@@ -182,11 +182,11 @@ def normal_nearest_neighbors(data, n_neighbors=40):
 
 def cluster_normals(normal_array, min_clusters=4, max_clusters=15):
     """Returns sklearn model from clustering an NxK array, comparing different numbers of clusters for a best fit."""
-    from sklearn import mixture
+    import sklearn
 
     model, old_bic = None, 1e32
     for n_components in range(min_clusters, max_clusters):
-        gmm = mixture.GMM(n_components=n_components) # Fit the filtered normal data using a gaussian classifier
+        gmm = sklearn.mixture.GMM(n_components=n_components) # Fit the filtered normal data using a gaussian classifier
         temp_model = gmm.fit(normal_array)
         temp_bic = temp_model.bic(normal_array)
         print("N Components: {}\tBIC: {}".format(n_components, temp_bic))
@@ -239,7 +239,7 @@ def get_vertices_at_intersections(normals, offsets, ceiling_height):
 
 
 def reorder_vertices(vertices):
-    """Takes an unordered Nx3 vertex array and reorders them to face the same direction as the normal"""
+    """Takes an unordered Nx3 vertex array and reorders them so the resulting face's normal vector faces upwards."""
     # Turn the vertex positions to unit-length rays from the mean position (assumes coplanarity)
     vertices = np.array(vertices)
     rays = vertices - np.mean(vertices, axis=0)
@@ -270,8 +270,7 @@ def reorder_vertices(vertices):
 
 def fan_triangulate(vertices):
     """Return an array of vertices in triangular order using a fan triangulation algorithm."""
-    new_verts = []
-    vert0 = vertices[0]
+    new_verts, vert0 = [], vertices[0]
     for ii, jj in zip(vertices[1:-1], vertices[2:]):
         new_verts.extend([vert0, ii, jj])
     return np.array(new_verts)
