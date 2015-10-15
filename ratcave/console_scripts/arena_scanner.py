@@ -273,6 +273,7 @@ def meshify(points, n_surfaces=None):
 
     # Calculate mean offset of vertices for each wall
     ids = model.predict(normals_ff)  # index for each point, giving the wall id number (0:n_components)
+
     surface_offsets = np.zeros_like(surface_normals)
     for idx in range(len(surface_normals)):
         surface_offsets[idx, :] = np.mean(points_ff[ids==idx, :], axis=0)
