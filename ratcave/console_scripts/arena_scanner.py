@@ -4,22 +4,28 @@ import numpy as np
 from sklearn.decomposition import PCA
 from ratcave.devices.trackers import utils
 from ratcave.graphics.core._transformations import rotation_matrix
+from ratcave.devices.trackers.optitrack import Optitrack
 
 np.set_printoptions(precision=3, suppress=True)
 
 
-def scan(optitrack_ip="127.0.0.1", rigid_body_name='Arena', pointwidth=.06, pointspeed=3.):
+def autoset_rigid_body_name(tracker, name=''):
+    """Checks if rigid body name is being tracked, or auto-returns the only name that is tracked if there is only one."""
+    if name:
+        assert name in tracker.rigid_bodies, "Rigid Body '{}' not found.".format(name)
+    else:
+        assert len(tracker.rigid_bodies) == 1, "More than one rigid body found.  Please use the -r flag to specify a rigid body name to use for the arena."
+        name = tracker.rigid_bodies.keys()[0]  # Auto-Set rigid body name.
+
+    return name
+
+
+def scan(tracker, rigid_body_name, pointwidth=.06, pointspeed=3.):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
 
     from ratcave import graphics
-    from ratcave.devices.trackers.optitrack import Optitrack
     from psychopy import event, core
-
-    # Get Tracker and Arena Rigid Body
-    tracker = Optitrack(client_ip=optitrack_ip)
-    assert rigid_body_name in tracker.rigid_bodies, "Rigid Body '{}' not found.".format(rigid_body_name)
-    body = tracker.rigid_bodies['Arena']
 
     # Initialize Calibration Point Grid.
     wavefront_reader = graphics.WavefrontReader(ratcave.graphics.resources.obj_primitives)
@@ -31,6 +37,9 @@ def scan(optitrack_ip="127.0.0.1", rigid_body_name='Arena', pointwidth=.06, poin
     scene.camera.ortho_mode = True
 
     window = graphics.Window(scene, screen=1, fullscr=True)
+
+    # Get Tracker and Arena Rigid Body
+    body = tracker.rigid_bodies[rigid_body_name]
 
     # Main Loop
     old_frame, clock, points, body_markers = tracker.iFrame, core.CountdownTimer(3.), [], []
@@ -348,34 +357,27 @@ if __name__ == '__main__':
 
     # Get command line inputs
     parser = argparse.ArgumentParser(description="This is the RatCAVE arena scanner script.  It projects a dot pattern and collects the positions of the dots.")
-    parser.add_argument('-o',
-                        action='store',
-                        dest='save_filename',
-                        default='',
+    parser.add_argument('-o', action='store', dest='save_filename', default='',
                         help='Additional Filename to save Arena Wavefront .obj data to.')
-    parser.add_argument('-n',
-                        action='store',
-                        dest='n_sides',
-                        default=0,
-                        type=int,
+
+    parser.add_argument('-n', action='store', dest='n_sides', default=0, type=int,
                         help='Number of Sides the Arena has. (If none given, will automatically search for best fit.')
 
-    parser.add_argument('-p',
-                        action='store_true',
-                        dest='pca_rotate',
-                        default=False,
+    parser.add_argument('-p', action='store_true', dest='pca_rotate', default=False,
                         help='If this flag is present, there will be a pca rotation of the mesh based on its markers.')
 
-    parser.add_argument('-m',
-                        action='store_true',
-                        dest='mean_center',
-                        default=False,
+    parser.add_argument('-m', action='store_true', dest='mean_center', default=False,
                         help='If this flag is present, the arena will be offset by its mean marker position.')
+
+    parser.add_argument('-r', action='store', dest='rigid_body_name', default='',
+                        help='Name of the Arena rigid body. If only one rigid body is present, unnecessary--that one will be used automatically.')
 
     args = parser.parse_args()
 
-    # Start scan process and collect calibreation data
-    points, markers = scan()
+    # Start scan process and collect calibration data
+    tracker = Optitrack(client_ip="127.0.0.1")
+    arena_name = autoset_rigid_body_name(tracker=tracker, name=args.rigid_body_name)
+    points, markers = scan(tracker, arena_name)
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
     if args.mean_center:
@@ -390,7 +392,7 @@ if __name__ == '__main__':
     vertices = {wall: fan_triangulate(reorder_vertices(verts)) for wall, verts in vertices.items()}  # Triangulate
 
     ## WRITE WAVEFRONT .OBJ FILE FOR IMPORTING INTO BLENDER ##
-    wave_str = data_to_wavefront('Arena', vertices, normals)
+    wave_str = data_to_wavefront(arena_name, vertices, normals)
     # Write to app data directory
     with open(path.join(ratcave.data_dir, 'arena.obj'), 'wb') as wavfile:
         wavfile.write(wave_str)
