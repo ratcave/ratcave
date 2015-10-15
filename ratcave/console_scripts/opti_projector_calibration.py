@@ -1,7 +1,6 @@
 __author__ = 'nickdg'
 import os
 import cv2
-import copy
 
 import time
 import numpy as np
@@ -67,10 +66,10 @@ def random_scan(window, tracker, n_points=300, sleep_mode=False):
 
         # Try to isolate a single point.
         for _ in timers.countdown_timer(.05, stop_iteration=True):
-            markers = copy.deepcopy(tracker.unidentified_markers)
+            markers = tracker.unidentified_markers[:]
             if len(markers) == 1 and markers[0].position[1] > 0.:
                 screenPos.append(circle.local.position[[0, 1]])
-                # Updatae Progress Bar
+                # Update Progress Bar
                 pointPos.append(markers[0].position)
                 pbar.widgets[2] = collect_fmt + str(len(pointPos))
                 pbar.update(len(pointPos))
@@ -91,21 +90,22 @@ def ray_scan(window, tracker):
 
     circle = window.active_scene.meshes[0]
     circle.visible = True
-    pointPos, screenPos = [], []
 
     # Do some non-random points to so human can change height range.
-    circle.local.position[[0, 1]] = 0,0
-    window.draw()
-    window.flip()
-    old_frame = tracker.iFrame
-    for _ in timers.countdown_timer(5, stop_iteration=True):
-        markers = copy.deepcopy(tracker.unidentified_markers)
-        if tracker.iFrame > old_frame + 5 and len(markers) == 1:
-            if markers[0].position[1] > 0.3:
-                #if abs(markers[0].position[0]) < .4 and abs(markers[0].position[2]) < .4:
-                screenPos.append(circle.local.position[[0, 1]])
-                pointPos.append(markers[0].position)
-                old_frame = tracker.iFrame
+    pointPos, screenPos = [], []
+    for pos in [(0, 0), (-.5, 0), (.5, 0)]:
+        circle.local.position[[0, 1]] = pos
+        window.draw()
+        window.flip()
+        old_frame = tracker.iFrame
+        for _ in timers.countdown_timer(5, stop_iteration=True):
+            markers = tracker.unidentified_markers[:]
+            if tracker.iFrame > old_frame + 5 and len(markers) == 1:
+                if markers[0].position[1] > 0.3:
+                    #if abs(markers[0].position[0]) < .4 and abs(markers[0].position[2]) < .4:
+                    screenPos.append(circle.local.position[[0, 1]])
+                    pointPos.append(markers[0].position)
+                    old_frame = tracker.iFrame
 
     return screenPos, pointPos
 
@@ -209,7 +209,7 @@ if __name__ == '__main__':
                         help='Number of Data Points to Collect.')
 
     parser.add_argument('-v', action='store_true', dest='human_scan', default=False,
-                        help='This flag adds an extra stationary step where the experimenter can add a vertical line of points to check the projector estimate.')
+                        help='This flag adds an extra stationary step where the experimenter can add some vertical lines of points to improve the projector estimate.')
 
     args = parser.parse_args()
 
