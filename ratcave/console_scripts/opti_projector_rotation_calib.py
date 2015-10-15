@@ -27,7 +27,7 @@ def display(optitrack_ip="127.0.0.1", calib_object_name=''):
     # Create Scene and Window
     scene = Scene(meshes)
     scene.camera = projector
-    scene.camera.fov_y = 27.25
+    scene.camera.fov_y = 27.35
 
     scene.light.position = scene.camera.position
 

@@ -336,7 +336,7 @@ if __name__ == '__main__':
     if not args.test_mode:
         print('Saving Results...')
         # Save Data in format for putting into a ratcave.graphics.Camera
-        projector_data = {'position': position, 'rotation': rotation, 'fov_y': 27.25}  # TODO: Un-hardcode the fov_y
+        projector_data = {'position': position, 'rotation': rotation, 'fov_y': 27.35}  # TODO: Un-hardcode the fov_y
         with open(os.path.join(ratcave.data_dir, 'projector_data.pickle'), "wb") as datafile:
             pickle.dump(projector_data, datafile)
 
