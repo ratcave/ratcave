@@ -15,26 +15,6 @@ from psychopy import event
 
 np.set_printoptions(precision=3, suppress=True)
 
-vert_dist = 0.66667
-
-
-def slow_draw(window, tracker, sleep_mode=False):
-        """Draws the window contents to screen, then blocks until tracker data updates."""
-
-        time.sleep(.02)
-
-        window.draw()
-        window.flip()
-
-        # Wait for tracker to update, just to be safe and align all data together.
-        old_frame = tracker.iFrame
-        while tracker.iFrame == old_frame:
-            pass
-
-        if sleep_mode:
-            time.sleep(.02)
-        time.sleep(.02)
-
 
 def setup_projcal_window():
     """Returns Window with everything needed for doing projector calibration."""
@@ -51,8 +31,14 @@ def setup_projcal_window():
 
     return window
 
+def slow_draw(window, sleep_time=.05):
+        """Draws the window contents to screen, then blocks until tracker data updates."""
+        window.draw()
+        window.flip()
+        time.sleep(sleep_time)
 
-def random_scan(window, tracker, n_points=300, sleep_mode=False):
+
+def random_scan(window, tracker, n_points=300):
 
     circle = window.active_scene.meshes[0]
     screenPos, pointPos = [], []
@@ -64,7 +50,7 @@ def random_scan(window, tracker, n_points=300, sleep_mode=False):
         # Update position of circle, and draw.
         circle.visible = True
         circle.local.position[[0, 1]] = np.random.random(2) - .5
-        slow_draw(window, tracker, sleep_mode=sleep_mode)
+        slow_draw(window)
 
         # Try to isolate a single point.
         for _ in timers.countdown_timer(.05, stop_iteration=True):
@@ -83,7 +69,7 @@ def random_scan(window, tracker, n_points=300, sleep_mode=False):
             pbar.update(len(pointPos))
         # Hide circle, and wait again for a new update.
         circle.visible = False
-        slow_draw(window, tracker)
+        slow_draw(window, sleep_time=.02)
 
     return np.array(screenPos), np.array(pointPos)
 
@@ -153,12 +139,14 @@ def calibrate(img_points, obj_points):
 if __name__ == '__main__':
 
     import pickle
+    import argparse
+
+    app_data_file = os.path.join(ratcave.data_dir, 'projector_data_points')
 
     # Get command line inputs
-    import argparse
     parser = argparse.ArgumentParser(description='Projector Calibration script. Projects a random dot pattern and calculates projector position.')
 
-    parser.add_argument('-i', action='store', dest='load_filename', default=os.path.join(ratcave.data_dir, 'projector_data_points.pickle'),
+    parser.add_argument('-i', action='store', dest='load_filename', default=app_data_file,
                         help='Calibrate using this datafile instead of collecting data directly.  Should be a pickled file containing a '
                              'single dictionary with two keys: imgPoints (Nx2 array) and objPoints (Nx3 array).')
 
@@ -171,7 +159,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', action='store_true', dest='debug_mode', default=False,
                         help='If this flag is present, scanning will be skipped.')
 
-    parser.add_argument('-n', action='store', type=int, dest='n_points', default=300,
+    parser.add_argument('-n', action='store', type=int, dest='n_points', default=250,
                         help='Number of Data Points to Collect.')
 
     parser.add_argument('-v', action='store_true', dest='human_scan', default=False,
@@ -180,18 +168,15 @@ if __name__ == '__main__':
     parser.add_argument('--fov_y', action='store', type=float, dest='fov_y', default=27.35,
                         help='Vertical field of view for the projector.  If known, please specify. (currently defaults with assumption of 1080x720 mode for ProPixx projector.')
 
+    parser.add_argument('--silent', action='store_true', dest='silent_mode', default=False,
+                        help='Silent mode.  Suppresses console output.')
+
+    parser.add_argument('--noplot', action='store_true', dest='no_plotting', default=False,
+                        help='This flag turns off result plotting, which normally blocks further code execution.')
+
     args = parser.parse_args()
 
-    try:
-        from ratcave.devices import propixx_utils
-        propixx_utils.start_frame_sync_signal()
-        print("Using ProPixx Frame Synchronization.")
-        sleep_mode = False
-    except ImportError:
-        print("Warning: No frame-sync method detected (only propixx currently supported.  Using time delays between frames to ensure tracker-display synchronization (a slower method)")
-        sleep_mode = True
-
-    # Collect data and save to app directory or get data from file
+    # Get Data from Tracker scanning or from a pickled file.
     if not args.debug_mode:
 
         # Setup Graphics
@@ -200,10 +185,10 @@ if __name__ == '__main__':
 
         # If the experimenter needs to enter the room, give them a bit of time to get inside.
         if args.human_scan:
-            time.sleep(4)
+            time.sleep(5)
 
         # Collect random points for calibration.
-        screenPos, pointPos = random_scan(window, tracker, n_points=args.n_points, sleep_mode=sleep_mode)
+        screenPos, pointPos = random_scan(window, tracker, n_points=args.n_points)
 
         # Project a few points that the experimenter can make rays from (by moving a piece of paper up and down along them.
         # Don't include human data, because its non-gaussian distribution can screw things up a bit.
@@ -219,8 +204,15 @@ if __name__ == '__main__':
             raise IOError("Only {} Points collected. Please check camera settings and try for more points.".format(len(pointPos)))
         assert len(screenPos) == len(pointPos), "Length of two paired lists doesn't match."
 
-        with open(os.path.join(ratcave.data_dir, 'projector_data_points.pickle'), "wb") as datafile:
-            pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, datafile)  # Save data
+        # If specified, save the data.
+        save_files = []
+        save_files = save_files + [app_data_file] if not args.test_mode else save_files
+        save_files = save_files + [args.save_filename] if args.save_filename else save_files
+        for filename in save_files:
+            with open(filename, 'wb') as myfile:
+                pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, myfile)
+                if not args.silent_mode:
+                    print('Saved to: {}'.format(os.path.splitext(filename)[0] + '.pickle'))
 
     # Else, get the data from file.
     else:
@@ -229,40 +221,35 @@ if __name__ == '__main__':
             assert isinstance(data, dict) and 'imgPoints' in data.keys() and 'objPoints' in data.keys(), "Loaded Datafile in wrong format. See help for more info."
             screenPos, pointPos = data['imgPoints'], data['objPoints']
 
-    # If specified, save the data.
-    if args.save_filename:
-        args.save_filename = args.save_filename + '.pickle' if not os.path.splitext(args.save_filename)[1] else args.save_filename
-        print('Saving Acquisition data to {}'.format(args.save_filename))
-        with open(args.save_filename, 'wb') as myfile:
-            pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, myfile)
-
     # Calibrate projector data
     position, rotation = calibrate(screenPos, pointPos)
-    print('Estimated Projector Position:{}\nEstimated Projector Rotation:{}'.format(position, rotation))
+    if not args.silent_mode:
+        print('\nEstimated Projector Position:\n\t{}\nEstimated Projector Rotation:\n{}\n'.format(position, rotation))
 
     # Save Results to application data.
     if not args.test_mode:
-        print('Saving Results...')
         # Save Data in format for putting into a ratcave.graphics.Camera
-        projector_data = {'position': position, 'rotation': rotation, 'fov_y': args.fov_y}  # TODO: Un-hardcode the fov_y
+        projector_data = {'position': position, 'rotation': rotation, 'fov_y': args.fov_y}
         with open(os.path.join(ratcave.data_dir, 'projector_data.pickle'), "wb") as datafile:
             pickle.dump(projector_data, datafile)
 
-    # # Plot Data
-    ax = plot_3d(pointPos, square_axis=True)
+    ## Plot Data
+    if not args.no_plotting:
+        ax = plot_3d(pointPos, square_axis=True)
 
-    # Plot and Check that vector position and direction is generally correct, and give tips if not.
-    cam_dir = np.dot([0, 0, -1], rotation) # Rotate from -Z vector (default OpenGL camera direction)
-    data_dir = np.mean(pointPos, axis=0) - position
-    data_dir /= np.linalg.norm(data_dir)
-    if np.dot(cam_dir, data_dir) < .4 or position[1] < 0.:
-        print("Warning: Estimated Projector Position and/or Rotation not pointing in right direction.\n\t"
-              "Please try to change the projector's 'ceiling mount mode' to off and try again.\n\t"
-              "ex) Propixx VPutil Command: cmm off\n\t"
-              "Also, could be the projection front/rear mode.  Normally should be set to front projection, but if\n\t "
-              "reflecting off of a mirror, should be set to rear projection.\n\t"
-              "ex) Propixx VPutil Command: pm r")
+        # Plot and Check that vector position and direction is generally correct, and give tips if not.
+        cam_dir = np.dot([0, 0, -1], rotation) # Rotate from -Z vector (default OpenGL camera direction)
+        data_dir = np.mean(pointPos, axis=0) - position
+        data_dir /= np.linalg.norm(data_dir)
+        if not args.silent_mode:
+            if np.dot(cam_dir, data_dir) < .4 or position[1] < 0.:
+                print("Warning: Estimated Projector Position and/or Rotation not pointing in right direction.\n\t"
+                      "Please try to change the projector's 'ceiling mount mode' to off and try again.\n\t"
+                      "ex) Propixx VPutil Command: cmm off\n\t"
+                      "Also, could be the projection front/rear mode.  Normally should be set to front projection, but if\n\t "
+                      "reflecting off of a mirror, should be set to rear projection.\n\t"
+                      "ex) Propixx VPutil Command: pm r")
 
-    rot_vec = np.vstack((position, position+cam_dir))
-    plot_3d(rot_vec, ax=ax, color='r', line=True)
-    plot_3d(np.array([position]), ax=ax, color='g', show=True)
+        rot_vec = np.vstack((position, position+cam_dir))
+        plot_3d(rot_vec, ax=ax, color='r', line=True)
+        plot_3d(np.array([position]), ax=ax, color='g', show=True)
