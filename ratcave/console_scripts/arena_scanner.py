@@ -28,12 +28,12 @@ def scan(tracker, pointwidth=.06, pointspeed=3.):
     window = graphics.Window(scene, screen=1, fullscr=True)
 
     # Main Loop
-    old_frame, clock, points = tracker.iFrame, utils.timers.countdown_timer(3.), []
-    while clock.next() > 0:
+    old_frame, points = tracker.iFrame, []
+    for dt in utils.timers.countdown_timer(3., stop_iteration=True):
 
         # Update Calibration Grid
-        scene.camera.position[:2] = (pointwidth * np.sin(clock.next() * pointspeed)), \
-                                    (pointwidth * np.cos(clock.next() * pointspeed))
+        scene.camera.position[:2] = (pointwidth * np.sin(dt * pointspeed)), \
+                                    (pointwidth * np.cos(dt * pointspeed))
         window.draw()
         window.flip()
 
