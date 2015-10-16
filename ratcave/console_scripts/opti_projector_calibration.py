@@ -85,7 +85,7 @@ def random_scan(window, tracker, n_points=300, sleep_mode=False):
         circle.visible = False
         slow_draw(window, tracker)
 
-    return screenPos, pointPos
+    return np.array(screenPos), np.array(pointPos)
 
 
 def ray_scan(window, tracker):
@@ -109,43 +109,6 @@ def ray_scan(window, tracker):
                     old_frame = tracker.iFrame
 
     return screenPos, pointPos
-
-
-def scan(n_points=300, window=None, keep_open=False, ray_on=False, sleep_mode=False):
-
-
-    # Setup Graphics
-    if window is None:
-        window = setup_projcal_window()
-
-    # Check that cameras are in correct configuration (only visible light, no LEDs on, in Segment tracking mode, everything calibrated)
-    optitrack_ip = "127.0.0.1"
-    tracker = Optitrack(client_ip=optitrack_ip)
-
-    if ray_on:
-        time.sleep(4)
-
-    screenPos, pointPos = random_scan(window, tracker, n_points=n_points, sleep_mode=sleep_mode)
-
-    if ray_on:
-        sp2, pp2 = ray_scan(window, tracker)
-        # screenPos.extend(sp2)  # TODO: Figure out how to properly get human-scanned projector calibration data in so OpenCV gets better estimate.
-        # pointPos.extend(pp2)
-
-    # Close Window
-    if not keep_open:
-        window.close()
-
-    # Early Tests
-    if len(pointPos) == 0:
-        raise IOError("Only {} Points collected. Please check camera settings and try for more points.".format(len(pointPos)))
-    assert len(screenPos) == len(pointPos), "Length of two paired lists doesn't match."
-
-    # Alter data to fit position on screen
-    screenPos, pointPos = np.array(screenPos), np.array(pointPos)
-
-    # Return Data
-    return screenPos, pointPos, window.size
 
 
 def calibrate(img_points, obj_points):
@@ -195,7 +158,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Projector Calibration script. Projects a random dot pattern and calculates projector position.')
 
-    parser.add_argument('-i', action='store', dest='load_filename', default='',
+    parser.add_argument('-i', action='store', dest='load_filename', default=os.path.join(ratcave.data_dir, 'projector_data_points.pickle'),
                         help='Calibrate using this datafile instead of collecting data directly.  Should be a pickled file containing a '
                              'single dictionary with two keys: imgPoints (Nx2 array) and objPoints (Nx3 array).')
 
@@ -206,13 +169,16 @@ if __name__ == '__main__':
                         help='If this flag is present, calibration results will be displayed, but not saved.')
 
     parser.add_argument('-d', action='store_true', dest='debug_mode', default=False,
-                        help='If this flag is present, no scanning will occur, but the last collected data will be used for calibration.')
+                        help='If this flag is present, scanning will be skipped.')
 
     parser.add_argument('-n', action='store', type=int, dest='n_points', default=300,
                         help='Number of Data Points to Collect.')
 
     parser.add_argument('-v', action='store_true', dest='human_scan', default=False,
                         help='This flag adds an extra stationary step where the experimenter can add some vertical lines of points to improve the projector estimate.')
+
+    parser.add_argument('--fov_y', action='store', type=float, dest='fov_y', default=27.35,
+                        help='Vertical field of view for the projector.  If known, please specify. (currently defaults with assumption of 1080x720 mode for ProPixx projector.')
 
     args = parser.parse_args()
 
@@ -226,16 +192,41 @@ if __name__ == '__main__':
         sleep_mode = True
 
     # Collect data and save to app directory or get data from file
-    if not args.load_filename and not args.debug_mode:
-        screenPos, pointPos, winSize = scan(n_points=args.n_points, ray_on=args.human_scan, sleep_mode=sleep_mode) # Collect data
+    if not args.debug_mode:
+
+        # Setup Graphics
+        window = setup_projcal_window()
+        tracker = Optitrack(client_ip="127.0.0.1")
+
+        # If the experimenter needs to enter the room, give them a bit of time to get inside.
+        if args.human_scan:
+            time.sleep(4)
+
+        # Collect random points for calibration.
+        screenPos, pointPos = random_scan(window, tracker, n_points=args.n_points, sleep_mode=sleep_mode)
+
+        # Project a few points that the experimenter can make rays from (by moving a piece of paper up and down along them.
+        # Don't include human data, because its non-gaussian distribution can screw things up a bit.
+        # TODO: Figure out how to properly get human-scanned projector calibration data in so OpenCV gets better estimate.
+        if args.human_scan:
+            ray_scan(window, tracker)
+
+        # Close Window
+        window.close()
+
+        # Early Tests
+        if len(pointPos) == 0:
+            raise IOError("Only {} Points collected. Please check camera settings and try for more points.".format(len(pointPos)))
+        assert len(screenPos) == len(pointPos), "Length of two paired lists doesn't match."
+
         with open(os.path.join(ratcave.data_dir, 'projector_data_points.pickle'), "wb") as datafile:
             pickle.dump({'imgPoints': screenPos, 'objPoints': pointPos}, datafile)  # Save data
+
+    # Else, get the data from file.
     else:
-        filename = os.path.join(ratcave.data_dir, 'projector_data_points.pickle') if args.debug_mode else args.load_filename
-        with open(filename) as datafile:
+        with open(args.load_filename) as datafile:
             data = pickle.load(datafile)
-            assert isinstance(data, dict), "loaded datafile should contain a single dict!"
-            assert 'imgPoints' in data.keys() and 'objPoints' in data.keys(), "loaded datafile's dict has wrong keys."
+            assert isinstance(data, dict) and 'imgPoints' in data.keys() and 'objPoints' in data.keys(), "Loaded Datafile in wrong format. See help for more info."
             screenPos, pointPos = data['imgPoints'], data['objPoints']
 
     # If specified, save the data.
@@ -253,7 +244,7 @@ if __name__ == '__main__':
     if not args.test_mode:
         print('Saving Results...')
         # Save Data in format for putting into a ratcave.graphics.Camera
-        projector_data = {'position': position, 'rotation': rotation, 'fov_y': 27.35}  # TODO: Un-hardcode the fov_y
+        projector_data = {'position': position, 'rotation': rotation, 'fov_y': args.fov_y}  # TODO: Un-hardcode the fov_y
         with open(os.path.join(ratcave.data_dir, 'projector_data.pickle'), "wb") as datafile:
             pickle.dump(projector_data, datafile)
 
