@@ -4,19 +4,21 @@ import numpy as np
 from sklearn import mixture
 from sklearn.decomposition import PCA
 
-from ratcave.devices import trackers
-from ratcave.graphics.core._transformations import rotation_matrix
-from ratcave.devices.trackers.optitrack import Optitrack
+from ratcave import graphics
 from ratcave import utils
+from ratcave.graphics.core._transformations import rotation_matrix
+
+import time
+import motive
+#motive.load_project('Desktop/Motive Project 2015-10-15 12.30.12 AM_vislight.ttp')
+motive.load_project('C:/Users/ratcave/Desktop/Motive Project 2015-10-15 12.30.12 AM_vislight.ttp')
 
 np.set_printoptions(precision=3, suppress=True)
 
 
-def scan(tracker, pointwidth=.06, pointspeed=3.):
+def scan(pointwidth=.06, pointspeed=3.):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
-
-    from ratcave import graphics
 
     # Initialize Calibration Point Grid.
     wavefront_reader = graphics.WavefrontReader(ratcave.graphics.resources.obj_primitives)
@@ -28,23 +30,29 @@ def scan(tracker, pointwidth=.06, pointspeed=3.):
     window = graphics.Window(scene, screen=1, fullscr=True)
 
     # Main Loop
-    old_frame, clock, points = tracker.iFrame, utils.timers.countdown_timer(3.), []
-    while clock.next() > 0:
+    old_frame, clock, points = motive.frame_time_stamp(), utils.timers.countdown_timer(3.), []
+    for theta in np.linspace(0, 2*np.pi, 60):
 
-        # Update Calibration Grid
-        scene.camera.position[:2] = (pointwidth * np.sin(clock.next() * pointspeed)), \
-                                    (pointwidth * np.cos(clock.next() * pointspeed))
+        # Update Screen
+        scene.camera.position[:2] = (pointwidth * np.sin(theta)), (pointwidth * np.cos(theta))
         window.draw()
         window.flip()
 
-        # Take new Tracker data, if new data is available.
-        if tracker.iFrame != old_frame:
-            old_frame = tracker.iFrame
-            points.extend([marker.position for marker in tracker.unidentified_markers])
+        # Collect New Tracker Data
+        old_frame = motive.frame_time_stamp()
+        while motive.frame_time_stamp() == old_frame:
+            motive.flush_camera_queues()
+            motive.update()
 
+        # Collect 3D points from Tracker
+        markers = motive.get_unident_markers()
+        if markers:
+            points.extend(markers)
+
+    # Housekeeping
     window.close()
 
-    assert(len(points)>100), "Only {} points detected.  Tracker is not detecting enough points to model".format(len(points))
+    # Data quality checks and return.
     return np.array(points)
 
 
@@ -309,34 +317,38 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # Start scan process and collect calibration data
-    tracker = Optitrack(client_ip="127.0.0.1")
-    tracker.get_data()
-
     # Select Rigid Body to track.
+    motive.update()
+    print('Camera mode: {}'.format([cam.video_type for cam in motive.get_cams()]))
+    rigid_bodies = motive.get_rigid_bodies()
     try:
         if not args.rigid_body_name:
-            assert len(tracker.rigid_bodies) == 1, "Only one rigid body should be present for auto-selection. Please use the -r flag to specify a rigid body name to track for the arena."
-        arena_name = args.rigid_body_name if args.rigid_body_name in tracker.rigid_bodies else tracker.rigid_bodies.keys()[0]
+            assert len(rigid_bodies) == 1, "Only one rigid body should be present for auto-selection. Please use the -r flag to specify a rigid body name to track for the arena."
+        arena_name = args.rigid_body_name if args.rigid_body_name in rigid_bodies else rigid_bodies.keys()[0]
     except IndexError:
         raise AssertionError("No Rigid Bodies found in Optitrack tracker.")
     except KeyError:
         raise KeyError("Rigid Body '{}' not found in list of Optitrack Rigid Bodies.".format(arena_name))
 
-    print('Arena Name: {}. N Markers: {}'.format(arena_name, len(tracker.rigid_bodies[arena_name].markers)))
-    assert len(tracker.rigid_bodies[arena_name].markers) > 5, "At least 6 markers in the arena's rigid body is required"
+    print('Arena Name: {}. N Markers: {}'.format(arena_name, len(rigid_bodies[arena_name].markers)))
+    assert len(rigid_bodies[arena_name].markers) > 5, "At least 6 markers in the arena's rigid body is required"
 
     # TODO: Fix bug that requires scanning be done in original orientation (doesn't affect later recreation, luckily.)
-    assert sum(np.abs(tracker.rigid_bodies[arena_name].rotation)) < 1., "Please reset rigid body's orientation to 0,0,0 before scanning.  (Current bug, planned to be fixed!!)"
+    rigid_bodies[arena_name].reset_orientation()
+    motive.update()
+    assert sum(np.abs(rigid_bodies[arena_name].rotation)) < 1., "Please reset rigid body's orientation to 0,0,0 before scanning.  (Current bug, planned to be fixed!!)"
 
     # Scan points
-    points = scan(tracker)
+    points = scan()
+    assert(len(points)>100), "Only {} points detected.  Tracker is not detecting enough points to model".format(len(points))
+
+    import pdb
+    pdb.set_trace()
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
-    #markers = tracker.rigid_bodies[arena_name].point_cloud_markers
-    markers = np.array([marker.position for marker in tracker.rigid_bodies[arena_name].markers])
+    markers = np.array(rigid_bodies[arena_name].point_cloud_markers)
     points = points - np.mean(markers, axis=0) if args.mean_center else points
-    points = np.dot(points,  rotation_matrix(np.radians(trackers.utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points
+    # points = np.dot(points,  rotation_matrix(np.radians(trackers.utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points # TODO: RE-ADD PCA Rotation!
 
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=args.n_sides)
