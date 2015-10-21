@@ -13,18 +13,6 @@ import motive
 
 np.set_printoptions(precision=3, suppress=True)
 
-def motive_camera_configure():
-    for cam in motive.get_cams():
-
-            # All cameras should have frame rate changed.
-            cam.frame_rate = 30
-
-            if 'Prime 13' in cam.name:
-                cam.set_settings(videotype=0, exposure=33000, threshold=40, intensity=0)  #check if 480 corresponds to these thousands described in motive
-                cam.image_gain = 8  # 8 is the maximum image gain setting
-                cam.set_filter_switch(False)
-            else:
-                cam.set_settings(0, cam.exposure, cam.threshold, cam.intensity)
 
 def scan(pointwidth=.06):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
@@ -333,7 +321,7 @@ if __name__ == '__main__':
     # Select Rigid Body to track.
     motive.load_project(args.motive_projectfile)
     print("Loaded Motive Project: {}".format(args.motive_projectfile))
-    motive_camera_configure()
+    utils.motive_camera_vislight_configure()
     print("Camera Settings changed to Detect Visible light:")
     print("\n\t".join(['{}: FPS={}, Gain={}, Exp.={}, Thresh.={}'.format(cam.name, cam.frame_rate, cam.image_gain, cam.exposure, cam.threshold) for cam in motive.get_cams()]))
 
