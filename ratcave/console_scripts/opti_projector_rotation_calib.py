@@ -10,7 +10,7 @@ np.set_printoptions(precision=2, suppress=True)
 
 print('Importing MotivePy...')
 import motive
-motive.load_project('C:\\Users\\ratcave\\Desktop\\Motive Project 2015-10-15 12.30.12 AM_vislight.ttp')
+motive.load_project('C:\\Users\\ratcave\\Desktop\\Motive Project 2015-10-15 12.30.12 AM.ttp')
 motive.update()
 
 def display(optitrack_ip="127.0.0.1", calib_object_name=''):

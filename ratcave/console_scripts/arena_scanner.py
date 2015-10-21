@@ -87,7 +87,8 @@ def hist_mask(data, threshold=.95, keep='lower'):
                 histmask &= data < cutoff_values[1]
                 return histmask
         else:
-            raise ValueError("Histogram filter not finding a good parameter to form a central cluster. Please try again.")
+            return data > -100000.  # Return an all-true mask
+            print("Warning: Histogram filter not finding a good parameter to form a central cluster. Please try again.")
 
 
 def normal_nearest_neighbors(data, n_neighbors=40):

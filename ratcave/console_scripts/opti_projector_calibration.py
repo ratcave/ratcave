@@ -52,7 +52,8 @@ def random_scan(window, n_points=300):
 
         # Update position of circle, and draw.
         circle.visible = True
-        circle.local.position[[0, 1]] = np.random.random(2) - .5
+        homogenous_pos = np.random.random(2) - .5
+        circle.local.position[[0, 1]] = homogenous_pos * [1.8, 1]
         slow_draw(window)
         motive.update()
 
@@ -213,6 +214,9 @@ if __name__ == '__main__':
         if len(pointPos) == 0:
             raise IOError("Only {} Points collected. Please check camera settings and try for more points.".format(len(pointPos)))
         assert len(screenPos) == len(pointPos), "Length of two paired lists doesn't match."
+
+        import pdb
+        pdb.set_trace()
 
         # If specified, save the data.
         save_files = []
