@@ -41,7 +41,7 @@ def scan(pointwidth=.06):
 
     # Main Loop
     old_frame, clock, points = motive.frame_time_stamp(), utils.timers.countdown_timer(3.), []
-    for theta in np.linspace(0, 2*np.pi, 60):
+    for theta in np.linspace(0, 2*np.pi, 40)[:-1]:
 
         # Update Screen
         scene.camera.position[:2] = (pointwidth * np.sin(theta)), (pointwidth * np.cos(theta))
@@ -99,7 +99,7 @@ def hist_mask(data, threshold=.95, keep='lower'):
                 histmask &= data < cutoff_values[1]
                 return histmask
         else:
-            raise ValueError("Histogram filter not finding a good parameter to form a central cluster.")
+            raise ValueError("Histogram filter not finding a good parameter to form a central cluster. Please try again.")
 
 
 def normal_nearest_neighbors(data, n_neighbors=40):
@@ -386,11 +386,7 @@ if __name__ == '__main__':
             wavfile.write(wave_str)
 
     # Show resulting plot with points and model in same place.
-    ax = utils.plot_3d(points[::8, :], square_axis=True)
+    ax = utils.plot_3d(points[::12, :], square_axis=True)
     for idx, verts in vertices.items():
         show = True if idx == len(vertices)-1 else False  # Only make the plot appear after the last face is drawn.
-        try:
-            ax = utils.plot_3d(np.vstack((verts, verts[0, :])), ax=ax, title='Triangulated Model', line=True, show=show)
-        except:
-            import pdb
-            pdb.set_trace()
+        ax = utils.plot_3d(np.vstack((verts, verts[0, :])), ax=ax, title='Triangulated Model', line=True, show=show)
