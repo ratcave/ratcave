@@ -104,7 +104,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Load Motive Project File
-    motive.load_project('C:\\Users\\ratcave\\Desktop\\Motive Project 2015-10-15 12.30.12 AM.ttp')
+    motive.load_project(args.motive_projectfile)
     motive.update()
 
     display(calib_object_name=args.calib_wand_name)
