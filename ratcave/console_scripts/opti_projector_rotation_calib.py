@@ -8,10 +8,7 @@ import argparse
 
 np.set_printoptions(precision=2, suppress=True)
 
-print('Importing MotivePy...')
 import motive
-motive.load_project('C:\\Users\\ratcave\\Desktop\\Motive Project 2015-10-15 12.30.12 AM.ttp')
-motive.update()
 
 def display(optitrack_ip="127.0.0.1", calib_object_name=''):
 
@@ -64,15 +61,11 @@ def display(optitrack_ip="127.0.0.1", calib_object_name=''):
         arena.world.position = arena_rb.location
         arena.world.rotation = arena_rb.rotation_global
 
-        # arena.world.position = tracker.rigid_bodies['Arena'].position
-        # arena.world.rotation = tracker.rigid_bodies['Arena'].rotation_pca_y
-        #aa += .5
         arena.world.rotation[1] += aa
 
 
         # If there's another object to track, then track it.
         if calib_object_name:
-            # cube.local.position = tracker.rigid_bodies[calib_object_name].position
             cube.local.position = motive.get_rigid_bodies()[calib_object_name].location
 
         # Re-Draw Everything
@@ -103,6 +96,15 @@ if __name__ == '__main__':
                         dest='calib_wand_name',
                         default='',
                         help="If a calibration wand or something is also trackable, then give the rigid body's name and a sphere will be placed in its position")
+
+    parser.add_argument('-i', action='store', dest='motive_projectfile', default=motive.utils.backup_project_filename,
+                        help='Name of the motive project file to load.  If not used, will load most recent Project file loaded in MotivePy.')
+
+
     args = parser.parse_args()
+
+    # Load Motive Project File
+    motive.load_project('C:\\Users\\ratcave\\Desktop\\Motive Project 2015-10-15 12.30.12 AM.ttp')
+    motive.update()
 
     display(calib_object_name=args.calib_wand_name)
