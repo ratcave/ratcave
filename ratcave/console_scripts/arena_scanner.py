@@ -8,15 +8,25 @@ from ratcave import graphics
 from ratcave import utils
 from ratcave.graphics.core._transformations import rotation_matrix
 
-import time
 import motive
-#motive.load_project('Desktop/Motive Project 2015-10-15 12.30.12 AM_vislight.ttp')
-motive.load_project('C:/Users/ratcave/Desktop/Motive Project 2015-10-15 12.30.12 AM_vislight.ttp')
+
 
 np.set_printoptions(precision=3, suppress=True)
 
+def motive_camera_configure():
+    for cam in motive.get_cams():
 
-def scan(pointwidth=.06, pointspeed=3.):
+            # All cameras should have frame rate changed.
+            cam.frame_rate = 30
+
+            if 'Prime 13' in cam.name:
+                cam.set_settings(videotype=0, exposure=33000, threshold=40, intensity=0)  #check if 480 corresponds to these thousands described in motive
+                cam.image_gain = 8  # 8 is the maximum image gain setting
+                cam.set_filter_switch(False)
+            else:
+                cam.set_settings(0, cam.exposure, cam.threshold, cam.intensity)
+
+def scan(pointwidth=.06):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
 
@@ -315,11 +325,20 @@ if __name__ == '__main__':
     parser.add_argument('-r', action='store', dest='rigid_body_name', default='',
                         help='Name of the Arena rigid body. If only one rigid body is present, unnecessary--that one will be used automatically.')
 
+    parser.add_argument('-i', action='store', dest='motive_projectfile', default=motive.utils.backup_project_filename,
+                        help='Name of the motive project file to load.  If not used, will load most recent Project file loaded in MotivePy.')
+
     args = parser.parse_args()
 
     # Select Rigid Body to track.
+    motive.load_project(args.motive_projectfile)
+    print("Loaded Motive Project: {}".format(args.motive_projectfile))
+    motive_camera_configure()
+    print("Camera Settings changed to Detect Visible light:")
+    print("\n\t".join(['{}: FPS={}, Gain={}, Exp.={}, Thresh.={}'.format(cam.name, cam.frame_rate, cam.image_gain, cam.exposure, cam.threshold) for cam in motive.get_cams()]))
+
     motive.update()
-    print('Camera mode: {}'.format([cam.video_type for cam in motive.get_cams()]))
+
     rigid_bodies = motive.get_rigid_bodies()
     try:
         if not args.rigid_body_name:
@@ -334,16 +353,17 @@ if __name__ == '__main__':
     assert len(rigid_bodies[arena_name].markers) > 5, "At least 6 markers in the arena's rigid body is required"
 
     # TODO: Fix bug that requires scanning be done in original orientation (doesn't affect later recreation, luckily.)
-    rigid_bodies[arena_name].reset_orientation()
-    motive.update()
-    assert sum(np.abs(rigid_bodies[arena_name].rotation)) < 1., "Please reset rigid body's orientation to 0,0,0 before scanning.  (Current bug, planned to be fixed!!)"
+    for attempt in range(3):  # Sometimes it doesn't work on the first try, for some reason.
+        rigid_bodies[arena_name].reset_orientation()
+        motive.update()
+        if sum(np.abs(rigid_bodies[arena_name].rotation)) < 1.:
+            break
+    else:
+        raise ValueError("Rigid Body Orientation not Resetting to 0,0,0 after 3 attempts.  This happens sometimes (bug), please just run the script again.")
 
     # Scan points
     points = scan()
-    assert(len(points)>100), "Only {} points detected.  Tracker is not detecting enough points to model".format(len(points))
-
-    import pdb
-    pdb.set_trace()
+    assert(len(points) > 100), "Only {} points detected.  Tracker is not detecting enough points to model.  Is the projector turned on?".format(len(points))
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
     markers = np.array(rigid_bodies[arena_name].point_cloud_markers)
@@ -374,5 +394,3 @@ if __name__ == '__main__':
         except:
             import pdb
             pdb.set_trace()
-
-
