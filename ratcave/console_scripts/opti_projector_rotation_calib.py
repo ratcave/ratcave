@@ -3,6 +3,7 @@ __author__ = 'ratcave'
 from psychopy import event
 import ratcave
 from ratcave.graphics import *
+from ratcave.devices.trackers.utils import rotate_to_var
 import numpy as np
 import argparse
 
@@ -45,6 +46,15 @@ def display(optitrack_ip="127.0.0.1", calib_object_name=''):
     arena.world.position = arena_rb.location
     arena.world.rotation = arena_rb.rotation
 
+    motive.update()
+    for attempt in range(3):
+        arena_rb.reset_orientation()
+        motive.update()
+
+    markers = np.array(arena_rb.point_cloud_markers)
+    additional_rotation = rotate_to_var(markers)
+
+
     # Print the Following every time a key is detected:
     print "Camera settings:\n -shift: {0}, {1}\n -position: {2}\n -fov_y(xz): {3}\n -rotation: {4}\n\n".format(
         scene.camera.x_shift, scene.camera.y_shift, scene.camera.position, scene.camera.fov_y, scene.camera.rotation)
@@ -52,7 +62,7 @@ def display(optitrack_ip="127.0.0.1", calib_object_name=''):
         arena.local.position, arena.local.rotation, arena.world.position, arena.world.rotation)
 
     aa = 0
-    arena_rb.reset_orientation()
+
     while True:
 
         # Update Everything's Position
@@ -60,8 +70,9 @@ def display(optitrack_ip="127.0.0.1", calib_object_name=''):
 
         arena.world.position = arena_rb.location
         arena.world.rotation = arena_rb.rotation_global
-
+        arena.world.rotation[1] += additional_rotation
         arena.world.rotation[1] += aa
+
 
 
         # If there's another object to track, then track it.

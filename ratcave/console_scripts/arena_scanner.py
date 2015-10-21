@@ -7,6 +7,7 @@ from sklearn.decomposition import PCA
 from ratcave import graphics
 from ratcave import utils
 from ratcave.graphics.core._transformations import rotation_matrix
+from ratcave.devices import trackers
 
 import motive
 
@@ -357,7 +358,7 @@ if __name__ == '__main__':
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
     markers = np.array(rigid_bodies[arena_name].point_cloud_markers)
     points = points - np.mean(markers, axis=0) if args.mean_center else points
-    # points = np.dot(points,  rotation_matrix(np.radians(trackers.utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points # TODO: RE-ADD PCA Rotation!
+    points = np.dot(points,  rotation_matrix(np.radians(trackers.utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points # TODO: RE-ADD PCA Rotation!
 
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=args.n_sides)

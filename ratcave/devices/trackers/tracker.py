@@ -92,9 +92,7 @@ class RigidBody(object):
     def rotation_pca_y(self):
         """Return RotationEuler, compensated for the initialized PCA Y rotation angle.  Use for 3D-scanned objects."""
         if self.__rotation_to_var is None and self.markers:
-            from ratcave.graphics.core._transformations import rotation_matrix
-            marker_pos = self.point_cloud_markers
-            self.__rotation_to_var = utils.rotate_to_var(marker_pos)
+            self.__rotation_to_var = utils.rotate_to_var(self.point_cloud_markers)
 
         return RotationEuler(self.__rotation[0], self.__rotation[1] + self.__rotation_to_var, self.__rotation[2])
 
