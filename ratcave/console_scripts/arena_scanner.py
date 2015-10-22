@@ -335,7 +335,7 @@ if __name__ == '__main__':
             assert len(rigid_bodies) == 1, "Only one rigid body should be present for auto-selection. Please use the -r flag to specify a rigid body name to track for the arena."
         arena_name = args.rigid_body_name if args.rigid_body_name in rigid_bodies else rigid_bodies.keys()[0]
     except IndexError:
-        raise AssertionError("No Rigid Bodies found in Optitrack tracker.")
+        raise IndexError("No Rigid Bodies found in Optitrack tracker.")
     except KeyError:
         raise KeyError("Rigid Body '{}' not found in list of Optitrack Rigid Bodies.".format(arena_name))
 
