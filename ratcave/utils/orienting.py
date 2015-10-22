@@ -10,15 +10,15 @@ def rotate_to_var(markers):
     markers -= np.mean(markers, axis=0)
 
     # Vector in direction of greatest variance
-    pca = PCA(n_components=1).fit(markers[:, [0, 2]])
+    pca = PCA(n_components=2).fit(markers[:, [0, 2]])
     coeff_vec = pca.components_[0]
 
-
     # Flip coeff_vec in direction of max variance along the vector.
-    marker_var = markers[markers[:,2].argsort(), 2]  # Check variance along component to determine whether to flip.
-    winlen = int(len(marker_var)/2+1)  # Window length for moving mean (two steps, with slight overlap)
-    var_means = np.array([marker_var[:winlen], marker_var[-winlen:]]).mean(axis=1)
-    coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec
+    markers_rotated = pca.fit_transform(markers)  # Rotate data to PCA axes.
+    markers_reordered = markers_rotated[markers_rotated[:,0].argsort(), :]  # Reorder Markers to go along first component
+    winlen = int(markers_reordered.shape[0]/2+1)  # Window length for moving mean (two steps, with slight overlap)
+    var_means = [np.var(markers_reordered[:winlen, 1]), np.var(markers_reordered[-winlen:, 1])] # Compute variance for each half
+    coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec  # Flip or not depending on which half if bigger.
 
     # Rotation amount, in radians
     base_vec = np.array([1, 0])  # Vector in +X direction
