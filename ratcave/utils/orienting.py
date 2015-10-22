@@ -14,11 +14,11 @@ def rotate_to_var(markers):
     coeff_vec = pca.components_[0]
 
 
-    # # Flip coeff_vec in direction of max variance along the vector.
-    # marker_var = markers[markers[:,2].argsort(), 2]  # Check variance along component to determine whether to flip.
-    # winlen = int(len(marker_var)/2+1)  # Window length for moving mean (two steps, with slight overlap)
-    # var_means = np.array([marker_var[:winlen], marker_var[-winlen:]]).mean(axis=1)
-    # coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec
+    # Flip coeff_vec in direction of max variance along the vector.
+    marker_var = markers[markers[:,2].argsort(), 2]  # Check variance along component to determine whether to flip.
+    winlen = int(len(marker_var)/2+1)  # Window length for moving mean (two steps, with slight overlap)
+    var_means = np.array([marker_var[:winlen], marker_var[-winlen:]]).mean(axis=1)
+    coeff_vec = coeff_vec * -1 if np.diff(var_means)[0] < 0 else coeff_vec
 
     # Rotation amount, in radians
     base_vec = np.array([1, 0])  # Vector in +X direction
