@@ -26,13 +26,3 @@ def rotate_to_var(markers):
     angle = np.degrees(np.arctan2(msin, mcos))
     print("Angle within function: {}".format(angle))
     return angle
-
-# def get_pca_rotation(markers):
-#
-#     markers_2d = markers[:, [0, 2]]
-#     pca = PCA(n_components=1).fit(markers[:, [0, 2]])
-#
-#     coeff = pca.components_[0]
-
-
-
