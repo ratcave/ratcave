@@ -25,7 +25,7 @@ def setup_projcal_window():
     # Setup graphics
 
     wavefront_reader = gg.WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.004)
+    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.008)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
     scene = gg.Scene([circle])
@@ -58,7 +58,8 @@ def random_scan(window, n_points=300):
         motive.update()
 
         # Try to isolate a single point.
-        for _ in timers.countdown_timer(.05, stop_iteration=True):
+        for _ in timers.countdown_timer(.2, stop_iteration=True):
+            motive.update()
             markers = motive.get_unident_markers()
             if markers and markers[0][1] > 0.:
                 screenPos.append(circle.local.position[[0, 1]])
@@ -72,9 +73,13 @@ def random_scan(window, n_points=300):
             missed_cnt += 1
             pbar.widgets[3] = missed_fmt + str(missed_cnt)
             pbar.update(len(pointPos))
+
         # Hide circle, and wait again for a new update.
         circle.visible = False
-        slow_draw(window, sleep_time=.02)
+        slow_draw(window)
+        motive.update()
+        while len(motive.get_unident_markers()) > 0:
+            motive.update()
 
     return np.array(screenPos), np.array(pointPos)
 
@@ -201,6 +206,17 @@ if __name__ == '__main__':
 
         screenPos, pointPos = random_scan(window, n_points=args.n_points)
 
+        print("Size of Point Data: {}".format(pointPos.shape))
+
+        # Remove Obviously Bad Points according to how far away from main cluster they are
+        histmask = np.ones(pointPos.shape[0], dtype=bool)  # Initializing mask with all True values
+        for coord in range(3):
+            histmask &= utils.hist_mask(pointPos[:, coord], keep='middle')
+        pointPos = pointPos[histmask, :]
+        screenPos = screenPos[histmask, :]
+
+        print("Size of Point Data after hist_mask: {}".format(pointPos.shape))
+
         # Project a few points that the experimenter can make rays from (by moving a piece of paper up and down along them.
         # Don't include human data, because its non-gaussian distribution can screw things up a bit.
         # TODO: Figure out how to properly get human-scanned projector calibration data in so OpenCV gets better estimate.
@@ -214,9 +230,6 @@ if __name__ == '__main__':
         if len(pointPos) == 0:
             raise IOError("Only {} Points collected. Please check camera settings and try for more points.".format(len(pointPos)))
         assert len(screenPos) == len(pointPos), "Length of two paired lists doesn't match."
-
-        import pdb
-        pdb.set_trace()
 
         # If specified, save the data.
         save_files = []

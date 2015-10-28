@@ -7,7 +7,6 @@ from sklearn.decomposition import PCA
 from ratcave import graphics
 from ratcave import utils
 from ratcave.graphics.core._transformations import rotation_matrix
-from ratcave.devices import trackers
 
 import motive
 
@@ -54,42 +53,6 @@ def scan(pointwidth=.06):
     # Data quality checks and return.
     return np.array(points)
 
-
-def hist_mask(data, threshold=.95, keep='lower'):
-    """
-    Returns boolean mask of values below a frequency percentage threshold (0-1).
-
-    Args:
-        -data (1D array)
-        -threshold (float): 0-1
-        -keep (str): lower, greater, middle. If middle, threshold is ignored,
-                     and a single cluster is searched out.
-    """
-
-    bins = len(data)/100 if keep.lower() == 'middle' else len(data) / 2
-    freq, val = np.histogram(data, bins=bins)
-    freq = freq / np.sum(freq).astype(float)  # Normalize frequency data
-
-    if keep.lower() in ('lower', 'upper'):
-        cutoff_value = val[np.where(np.diff(np.cumsum(freq) < threshold))[0] + 1]
-        cutoff_value = val[1] if len(cutoff_value)==0 else cutoff_value
-        if keep.lower() == 'lower':
-            return data < cutoff_value
-        else:
-            return data > cutoff_value
-    else:
-        histmask = np.ones(points.shape[0], dtype=bool)  # Initializing mask with all True values
-
-        # Slowly increment the parameter until a strong single central cluster is found
-        for param in np.arange(0.0005, .02, .0003):
-            cutoff_values = val[np.where(np.diff(freq < param))[0]]
-            if len(cutoff_values) == 2:
-                histmask &= data > cutoff_values[0]
-                histmask &= data < cutoff_values[1]
-                return histmask
-        else:
-            return data > -100000.  # Return an all-true mask
-            print("Warning: Histogram filter not finding a good parameter to form a central cluster. Please try again.")
 
 
 def normal_nearest_neighbors(data, n_neighbors=40):
@@ -258,14 +221,14 @@ def meshify(points, n_surfaces=None):
     # Remove Obviously Bad Points according to how far away from main cluster they are
     histmask = np.ones(points.shape[0], dtype=bool)  # Initializing mask with all True values
     for coord in range(3):
-        histmask &= hist_mask(points[:, coord], keep='middle')
+        histmask &= utils.hist_mask(points[:, coord], keep='middle')
     points_f = points[histmask, :]
 
     # Get the normals of the N-Neighborhood around each point, and filter out points with lowish planarity
     normals_f, explained_variances = normal_nearest_neighbors(points_f)
 
     # Histogram filter: take the 70% best-planar data to model.
-    normfilter = hist_mask(explained_variances[:, 2], threshold=.7, keep='lower')
+    normfilter = utils.hist_mask(explained_variances[:, 2], threshold=.7, keep='lower')
     points_ff = points_f[normfilter, :]
     normals_ff = normals_f[normfilter, :]
 
@@ -358,7 +321,7 @@ if __name__ == '__main__':
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
     markers = np.array(rigid_bodies[arena_name].point_cloud_markers)
     points = points - np.mean(markers, axis=0) if args.mean_center else points
-    points = np.dot(points,  rotation_matrix(np.radians(trackers.utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points # TODO: RE-ADD PCA Rotation!
+    points = np.dot(points,  rotation_matrix(np.radians(utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points # TODO: RE-ADD PCA Rotation!
 
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=args.n_sides)

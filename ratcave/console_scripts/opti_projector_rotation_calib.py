@@ -3,7 +3,7 @@ __author__ = 'ratcave'
 from psychopy import event
 import ratcave
 from ratcave.graphics import *
-from ratcave.devices.trackers.utils import rotate_to_var
+from ratcave.utils import rotate_to_var
 import numpy as np
 import argparse
 
