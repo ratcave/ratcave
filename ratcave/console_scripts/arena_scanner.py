@@ -4,19 +4,19 @@ import numpy as np
 from sklearn import mixture
 from sklearn.decomposition import PCA
 
-from ratcave.devices import trackers
-from ratcave.graphics.core._transformations import rotation_matrix
-from ratcave.devices.trackers.optitrack import Optitrack
+from ratcave import graphics
 from ratcave import utils
+from ratcave.graphics.core._transformations import rotation_matrix
+
+import motive
+
 
 np.set_printoptions(precision=3, suppress=True)
 
 
-def scan(tracker, pointwidth=.06, pointspeed=3.):
+def scan(pointwidth=.06):
     """Project a series of points onto the arena, collect their 3d position, and save them and the associated
     rigid body data into a pickled file."""
-
-    from ratcave import graphics
 
     # Initialize Calibration Point Grid.
     wavefront_reader = graphics.WavefrontReader(ratcave.graphics.resources.obj_primitives)
@@ -28,60 +28,31 @@ def scan(tracker, pointwidth=.06, pointspeed=3.):
     window = graphics.Window(scene, screen=1, fullscr=True)
 
     # Main Loop
-    old_frame, points = tracker.iFrame, []
-    for dt in utils.timers.countdown_timer(3., stop_iteration=True):
+    old_frame, clock, points = motive.frame_time_stamp(), utils.timers.countdown_timer(3.), []
+    for theta in np.linspace(0, 2*np.pi, 40)[:-1]:
 
-        # Update Calibration Grid
-        scene.camera.position[:2] = (pointwidth * np.sin(dt * pointspeed)), \
-                                    (pointwidth * np.cos(dt * pointspeed))
+        # Update Screen
+        scene.camera.position[:2] = (pointwidth * np.sin(theta)), (pointwidth * np.cos(theta))
         window.draw()
         window.flip()
 
-        # Take new Tracker data, if new data is available.
-        if tracker.iFrame != old_frame:
-            old_frame = tracker.iFrame
-            points.extend([marker.position for marker in tracker.unidentified_markers])
+        # Collect New Tracker Data
+        old_frame = motive.frame_time_stamp()
+        while motive.frame_time_stamp() == old_frame:
+            motive.flush_camera_queues()
+            motive.update()
 
+        # Collect 3D points from Tracker
+        markers = motive.get_unident_markers()
+        if markers:
+            points.extend(markers)
+
+    # Housekeeping
     window.close()
 
-    assert(len(points)>100), "Only {} points detected.  Tracker is not detecting enough points to model".format(len(points))
+    # Data quality checks and return.
     return np.array(points)
 
-
-def hist_mask(data, threshold=.95, keep='lower'):
-    """
-    Returns boolean mask of values below a frequency percentage threshold (0-1).
-
-    Args:
-        -data (1D array)
-        -threshold (float): 0-1
-        -keep (str): lower, greater, middle. If middle, threshold is ignored,
-                     and a single cluster is searched out.
-    """
-
-    bins = len(data)/100 if keep.lower() == 'middle' else len(data) / 2
-    freq, val = np.histogram(data, bins=bins)
-    freq = freq / np.sum(freq).astype(float)  # Normalize frequency data
-
-    if keep.lower() in ('lower', 'upper'):
-        cutoff_value = val[np.where(np.diff(np.cumsum(freq) < threshold))[0] + 1]
-        cutoff_value = val[1] if len(cutoff_value)==0 else cutoff_value
-        if keep.lower() == 'lower':
-            return data < cutoff_value
-        else:
-            return data > cutoff_value
-    else:
-        histmask = np.ones(points.shape[0], dtype=bool)  # Initializing mask with all True values
-
-        # Slowly increment the parameter until a strong single central cluster is found
-        for param in np.arange(0.0005, .02, .0003):
-            cutoff_values = val[np.where(np.diff(freq < param))[0]]
-            if len(cutoff_values) == 2:
-                histmask &= data > cutoff_values[0]
-                histmask &= data < cutoff_values[1]
-                return histmask
-        else:
-            raise ValueError("Histogram filter not finding a good parameter to form a central cluster.")
 
 
 def normal_nearest_neighbors(data, n_neighbors=40):
@@ -250,14 +221,14 @@ def meshify(points, n_surfaces=None):
     # Remove Obviously Bad Points according to how far away from main cluster they are
     histmask = np.ones(points.shape[0], dtype=bool)  # Initializing mask with all True values
     for coord in range(3):
-        histmask &= hist_mask(points[:, coord], keep='middle')
+        histmask &= utils.hist_mask(points[:, coord], keep='middle')
     points_f = points[histmask, :]
 
     # Get the normals of the N-Neighborhood around each point, and filter out points with lowish planarity
     normals_f, explained_variances = normal_nearest_neighbors(points_f)
 
     # Histogram filter: take the 70% best-planar data to model.
-    normfilter = hist_mask(explained_variances[:, 2], threshold=.7, keep='lower')
+    normfilter = utils.hist_mask(explained_variances[:, 2], threshold=.7, keep='lower')
     points_ff = points_f[normfilter, :]
     normals_ff = normals_f[normfilter, :]
 
@@ -307,36 +278,50 @@ if __name__ == '__main__':
     parser.add_argument('-r', action='store', dest='rigid_body_name', default='',
                         help='Name of the Arena rigid body. If only one rigid body is present, unnecessary--that one will be used automatically.')
 
+    parser.add_argument('-i', action='store', dest='motive_projectfile', default=motive.utils.backup_project_filename,
+                        help='Name of the motive project file to load.  If not used, will load most recent Project file loaded in MotivePy.')
+
     args = parser.parse_args()
 
-    # Start scan process and collect calibration data
-    tracker = Optitrack(client_ip="127.0.0.1")
-    tracker.get_data()
-
     # Select Rigid Body to track.
+    motive.load_project(args.motive_projectfile)
+    print("Loaded Motive Project: {}".format(args.motive_projectfile))
+    utils.motive_camera_vislight_configure()
+    print("Camera Settings changed to Detect Visible light:")
+    print("\n\t".join(['{}: FPS={}, Gain={}, Exp.={}, Thresh.={}'.format(cam.name, cam.frame_rate, cam.image_gain, cam.exposure, cam.threshold) for cam in motive.get_cams()]))
+
+    motive.update()
+
+    rigid_bodies = motive.get_rigid_bodies()
     try:
         if not args.rigid_body_name:
-            assert len(tracker.rigid_bodies) == 1, "Only one rigid body should be present for auto-selection. Please use the -r flag to specify a rigid body name to track for the arena."
-        arena_name = args.rigid_body_name if args.rigid_body_name in tracker.rigid_bodies else tracker.rigid_bodies.keys()[0]
+            assert len(rigid_bodies) == 1, "Only one rigid body should be present for auto-selection. Please use the -r flag to specify a rigid body name to track for the arena."
+        arena_name = args.rigid_body_name if args.rigid_body_name in rigid_bodies else rigid_bodies.keys()[0]
     except IndexError:
-        raise AssertionError("No Rigid Bodies found in Optitrack tracker.")
+        raise IndexError("No Rigid Bodies found in Optitrack tracker.")
     except KeyError:
         raise KeyError("Rigid Body '{}' not found in list of Optitrack Rigid Bodies.".format(arena_name))
 
-    print('Arena Name: {}. N Markers: {}'.format(arena_name, len(tracker.rigid_bodies[arena_name].markers)))
-    assert len(tracker.rigid_bodies[arena_name].markers) > 5, "At least 6 markers in the arena's rigid body is required"
+    print('Arena Name: {}. N Markers: {}'.format(arena_name, len(rigid_bodies[arena_name].markers)))
+    assert len(rigid_bodies[arena_name].markers) > 5, "At least 6 markers in the arena's rigid body is required"
 
     # TODO: Fix bug that requires scanning be done in original orientation (doesn't affect later recreation, luckily.)
-    assert sum(np.abs(tracker.rigid_bodies[arena_name].rotation)) < 1., "Please reset rigid body's orientation to 0,0,0 before scanning.  (Current bug, planned to be fixed!!)"
+    for attempt in range(3):  # Sometimes it doesn't work on the first try, for some reason.
+        rigid_bodies[arena_name].reset_orientation()
+        motive.update()
+        if sum(np.abs(rigid_bodies[arena_name].rotation)) < 1.:
+            break
+    else:
+        raise ValueError("Rigid Body Orientation not Resetting to 0,0,0 after 3 attempts.  This happens sometimes (bug), please just run the script again.")
 
     # Scan points
-    points = scan(tracker)
+    points = scan()
+    assert(len(points) > 100), "Only {} points detected.  Tracker is not detecting enough points to model.  Is the projector turned on?".format(len(points))
 
     # Rotate all points to be mean-centered and aligned to Optitrack Markers direction or largest variance.
-    #markers = tracker.rigid_bodies[arena_name].point_cloud_markers
-    markers = np.array([marker.position for marker in tracker.rigid_bodies[arena_name].markers])
+    markers = np.array(rigid_bodies[arena_name].point_cloud_markers)
     points = points - np.mean(markers, axis=0) if args.mean_center else points
-    points = np.dot(points,  rotation_matrix(np.radians(trackers.utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points
+    points = np.dot(points,  rotation_matrix(np.radians(utils.rotate_to_var(markers)), [0, 1, 0])[:3, :3]) if args.pca_rotate else points # TODO: RE-ADD PCA Rotation!
 
     # Get vertex positions and normal directions from the collected data.
     vertices, normals = meshify(points, n_surfaces=args.n_sides)
@@ -354,13 +339,7 @@ if __name__ == '__main__':
             wavfile.write(wave_str)
 
     # Show resulting plot with points and model in same place.
-    ax = utils.plot_3d(points[::8, :], square_axis=True)
+    ax = utils.plot_3d(points[::12, :], square_axis=True)
     for idx, verts in vertices.items():
         show = True if idx == len(vertices)-1 else False  # Only make the plot appear after the last face is drawn.
-        try:
-            ax = utils.plot_3d(np.vstack((verts, verts[0, :])), ax=ax, title='Triangulated Model', line=True, show=show)
-        except:
-            import pdb
-            pdb.set_trace()
-
-
+        ax = utils.plot_3d(np.vstack((verts, verts[0, :])), ax=ax, title='Triangulated Model', line=True, show=show)

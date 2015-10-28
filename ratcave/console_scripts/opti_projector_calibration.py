@@ -8,7 +8,10 @@ import progressbar as pb
 
 import ratcave
 import ratcave.graphics as gg
-from ratcave.devices import Optitrack
+import ratcave.utils as utils
+
+import motive
+
 from ratcave.utils import plot_3d, timers
 
 from psychopy import event
@@ -22,7 +25,7 @@ def setup_projcal_window():
     # Setup graphics
 
     wavefront_reader = gg.WavefrontReader(ratcave.graphics.resources.obj_primitives)
-    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.004)
+    circle = wavefront_reader.get_mesh('Sphere', centered=True, lighting=False, position=[0., 0., -1.], scale=.008)
     circle.material.diffuse.rgb = 1, 1, 1  # Make white
 
     scene = gg.Scene([circle])
@@ -38,7 +41,7 @@ def slow_draw(window, sleep_time=.05):
         time.sleep(sleep_time)
 
 
-def random_scan(window, tracker, n_points=300):
+def random_scan(window, n_points=300):
 
     circle = window.active_scene.meshes[0]
     screenPos, pointPos = [], []
@@ -49,16 +52,19 @@ def random_scan(window, tracker, n_points=300):
 
         # Update position of circle, and draw.
         circle.visible = True
-        circle.local.position[[0, 1]] = np.random.random(2) - .5
+        homogenous_pos = np.random.random(2) - .5
+        circle.local.position[[0, 1]] = homogenous_pos * [1.8, 1]
         slow_draw(window)
+        motive.update()
 
         # Try to isolate a single point.
-        for _ in timers.countdown_timer(.05, stop_iteration=True):
-            markers = tracker.unidentified_markers[:]
-            if len(markers) == 1 and markers[0].position[1] > 0.:
+        for _ in timers.countdown_timer(.2, stop_iteration=True):
+            motive.update()
+            markers = motive.get_unident_markers()
+            if markers and markers[0][1] > 0.:
                 screenPos.append(circle.local.position[[0, 1]])
                 # Update Progress Bar
-                pointPos.append(markers[0].position)
+                pointPos.append(markers[0])
                 pbar.widgets[2] = collect_fmt + str(len(pointPos))
                 pbar.update(len(pointPos))
                 break
@@ -67,14 +73,18 @@ def random_scan(window, tracker, n_points=300):
             missed_cnt += 1
             pbar.widgets[3] = missed_fmt + str(missed_cnt)
             pbar.update(len(pointPos))
+
         # Hide circle, and wait again for a new update.
         circle.visible = False
-        slow_draw(window, sleep_time=.02)
+        slow_draw(window)
+        motive.update()
+        while len(motive.get_unident_markers()) > 0:
+            motive.update()
 
     return np.array(screenPos), np.array(pointPos)
 
 
-def ray_scan(window, tracker):
+def ray_scan(window):
 
     circle = window.active_scene.meshes[0]
     circle.visible = True
@@ -85,14 +95,15 @@ def ray_scan(window, tracker):
         circle.local.position[[0, 1]] = pos
         window.draw()
         window.flip()
-        old_frame = tracker.iFrame
         for _ in timers.countdown_timer(5, stop_iteration=True):
-            markers = tracker.unidentified_markers[:]
-            if tracker.iFrame > old_frame + 5 and len(markers) == 1:
-                if markers[0].position[1] > 0.3:
+            motive.update()
+            markers = motive.get_unident_markers()
+            old_time = motive.frame_time_stamp()
+            if motive.frame_time_stamp() > old_time + .3 and len(markers) == 1:
+                if markers[0][1] > 0.1:
                     screenPos.append(circle.local.position[[0, 1]])
-                    pointPos.append(markers[0].position)
-                    old_frame = tracker.iFrame
+                    pointPos.append(markers[0])
+                    old_time = motive.frame_time_stamp()
 
     return screenPos, pointPos
 
@@ -153,6 +164,9 @@ if __name__ == '__main__':
     parser.add_argument('-o', action='store', dest='save_filename', default='',
                         help='Pickle file to store point data to, if desired.')
 
+    parser.add_argument('-m', action='store', dest='motive_projectfile', default=motive.utils.backup_project_filename,
+                        help='Name of the motive project file to load.  If not used, will load most recent Project file loaded in MotivePy.')
+
     parser.add_argument('-t', action='store_true', dest='test_mode', default=False,
                         help='If this flag is present, calibration results will be displayed, but not saved.')
 
@@ -181,20 +195,33 @@ if __name__ == '__main__':
 
         # Setup Graphics
         window = setup_projcal_window()
-        tracker = Optitrack(client_ip="127.0.0.1")
 
         # If the experimenter needs to enter the room, give them a bit of time to get inside.
         if args.human_scan:
             time.sleep(5)
 
         # Collect random points for calibration.
-        screenPos, pointPos = random_scan(window, tracker, n_points=args.n_points)
+        motive.load_project(args.motive_projectfile)
+        utils.motive_camera_vislight_configure()
+
+        screenPos, pointPos = random_scan(window, n_points=args.n_points)
+
+        print("Size of Point Data: {}".format(pointPos.shape))
+
+        # Remove Obviously Bad Points according to how far away from main cluster they are
+        histmask = np.ones(pointPos.shape[0], dtype=bool)  # Initializing mask with all True values
+        for coord in range(3):
+            histmask &= utils.hist_mask(pointPos[:, coord], keep='middle')
+        pointPos = pointPos[histmask, :]
+        screenPos = screenPos[histmask, :]
+
+        print("Size of Point Data after hist_mask: {}".format(pointPos.shape))
 
         # Project a few points that the experimenter can make rays from (by moving a piece of paper up and down along them.
         # Don't include human data, because its non-gaussian distribution can screw things up a bit.
         # TODO: Figure out how to properly get human-scanned projector calibration data in so OpenCV gets better estimate.
         if args.human_scan:
-            ray_scan(window, tracker)
+            ray_scan(window)
 
         # Close Window
         window.close()
