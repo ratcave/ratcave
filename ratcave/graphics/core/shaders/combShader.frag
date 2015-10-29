@@ -26,7 +26,8 @@ void main()
 
     //Shade Cube Map and return, if needed
     if (hasCubeMap > 0) {
-        final_color = textureCube(my_cube_texture, eyeVec);// * lightAmount;
+        final_color = textureCube(my_cube_texture, eyeVec) * lightAmount;
+        final_color[3] = 1.0;
         return;
     }
 
