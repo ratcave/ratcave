@@ -42,7 +42,7 @@ class Material(object):
     material settings to create object, and relies on defaults to be set
     in the object initialization!"""
 
-    def __init__(self, name='DefaultGray', diffuse=(.8, .8, .8), spec_weight=0, spec_color=(0, 0, 0), ambient=(0, 0, 0),
+    def __init__(self, name='DefaultGray', diffuse=(.8, .8, .8, 1.), spec_weight=0, spec_color=(0, 0, 0, 1.), ambient=(0, 0, 0, 1.),
                  dissolve=0):
         """
         Returns a Material object containing various Color properties for 3D shading in graphics packages.
@@ -67,9 +67,6 @@ class Material(object):
         self.ambient = mixins.Color(*ambient)
         if dissolve != 0:
             raise NotImplementedError("Material.dissolve not yet implemented.  Please see Mesh.visible for hiding Meshes.")
-
-    def __repr__(self):
-        return "Material: self.name. Diffuse: {0}".format(self.diffuse.rgba)
 
 
 drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS
