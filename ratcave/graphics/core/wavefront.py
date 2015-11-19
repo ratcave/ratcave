@@ -146,10 +146,10 @@ class WavefrontReader(object):
                 # Make Material object and add to list of materials
                 name = props['newmtl']
                 material = Material(name=name,
-                                    diffuse=props['Kd'],
+                                    diffuse=props['Kd'] + [1.,],
                                     spec_weight=props['Ns'],
-                                    spec_color=props['Ks'],
-                                    ambient=props['Ka'])
+                                    spec_color=props['Ks'] + [1.,],
+                                    ambient=props['Ka'] + [1.,])
                                     #dissolve=props['d'])
 
                 self.materials[name] = material

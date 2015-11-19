@@ -2,30 +2,9 @@ __author__ = 'nickdg'
 
 import numpy as np
 from . import _transformations as transformations
+from collections import namedtuple
 
-
-class Color(object):
-
-    def __init__(self, r, g, b, a=1.):
-        """Color object, defines rgba attributes"""
-        self.r, self.g, self.b, self.a = r, g, b, a
-
-    @property
-    def rgb(self):
-        return self.r, self.g, self.b
-
-    @rgb.setter
-    def rgb(self, value):
-        self.r, self.g, self.b = value
-
-    @property
-    def rgba(self):
-        return self.r, self.g, self.b, self.a
-
-    @rgba.setter
-    def rgba(self, value):
-        self.r, self.g, self.b, self.a = value
-
+Color = namedtuple('Color', 'r g b a')
 
 class Physical(object):
 

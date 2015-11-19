@@ -180,7 +180,7 @@ class Window(visual.Window):
         gl.glEnable(gl.GL_TEXTURE_2D)
 
         # Clear and Refresh Screen
-        gl.glClearColor(scene.bgColor.r, scene.bgColor.g, scene.bgColor.b, 1.)
+        gl.glClearColor(*scene.bgColor)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
         # Bind Shader
@@ -209,11 +209,11 @@ class Window(visual.Window):
             if mesh.visible:
 
                 # Change Material to Mesh's
-                shader.uniformf('ambient', *mesh.material.ambient.rgb)
-                shader.uniformf('diffuse', *mesh.material.diffuse.rgb)
-                shader.uniformf('spec_color', *mesh.material.spec_color.rgb)
+                shader.uniformf('ambient', *mesh.material.ambient[:3])
+                shader.uniformf('diffuse', *mesh.material.diffuse[:3])
+                shader.uniformf('spec_color', *mesh.material.spec_color[:3])
                 shader.uniformf('spec_weight', mesh.material.spec_weight)
-                shader.uniformf('opacity', mesh.material.diffuse.a)
+                shader.uniformf('opacity', mesh.material.diffuse[3])
                 shader.uniformi('hasLighting', mesh.lighting)
 
                 # Bind Cubemap if mesh is to be rendered with the cubemap.

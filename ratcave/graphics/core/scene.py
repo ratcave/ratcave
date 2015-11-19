@@ -3,7 +3,7 @@ from .camera import Camera
 
 class Scene:
 
-    def __init__(self, meshes=[], camera=None, light=None, bgColor=(0., 0., 0.)):
+    def __init__(self, meshes=[], camera=None, light=None, bgColor=(0., 0., 0., 1.)):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
 
         # Initialize List of all Meshes to draw
