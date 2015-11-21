@@ -25,7 +25,7 @@ plane2.material.diffuse.rgb = .7, .5, .2
 
 scene = graphics.Scene([monkey2, plane])
 scene.bgColor.rgb = 1., 1., 0.
-scene.light.position[2] = 1
+scene.light.x = 1
 scene.camera.fov_y  = 90
 
 virScene = graphics.Scene([monkey, plane2])
@@ -38,12 +38,12 @@ grayscale=False, fullscr=False, shadow_rendering=True, shadow_fov_y = 80, autoCa
 aa = 0.
 while 'escape' not in event.getKeys():
     currtime = time.time() * 1000
-    scene.camera.position[0] = 2 * math.sin(math.radians(aa))
+    scene.camera.x = 2 * math.sin(math.radians(aa))
     virScene.camera.position = scene.camera.position
-    monkey.local.rotation[1] += 1.
-    scene.light.position[0] = 2 * math.sin(math.radians(aa))
-    monkey2.local.rotation[2] += 1
-    virScene.light.position[1] = math.sin(math.radians(aa) + 1)
+    monkey.local.rot_y += 1.
+    scene.light.x = 2 * math.sin(math.radians(aa))
+    monkey2.local.rot_z += 1
+    virScene.light.y = math.sin(math.radians(aa) + 1)
     aa += 5.
     predrawtime = time.time()  *1000
     win.draw()

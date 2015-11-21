@@ -79,7 +79,7 @@ class WavefrontReader(object):
         Return a Scene object containing the Meshes in the file.
 
         Args:
-            include (list): mesh names to only include. 
+            include (list): mesh names to only include.
             exclude (list): mesh names to exclude.
 
         Returns:
