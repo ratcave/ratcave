@@ -15,6 +15,8 @@ from .core.scene import Scene
 from .core.window import Window
 from .core.wavefront import WavefrontReader
 from .core.mixins import Physical
+from .core.logger import Logger
+
 from .core import _transformations
 
 # Create the projector
@@ -39,5 +41,5 @@ projector = __build_projector()
 
 
 
-__all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'projector', 'resources']
+__all__ = ['Camera', 'Logger', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'projector', 'resources']
 
