@@ -37,7 +37,6 @@ class Logger(object):
     def __init__(self, fname, window, exp_name, student_name, subj_name, sess_name, indent=2):
 
         self.filename = fname
-        self.window = window
 
         today = datetime.datetime.today()
         self.metadata = {'Experiment': exp_name,
@@ -49,13 +48,16 @@ class Logger(object):
 
         self.f = None  # Will be flie
         self.indent = indent
+        self.win_dict = {'active_scene': window.active_scene}
+        if window.virtual_scene:
+            self.win_dict.update({'virtual_scene': window.virtual_scene})
 
 
     def __enter__(self):
         # Write the header, first, in its own file.
         with open(self.filename+'_header.json', 'w') as f:
             json.dump(self.metadata, f, indent=self.indent)
-            self._dump_as(f, encode_obj)
+            json.dump(self.win_dict, f, default=encode_obj, indent=self.indent)
 
         #Return the file for writing the Physical, frame-by-frame, log:
         self.f = open(self.filename+'_tracker.json', 'w')
@@ -65,16 +67,6 @@ class Logger(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.f.close()
 
-    def _dump_as(self, f, encoder):
-        json.dump({'active_scene': self.window.active_scene}, f, default=encoder, indent=self.indent)
-        if self.window.virtual_scene:
-            json.dump({'virtual_scene': self.window.virtual_scene}, f, default=encoder, indent=self.indent)
-
-    def write(self, time=datetime.datetime.today().time().isoformat()):
-        self._dump_as(self.f, encode_phys)
-
-
-
-
-
-
+    def write(self):
+        today = datetime.datetime.today
+        json.dump({'time': today().time().isoformat(), 'data': self.win_dict}, self.f, default=encode_phys, indent=self.indent)
