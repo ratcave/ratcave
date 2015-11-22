@@ -57,16 +57,25 @@ class Logger(object):
         # Write the header, first, in its own file.
         with open(self.filename+'_header.json', 'w') as f:
             json.dump(self.metadata, f, indent=self.indent)
-            json.dump(self.win_dict, f, default=encode_obj, indent=self.indent)
+            json.dump(self.win_dict, f, default=encode_obj, indent=self.indent, sort_keys=True)
 
         #Return the file for writing the Physical, frame-by-frame, log:
         self.f = open(self.filename+'_tracker.json', 'w')
-        json.dump(self.metadata, self.f, indent=self.indent)
+        self.f.write('[')
+        # json.dump(self.metadata, self.f, indent=self.indent)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        # Remove trailing comma, and close array
+        self.f.seek(-1, 1)
+        self.f.truncate()
+        self.f.write(']')
         self.f.close()
 
     def write(self):
         today = datetime.datetime.today
-        json.dump({'time': today().time().isoformat(), 'data': self.win_dict}, self.f, default=encode_phys, indent=self.indent)
+        self.win_dict['time'] = today().time().isoformat()
+        json.dump(self.win_dict, self.f, default=encode_phys, indent=self.indent, sort_keys=True)
+        self.f.write(',')
+
+
