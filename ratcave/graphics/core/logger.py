@@ -3,7 +3,7 @@ __author__ = 'nicholas'
 import datetime
 import json
 from json import encoder
-encoder.FLOAT_REPR = lambda o: "{0:.4f}".format(o)#lambda o: format(o, '.4f')
+encoder.FLOAT_REPR = lambda x: "{0:.4f}".format(x).rstrip('0').rstrip('.')
 from . import mixins
 import time
 import os
