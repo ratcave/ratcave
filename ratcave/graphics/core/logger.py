@@ -35,9 +35,6 @@ def encode_obj(obj):
 
 
 
-
-
-
 class Logger(object):
 
     def __init__(self, window, exp_name, log_directory=os.path.join('.', 'logs'), metadata_dict={}, buffer_len=240):
