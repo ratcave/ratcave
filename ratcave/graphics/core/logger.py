@@ -6,6 +6,7 @@ from json import encoder
 encoder.FLOAT_REPR = lambda o: "{0:.4f}".format(o)#lambda o: format(o, '.4f')
 from . import mixins
 import time
+import os
 
 physical_keys = mixins.Physical().__dict__.keys()
 def encode_phys(obj):
@@ -39,24 +40,26 @@ def encode_obj(obj):
 
 class Logger(object):
 
-    def __init__(self, fname, window, exp_name, student_name, subj_name, sess_name, buffer_len=240):
-
-        self.filename = fname
+    def __init__(self, window, exp_name, log_directory=os.path.join('.', 'logs'), metadata_dict={}, buffer_len=240):
 
         today = datetime.datetime.today()
-        self.metadata = {'Experiment': exp_name,
-                         'Experimenter': student_name,
-                         'Subject': subj_name,
-                         'Session': sess_name,
-                         'Date': today.date().isoformat(),
-                         'Time': today.time().isoformat()}
 
-        self.f = None  # Will be flie
-        self.win_dict = {'active_scene': window.active_scene}
+        # File specifics
+        self.f = None  # Will be the file handle, when opened with a context manager
+        self.filename = exp_name + today.strftime('_%Y-%m-%d_%H-%M-%S') + '.json'
+        self.filedir = log_directory
+
+        # Create Header Data
+        self.metadata = metadata_dict
+        self.metadata.update({'Date': today.date().isoformat(), 'Time': today.time().isoformat()})
+
+        # Cache/Buffer parameters
         self.lines_buffer = []
         self.buffer_len = buffer_len
         self.timestamp_start = time.time()
 
+        # Data pre-organization
+        self.win_dict = {'active_scene': window.active_scene}
         if window.virtual_scene:
             self.win_dict.update({'virtual_scene': window.virtual_scene})
 
@@ -64,7 +67,9 @@ class Logger(object):
     def __enter__(self):
 
         # Return the file for writing the Physical, frame-by-frame, log:
-        self.f = open(self.filename+'.json', 'w')
+        if not os.path.exists(self.filedir):
+            os.mkdir(self.filedir)
+        self.f = open(os.path.join(self.filedir, self.filename), 'w')
 
         # Write the experiment metdadata
         self.f.write('{"session": ')
@@ -94,21 +99,6 @@ class Logger(object):
         self.lines_buffer.append(json.dumps(self.win_dict, default=encode_phys, sort_keys=True))
 
         if len(self.lines_buffer) > self.buffer_len:
-            self.f.write(','.join(self.lines_buffer))
-            self.f.write(',')
+            self.f.write(','.join(self.lines_buffer) + ',')
             self.lines_buffer = []
-
-        # Write only the data
-        # data = json.loads(json.dumps(self.win_dict, self.f, default=encode_phys, sort_keys=True))
-        # for scene_dict in ['active_scene']:
-        #
-        #     #data[scene_dict]['light'] = [data[scene_dict]['light'][key] for key in physical_keys]
-        #     data[scene_dict]['camera'] = [data[scene_dict]['camera'][key] for key in physical_keys]
-        #     for meshkey in data[scene_dict]['meshes']:
-        #         for phys in ['local', 'world']:
-        #             data[scene_dict]['meshes'][meshkey][phys] = [data[scene_dict]['meshes'][meshkey][phys][key] for key in physical_keys]
-        # json.dump(data, self.f, sort_keys=True)#
-
-
-        # self.f.write(',')
 
