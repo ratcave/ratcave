@@ -8,13 +8,16 @@ from . import mixins
 import time
 import os
 
-physical_keys = mixins.Physical().__dict__.keys()
+physical_keys = sorted(mixins.Physical().__dict__.keys())
 def encode_phys(obj):
     """Only grabs the data that is expected to change frame to frame"""
     try:
         d = obj.__dict__
-        dd = {key: d[key] for key in d if key in ['camera', 'local', 'world']}
-        dd.update({key: d[key] for key in d if key in physical_keys})
+        dd = {}
+        for key in d:
+            if key in ['camera', 'local', 'world']:
+                temp_d = d[key].__dict__
+                dd.update({key: [temp_d[n] for n in physical_keys if n in temp_d]})
         if 'meshes' in d:
             dd.update({'meshes': {mesh.data.name: mesh for mesh in d['meshes']}})
         if 'visible' in d:
@@ -77,7 +80,7 @@ class Logger(object):
         json.dump(self.win_dict, self.f, default=encode_obj, sort_keys=True)
 
         # Fake-Create the Data Side (if crashes during experiment, will just need to write onto the end.
-        self.f.write(', "data": [')
+        self.f.write(', "log": {"columns": %s, "data": [' % json.dumps(physical_keys))
 
         # Return self for context manager
         return self
@@ -86,7 +89,7 @@ class Logger(object):
         # Remove trailing comma, close array, and close file
         self.f.seek(-1, 1)
         self.f.truncate()
-        self.f.write(']}')
+        self.f.write(']}}')
         self.f.close()
 
     def write(self, note=None):
