@@ -34,7 +34,7 @@ def encode_obj(obj):
         try:
             return obj.tolist()
         except AttributeError:
-            return str(obj)
+            return obj
 
 
 
