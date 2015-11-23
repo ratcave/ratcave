@@ -87,16 +87,16 @@ class Logger(object):
         self.f.write(']}')
         self.f.close()
 
-    def write(self):
+    def write(self, note=None):
 
         self.win_dict['time'] = time.time() - self.timestamp_start
+        self.win_dict['note'] = note
         self.lines_buffer.append(json.dumps(self.win_dict, default=encode_phys, sort_keys=True))
 
         if len(self.lines_buffer) > self.buffer_len:
             self.f.write(','.join(self.lines_buffer))
             self.f.write(',')
             self.lines_buffer = []
-
 
         # Write only the data
         # data = json.loads(json.dumps(self.win_dict, self.f, default=encode_phys, sort_keys=True))
@@ -106,10 +106,9 @@ class Logger(object):
         #     data[scene_dict]['camera'] = [data[scene_dict]['camera'][key] for key in physical_keys.keys()]
         #     for meshkey in data[scene_dict]['meshes']:
         #         for phys in ['local', 'world']:
-        #             data[scene_dict]['meshes'][meshkey][phys] = data[scene_dict]['meshes'][meshkey][phys].values()
+        #             data[scene_dict]['meshes'][meshkey][phys] = [data[scene_dict]['meshes'][meshkey][phys][key] for key in physical_keys.keys()]
         # json.dump(data, self.f, sort_keys=True)#
 
 
         # self.f.write(',')
-
 
