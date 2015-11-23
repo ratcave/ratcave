@@ -54,6 +54,8 @@ class Logger(object):
         self.f = None  # Will be flie
         self.indent = indent
         self.win_dict = {'active_scene': window.active_scene}
+        self.lines_buffer = []
+
         if window.virtual_scene:
             self.win_dict.update({'virtual_scene': window.virtual_scene})
 
@@ -80,7 +82,15 @@ class Logger(object):
     def write(self):
         today = datetime.datetime.today
         self.win_dict['time'] = today().time().isoformat()
-        json.dump(self.win_dict, self.f, default=encode_phys, sort_keys=True)#, indent=self.indent)
+        # json.dump(self.win_dict, self.f, default=encode_phys, sort_keys=True)
+
+        self.lines_buffer.append(json.dumps(self.win_dict, default=encode_phys, sort_keys=True))
+
+        if len(self.lines_buffer) > 24:
+            self.f.write(','.join(self.lines_buffer))
+            self.f.write(',')
+            self.lines_buffer = []
+
 
         # Write only the data
         # data = json.loads(json.dumps(self.win_dict, self.f, default=encode_phys, indent=self.indent, sort_keys=True))
@@ -94,6 +104,6 @@ class Logger(object):
         # json.dump(data, self.f, sort_keys=True)#indent=self.indent, )
 
 
-        self.f.write(',')
+        # self.f.write(',')
 
 
