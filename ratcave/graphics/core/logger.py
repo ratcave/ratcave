@@ -7,7 +7,7 @@ encoder.FLOAT_REPR = lambda o: "{0:.4f}".format(o)#lambda o: format(o, '.4f')
 from . import mixins
 import time
 
-physical_keys = mixins.Physical().__dict__
+physical_keys = mixins.Physical().__dict__.keys()
 def encode_phys(obj):
     """Only grabs the data that is expected to change frame to frame"""
     try:
@@ -102,11 +102,11 @@ class Logger(object):
         # data = json.loads(json.dumps(self.win_dict, self.f, default=encode_phys, sort_keys=True))
         # for scene_dict in ['active_scene']:
         #
-        #     #data[scene_dict]['light'] = [data[scene_dict]['light'][key] for key in physical_keys.keys()]
-        #     data[scene_dict]['camera'] = [data[scene_dict]['camera'][key] for key in physical_keys.keys()]
+        #     #data[scene_dict]['light'] = [data[scene_dict]['light'][key] for key in physical_keys]
+        #     data[scene_dict]['camera'] = [data[scene_dict]['camera'][key] for key in physical_keys]
         #     for meshkey in data[scene_dict]['meshes']:
         #         for phys in ['local', 'world']:
-        #             data[scene_dict]['meshes'][meshkey][phys] = [data[scene_dict]['meshes'][meshkey][phys][key] for key in physical_keys.keys()]
+        #             data[scene_dict]['meshes'][meshkey][phys] = [data[scene_dict]['meshes'][meshkey][phys][key] for key in physical_keys]
         # json.dump(data, self.f, sort_keys=True)#
 
 
