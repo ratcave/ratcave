@@ -39,7 +39,7 @@ def encode_obj(obj):
 
 class Logger(object):
 
-    def __init__(self, fname, window, exp_name, student_name, subj_name, sess_name, indent=2):
+    def __init__(self, fname, window, exp_name, student_name, subj_name, sess_name, buffer_len=240):
 
         self.filename = fname
 
@@ -52,31 +52,38 @@ class Logger(object):
                          'Time': today.time().isoformat()}
 
         self.f = None  # Will be flie
-        self.indent = indent
         self.win_dict = {'active_scene': window.active_scene}
         self.lines_buffer = []
+        self.buffer_len = buffer_len
 
         if window.virtual_scene:
             self.win_dict.update({'virtual_scene': window.virtual_scene})
 
 
     def __enter__(self):
-        # Write the header, first, in its own file.
-        with open(self.filename+'_header.json', 'w') as f:
-            json.dump(self.metadata, f, indent=self.indent)
-            json.dump(self.win_dict, f, default=encode_obj, indent=self.indent, sort_keys=True)
 
-        #Return the file for writing the Physical, frame-by-frame, log:
-        self.f = open(self.filename+'_tracker.json', 'w')
-        self.f.write('[')
-        # json.dump(self.metadata, self.f, indent=self.indent)
+        # Return the file for writing the Physical, frame-by-frame, log:
+        self.f = open(self.filename+'.json', 'w')
+
+        # Write the experiment metdadata
+        self.f.write('{"session": ')
+        json.dump(self.metadata, self.f)
+
+        # Describe the scene
+        self.f.write(', "objects": ')
+        json.dump(self.win_dict, self.f, default=encode_obj, sort_keys=True)
+
+        # Fake-Create the Data Side (if crashes during experiment, will just need to write onto the end.
+        self.f.write(', "data": [')
+
+        # Return self for context manager
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # Remove trailing comma, and close array
+        # Remove trailing comma, close array, and close file
         self.f.seek(-1, 1)
         self.f.truncate()
-        self.f.write(']')
+        self.f.write(']}')
         self.f.close()
 
     def write(self):
@@ -86,14 +93,14 @@ class Logger(object):
 
         self.lines_buffer.append(json.dumps(self.win_dict, default=encode_phys, sort_keys=True))
 
-        if len(self.lines_buffer) > 24:
+        if len(self.lines_buffer) > self.buffer_len:
             self.f.write(','.join(self.lines_buffer))
             self.f.write(',')
             self.lines_buffer = []
 
 
         # Write only the data
-        # data = json.loads(json.dumps(self.win_dict, self.f, default=encode_phys, indent=self.indent, sort_keys=True))
+        # data = json.loads(json.dumps(self.win_dict, self.f, default=encode_phys, sort_keys=True))
         # for scene_dict in ['active_scene']:
         #
         #     #data[scene_dict]['light'] = [data[scene_dict]['light'][key] for key in physical_keys.keys()]
@@ -101,7 +108,7 @@ class Logger(object):
         #     for meshkey in data[scene_dict]['meshes']:
         #         for phys in ['local', 'world']:
         #             data[scene_dict]['meshes'][meshkey][phys] = data[scene_dict]['meshes'][meshkey][phys].values()
-        # json.dump(data, self.f, sort_keys=True)#indent=self.indent, )
+        # json.dump(data, self.f, sort_keys=True)#
 
 
         # self.f.write(',')
