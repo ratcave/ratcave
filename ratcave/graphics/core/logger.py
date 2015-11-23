@@ -7,6 +7,9 @@ encoder.FLOAT_REPR = lambda x: "{0:.4f}".format(x).rstrip('0').rstrip('.')
 from . import mixins
 import time
 import os
+import Image
+import base64
+from pyglet import image
 
 physical_keys = sorted(mixins.Physical().__dict__.keys())
 def encode_phys(obj):
@@ -28,8 +31,15 @@ def encode_phys(obj):
 
 def encode_obj(obj):
     """Handles json obj and numpy array encoding."""
+    if isinstance(obj, image.Texture):
+        img = obj.get_texture().get_image_data()
+        im = Image.frombytes(img.format, (img.width, img.height), img.data).resize((32, 32), Image.ANTIALIAS)
+        return {'shape': im.size,'format': img.format, 'data': base64.b64encode(im.tobytes()), 'encoding': 'Base64'}
     try:
-        return obj.__dict__
+        d = obj.__dict__.copy()
+        if 'meshes' in d:
+            d['meshes'] = {mesh.data.name: mesh for mesh in d['meshes']}
+        return d #obj.__dict__
     except AttributeError:
         try:
             return obj.tolist()
