@@ -3,7 +3,7 @@ __author__ = 'nicholas'
 import datetime
 import json
 from json import encoder
-encoder.FLOAT_REPR = lambda o: str(round(o, 4))#lambda o: format(o, '.4f')
+encoder.FLOAT_REPR = lambda o: "{0:.4f}".format(o)#lambda o: format(o, '.4f')
 from . import mixins
 import time
 
@@ -55,6 +55,7 @@ class Logger(object):
         self.win_dict = {'active_scene': window.active_scene}
         self.lines_buffer = []
         self.buffer_len = buffer_len
+        self.timestamp_start = time.time()
 
         if window.virtual_scene:
             self.win_dict.update({'virtual_scene': window.virtual_scene})
@@ -87,10 +88,8 @@ class Logger(object):
         self.f.close()
 
     def write(self):
-        today = datetime.datetime.today
-        self.win_dict['time'] = today().time().isoformat()
-        # json.dump(self.win_dict, self.f, default=encode_phys, sort_keys=True)
 
+        self.win_dict['time'] = time.time() - self.timestamp_start
         self.lines_buffer.append(json.dumps(self.win_dict, default=encode_phys, sort_keys=True))
 
         if len(self.lines_buffer) > self.buffer_len:
