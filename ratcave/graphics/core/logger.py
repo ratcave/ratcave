@@ -22,9 +22,7 @@ def encode_phys(obj):
                 temp_d = d[key].__dict__
                 dd.update({key: [temp_d[n] for n in physical_keys if n in temp_d]})
         if 'meshes' in d:
-            dd.update({'meshes': {mesh.data.name: mesh for mesh in d['meshes']}})
-        if 'visible' in d:
-            dd['visible'] = d['visible']
+            dd.update({'meshes': {mesh.data.name: mesh for mesh in d['meshes'] if mesh.visible}})
         return dd
     except:
         return
