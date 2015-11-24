@@ -11,7 +11,7 @@ import Image
 import base64
 from pyglet import image
 
-physical_keys = sorted(mixins.Physical().__dict__.keys())
+physical_keys = sorted(key for key in mixins.Physical().__dict__.keys() if '_' not in key[0])
 def encode_phys(obj):
     """Only grabs the data that is expected to change frame to frame"""
     try:

@@ -2,7 +2,7 @@ __author__ = 'nickdg'
 
 import numpy as np
 from . import _transformations as transformations
-
+import types
 
 class Color(object):
 
@@ -40,6 +40,7 @@ class Physical(object):
         """
         self.x, self.y, self.z = position
         self.rot_x, self.rot_y, self.rot_z = rotation
+        self._rot_matrix = None
         self.scale = scale
 
     @property
@@ -65,10 +66,14 @@ class Physical(object):
         # Set Model and Normal Matrices
         trans_mat = transformations.translation_matrix(self.position)
 
-        rot_x_mat = transformations.rotation_matrix(np.radians(self.rotation[0]), [1, 0, 0])
-        rot_y_mat = transformations.rotation_matrix(np.radians(self.rotation[1]), [0, 1, 0])
-        rot_z_mat = transformations.rotation_matrix(np.radians(self.rotation[2]), [0, 0, 1])
-        rot_mat = np.dot(np.dot(rot_z_mat,rot_y_mat), rot_x_mat)
+        if isinstance(self._rot_matrix, types.NoneType):
+            rot_x_mat = transformations.rotation_matrix(np.radians(self.rotation[0]), [1, 0, 0])
+            rot_y_mat = transformations.rotation_matrix(np.radians(self.rotation[1]), [0, 1, 0])
+            rot_z_mat = transformations.rotation_matrix(np.radians(self.rotation[2]), [0, 0, 1])
+            rot_mat = np.dot(np.dot(rot_z_mat,rot_y_mat), rot_x_mat)
+        else:
+            rot_mat = np.eye(4)
+            rot_mat[:3, :3] = self.__rotation
 
         scale_mat = transformations.scale_matrix(self.scale)
 
@@ -85,14 +90,14 @@ class Physical(object):
         # Set View Matrix
         trans_mat = transformations.translation_matrix((-self.x, -self.y, -self.z))
 
-        rot_x_mat = transformations.rotation_matrix(np.radians(-self.rotation[0]), [1, 0, 0])
-        rot_y_mat = transformations.rotation_matrix(np.radians(-self.rotation[1]), [0, 1, 0])
-        rot_z_mat = transformations.rotation_matrix(np.radians(-self.rotation[2]), [0, 0, 1])
-        rot_mat = np.dot(np.dot(rot_x_mat, rot_y_mat), rot_z_mat)
+        if isinstance(self._rot_matrix, types.NoneType):
+            rot_x_mat = transformations.rotation_matrix(np.radians(-self.rotation[0]), [1, 0, 0])
+            rot_y_mat = transformations.rotation_matrix(np.radians(-self.rotation[1]), [0, 1, 0])
+            rot_z_mat = transformations.rotation_matrix(np.radians(-self.rotation[2]), [0, 0, 1])
+            rot_mat = np.dot(np.dot(rot_x_mat, rot_y_mat), rot_z_mat)
+        else:
+            rot_mat = np.eye(4)
+            rot_mat[:3, :3] = self.__rotation
 
-        try:
-            return np.dot(rot_mat, trans_mat)
-        except:
-            import pdb
-            pdb.set_trace()
+        return np.dot(rot_mat, trans_mat)
 
