@@ -51,7 +51,7 @@ def encode_obj(obj):
 
 class Logger(object):
 
-    def __init__(self, window, exp_name, log_directory=os.path.join('.', 'logs'), metadata_dict={}, buffer_len=240):
+    def __init__(self, window, exp_name, log_directory=os.path.join('.', 'logs'), metadata_dict={}, phys_encoder=encode_phys, buffer_len=240):
 
         today = datetime.datetime.today()
 
@@ -64,10 +64,12 @@ class Logger(object):
         self.metadata = metadata_dict
         self.metadata.update({'Date': today.date().isoformat(), 'Time': today.time().isoformat()})
 
+
         # Cache/Buffer parameters
         self.lines_buffer = []
         self.buffer_len = buffer_len
         self.timestamp_start = time.time()
+        self.phys_encoder = phys_encoder
 
         # Data pre-organization
         self.win_dict = {'active_scene': window.active_scene}
@@ -107,7 +109,7 @@ class Logger(object):
 
         self.win_dict['time'] = time.time() - self.timestamp_start
         self.win_dict['note'] = note
-        self.lines_buffer.append(json.dumps(self.win_dict, default=encode_phys, sort_keys=True))
+        self.lines_buffer.append(json.dumps(self.win_dict, default=self.phys_encoder, sort_keys=True))
 
         if len(self.lines_buffer) > self.buffer_len:
             self.f.write(','.join(self.lines_buffer) + ',')
