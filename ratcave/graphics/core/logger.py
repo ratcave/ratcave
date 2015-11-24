@@ -32,9 +32,10 @@ def encode_phys(obj):
 def encode_obj(obj):
     """Handles json obj and numpy array encoding."""
     if isinstance(obj, image.Texture):
-        img = obj.get_texture().get_image_data()
-        im = Image.frombytes(img.format, (img.width, img.height), img.data).resize((32, 32), Image.ANTIALIAS)
-        return {'shape': im.size,'format': img.format, 'data': base64.b64encode(im.tobytes()), 'encoding': 'Base64'}
+        #img = obj.get_texture().get_image_data()
+        #im = Image.frombytes(img.format, (img.width, img.height), img.data).resize((32, 32), Image.ANTIALIAS)
+        #return {'shape': im.size,'format': img.format, 'data': base64.b64encode(im.tobytes()), 'encoding': 'Base64'}
+        return
     try:
         d = obj.__dict__.copy()
         if 'meshes' in d:
