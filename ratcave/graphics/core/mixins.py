@@ -72,7 +72,7 @@ class Physical(object):
             rot_mat = np.dot(np.dot(rot_z_mat,rot_y_mat), rot_x_mat)
         else:
             rot_mat = np.eye(4)
-            rot_mat[:3, :3] = self.__rotation
+            rot_mat[:3, :3] = self._rot_matrix
 
         scale_mat = transformations.scale_matrix(self.scale)
 
@@ -96,7 +96,7 @@ class Physical(object):
             rot_mat = np.dot(np.dot(rot_x_mat, rot_y_mat), rot_z_mat)
         else:
             rot_mat = np.eye(4)
-            rot_mat[:3, :3] = self.__rotation
+            rot_mat[:3, :3] = self._rot_matrix
 
         return np.dot(rot_mat, trans_mat)
 

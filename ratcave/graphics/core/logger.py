@@ -30,9 +30,10 @@ def encode_phys(obj):
 def encode_obj(obj):
     """Handles json obj and numpy array encoding."""
     if isinstance(obj, image.Texture):
-        img = obj.get_texture().get_image_data()
-        im = Image.frombytes(img.format, (img.width, img.height), img.data).resize((32, 32), Image.ANTIALIAS)
-        return {'shape': im.size,'format': img.format, 'data': base64.b64encode(im.tobytes()), 'encoding': 'Base64'}
+        #img = obj.get_texture().get_image_data()
+        #im = Image.frombytes(img.format, (img.width, img.height), img.data).resize((32, 32), Image.ANTIALIAS)
+        #return {'shape': im.size,'format': img.format, 'data': base64.b64encode(im.tobytes()), 'encoding': 'Base64'}
+        return
     try:
         d = obj.__dict__.copy()
         if 'meshes' in d:
@@ -48,7 +49,7 @@ def encode_obj(obj):
 
 class Logger(object):
 
-    def __init__(self, scenes, exp_name, log_directory=os.path.join('.', 'logs'), metadata_dict={}, buffer_len=240):
+    def __init__(self, scenes, exp_name, log_directory=os.path.join('.', 'logs'), metadata_dict={}, phys_encoder=encode_phys, buffer_len=240):
 
         today = datetime.datetime.today()
 
@@ -61,10 +62,12 @@ class Logger(object):
         self.metadata = metadata_dict
         self.metadata.update({'Date': today.date().isoformat(), 'Time': today.time().isoformat()})
 
+
         # Cache/Buffer parameters
         self.lines_buffer = []
         self.buffer_len = buffer_len
         self.timestamp_start = time.time()
+        self.phys_encoder = phys_encoder
 
         # Data pre-organization
         self.win_dict = {'scenes': scenes}
@@ -102,7 +105,7 @@ class Logger(object):
 
         self.win_dict['time'] = time.time() - self.timestamp_start
         self.win_dict['note'] = note
-        self.lines_buffer.append(json.dumps(self.win_dict, default=encode_phys, sort_keys=True))
+        self.lines_buffer.append(json.dumps(self.win_dict, default=self.phys_encoder, sort_keys=True))
 
         if len(self.lines_buffer) > self.buffer_len:
             self.f.write(','.join(self.lines_buffer) + ',')
