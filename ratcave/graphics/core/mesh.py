@@ -187,6 +187,9 @@ class Mesh(object):
         self._modelmat_preset = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
         self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
 
+    @property
+    def position(self):
+        return np.dot(self.world.model_matrix, self.local.model_matrix)[:3, -1].tolist()
 
     def render(self, shader):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
