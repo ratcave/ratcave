@@ -48,7 +48,7 @@ def encode_obj(obj):
 
 class Logger(object):
 
-    def __init__(self, window, exp_name, log_directory=os.path.join('.', 'logs'), metadata_dict={}, buffer_len=240):
+    def __init__(self, scenes, exp_name, log_directory=os.path.join('.', 'logs'), metadata_dict={}, buffer_len=240):
 
         today = datetime.datetime.today()
 
@@ -67,9 +67,7 @@ class Logger(object):
         self.timestamp_start = time.time()
 
         # Data pre-organization
-        self.win_dict = {'active_scene': window.active_scene}
-        if window.virtual_scene:
-            self.win_dict.update({'virtual_scene': window.virtual_scene})
+        self.win_dict = {'scenes': scenes}
 
 
     def __enter__(self):
@@ -84,7 +82,7 @@ class Logger(object):
         json.dump(self.metadata, self.f)
 
         # Describe the scene
-        self.f.write(', "objects": ')
+        self.f.write(', "init_state": ')
         json.dump(self.win_dict, self.f, default=encode_obj, sort_keys=True)
 
         # Fake-Create the Data Side (if crashes during experiment, will just need to write onto the end.
