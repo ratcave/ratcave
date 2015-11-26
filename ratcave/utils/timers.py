@@ -20,6 +20,7 @@ def dt_timer():
     """A Generator that returns the time since last called. Never returns StopIteration."""
     last_time = time.time()
     while True:
-        dt = time.time() - last_time
-        last_time = dt
+        new_time = time.time()
+        dt = new_time - last_time
+        last_time = new_time
         yield dt
