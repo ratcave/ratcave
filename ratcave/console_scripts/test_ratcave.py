@@ -11,17 +11,17 @@ reader = graphics.WavefrontReader(graphics.resources.obj_primitives)
 
 monkey = reader.get_mesh("Monkey", position=(0, 0, -2), scale = .5, centered=True)
 #monkey.load_texture(graphics.resources.img_colorgrid)
-monkey.material.diffuse = (.5, 1., 1., 1.)
+monkey.material.diffuse.rgba = (.5, 1., 1., 1.)
 
 monkey2 = reader.get_mesh("Monkey", position=(0,0, -1), scale = .7, centered=True)
 monkey2.cubemap = True
 
 
 plane = reader.get_mesh("Grid", position=(0, 0, -3), scale = 2, centered=True, drawstyle='point')
-plane.material.diffuse = 0, 0, 0, 0
+plane.material.diffuse.rgba = 0, 0, 0, 0
 
 plane2 = reader.get_mesh("Plane", position=(0, 0, -3), scale = 2, centered=True)
-plane2.material.diffuse = .7, .5, .2, 1.
+plane2.material.diffuse.rgba = .7, .5, .2, 1.
 
 scene = graphics.Scene([monkey2, plane])
 scene.bgColor.rgb = 1., 1., 0.
@@ -29,7 +29,7 @@ scene.light.x = 1
 scene.camera.fov_y  = 90
 
 virScene = graphics.Scene([monkey, plane2])
-virScene.bgColor = 1., 0., 1., 1.
+virScene.bgColor.rgba = 1., 0., 1., 1.
 
 win = graphics.Window(scene, virtual_scene=virScene,
 grayscale=False, fullscr=False, shadow_rendering=True, shadow_fov_y = 80, autoCam=False)
