@@ -50,12 +50,12 @@ class Window(visual.Window):
         assert self.winType == 'pyglet', "Window Type must be 'pyglet' for ratCAVE to work."
 
         # Assign data to window after OpenGL context initialization
+        self._active_scene = None
         self.active_scene = active_scene  # For normal rendering.
-        self.active_scene.camera.aspect = float(self.size[0]) / self.size[1]  # Camera aspect ratio should match screen size, at least for the active scene.
-        self.virtual_scene = virtual_scene  # For dynamic cubemapping.
-        if self.virtual_scene:
-            self.virtual_scene.camera.fov_y = 90.
-            self.virtual_scene.camera.aspect = 1.
+        self._virtual_scene = None
+        if virtual_scene:
+            self.virtual_scene = virtual_scene
+
         self.autoCam = autoCam  # Convenience attribute for moving virtual scene's light to the active scene's position.
 
 
@@ -77,6 +77,25 @@ class Window(visual.Window):
         self.shadow_rendering = shadow_rendering
         self.__shadow_fov_y = shadow_fov_y
         self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y, aspect=1.).projection_matrix.T.ravel()
+
+    @property
+    def active_scene(self):
+        return self._active_scene
+
+    @active_scene.setter
+    def active_scene(self, scene):
+        scene.camera.aspect = float(self.size[0]) / self.size[1]  # Camera aspect ratio should match screen size, at least for the active scene.
+        self._active_scene = scene
+
+    @property
+    def virtual_scene(self):
+        return self._virtual_scene
+
+    @virtual_scene.setter
+    def virtual_scene(self, scene):
+        scene.camera.fov_y = 90.
+        scene.camera.aspect = 1.
+        self._virtual_scene = scene
 
     @property
     def shadow_fov_y(self):
