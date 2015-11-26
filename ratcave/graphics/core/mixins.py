@@ -2,9 +2,29 @@ __author__ = 'nickdg'
 
 import numpy as np
 from . import _transformations as transformations
-from collections import namedtuple
+import types
 
-Color = namedtuple('Color', 'r g b a')
+class Color(object):
+
+    def __init__(self, r, g, b, a=1.):
+        """Color object, defines rgba attributes"""
+        self.r, self.g, self.b, self.a = r, g, b, a
+
+    @property
+    def rgb(self):
+        return self.r, self.g, self.b
+
+    @rgb.setter
+    def rgb(self, value):
+        self.r, self.g, self.b = value
+
+    @property
+    def rgba(self):
+        return self.r, self.g, self.b, self.a
+
+    @rgba.setter
+    def rgba(self, value):
+        self.r, self.g, self.b, self.a = value
 
 class Physical(object):
 
@@ -17,9 +37,26 @@ class Physical(object):
             rotation (list): (x, y, z) rotation values
             scale (float): uniform scale factor. 1 = no scaling.
         """
-        self.position = list(position)
-        self.rotation = list(rotation)
+        self.x, self.y, self.z = position
+        self.rot_x, self.rot_y, self.rot_z = rotation
+        self._rot_matrix = None
         self.scale = scale
+
+    @property
+    def position(self):
+        return self.x, self.y, self.z
+
+    @position.setter
+    def position(self, value):
+        self.x, self.y, self.z = value
+
+    @property
+    def rotation(self):
+        return self.rot_x, self.rot_y, self.rot_z
+
+    @rotation.setter
+    def rotation(self, value):
+        self.rot_x, self.rot_y, self.rot_z = value
 
     @property
     def model_matrix(self):
@@ -28,10 +65,14 @@ class Physical(object):
         # Set Model and Normal Matrices
         trans_mat = transformations.translation_matrix(self.position)
 
-        rot_x_mat = transformations.rotation_matrix(np.radians(self.rotation[0]), [1, 0, 0])
-        rot_y_mat = transformations.rotation_matrix(np.radians(self.rotation[1]), [0, 1, 0])
-        rot_z_mat = transformations.rotation_matrix(np.radians(self.rotation[2]), [0, 0, 1])
-        rot_mat = np.dot(np.dot(rot_z_mat,rot_y_mat), rot_x_mat)
+        if isinstance(self._rot_matrix, types.NoneType):
+            rot_x_mat = transformations.rotation_matrix(np.radians(self.rotation[0]), [1, 0, 0])
+            rot_y_mat = transformations.rotation_matrix(np.radians(self.rotation[1]), [0, 1, 0])
+            rot_z_mat = transformations.rotation_matrix(np.radians(self.rotation[2]), [0, 0, 1])
+            rot_mat = np.dot(np.dot(rot_z_mat,rot_y_mat), rot_x_mat)
+        else:
+            rot_mat = np.eye(4)
+            rot_mat[:3, :3] = self.__rotation
 
         scale_mat = transformations.scale_matrix(self.scale)
 
@@ -46,16 +87,20 @@ class Physical(object):
     def view_matrix(self):
         """The 4x4 view matrix."""
         # Set View Matrix
-        trans_mat = transformations.translation_matrix([-el for el in self.position])
+        trans_mat = transformations.translation_matrix((-self.x, -self.y, -self.z))
 
-        rot_x_mat = transformations.rotation_matrix(np.radians(-self.rotation[0]), [1, 0, 0])
-        rot_y_mat = transformations.rotation_matrix(np.radians(-self.rotation[1]), [0, 1, 0])
-        rot_z_mat = transformations.rotation_matrix(np.radians(-self.rotation[2]), [0, 0, 1])
-        rot_mat = np.dot(np.dot(rot_x_mat, rot_y_mat), rot_z_mat)
+        if isinstance(self._rot_matrix, types.NoneType):
+            rot_x_mat = transformations.rotation_matrix(np.radians(-self.rotation[0]), [1, 0, 0])
+            rot_y_mat = transformations.rotation_matrix(np.radians(-self.rotation[1]), [0, 1, 0])
+            rot_z_mat = transformations.rotation_matrix(np.radians(-self.rotation[2]), [0, 0, 1])
+            rot_mat = np.dot(np.dot(rot_x_mat, rot_y_mat), rot_z_mat)
+        else:
+            rot_mat = np.eye(4)
+            rot_mat[:3, :3] = self.__rotation
 
-        try:
-            return np.dot(rot_mat, trans_mat)
-        except:
-            import pdb
-            pdb.set_trace()
+        return np.dot(rot_mat, trans_mat)
+
+    def update(self, dt):
+        """Interface for implementing physics. Subclassed Physical objects can take advantage of this."""
+        pass
 

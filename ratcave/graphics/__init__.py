@@ -15,6 +15,8 @@ from .core.scene import Scene
 from .core.window import Window
 from .core.wavefront import WavefrontReader
 from .core.mixins import Physical
+from .core.logger import Logger
+
 from .core import _transformations
 
 # Create the projector
@@ -27,8 +29,9 @@ def __build_projector():
     if path.exists(proj_file):
         projector_data = pickle.load(open(proj_file))
         projector = Camera(position=projector_data['position'],
-                           rotation=projector_data['rotation'],
+                           #rotation=projector_data['rotation'],
                            fov_y=projector_data['fov_y'])
+        projector._rot_matrix = projector_data['rotation']
     else:
         print("Cannot auto-create projector until opti_projector_calibration script is run.  projector object will be set to None.")
         projector = None
@@ -39,5 +42,5 @@ projector = __build_projector()
 
 
 
-__all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'projector', 'resources']
+__all__ = ['Camera', 'Logger', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'projector', 'resources']
 

@@ -119,6 +119,7 @@ class Mesh(object):
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         self.texture = None
+        self.texture_filename = None
         self.cubemap = cubemap
         self.lighting = lighting
         self.drawstyle = drawstyle
@@ -136,6 +137,7 @@ class Mesh(object):
 
     def load_texture(self, file_name):
         """Loads a texture from an image file into OpenGL and applies it to the Mesh for rendering."""
+        self.texture_filename = file_name
         self.texture = image.load(file_name).get_texture()
 
     def _create_vao(self):
