@@ -36,10 +36,10 @@ def get_arena_from(file_name=graphics.resources.obj_arena, cubemap=True):
     arena.cubemap = cubemap
     return arena
 
-def update_world_position(meshes, arena_rb, additional_rotation=0.):
+def update_world_position(meshes, arena_rb, additional_rot_y_rotation):
     """# Update the positions of everything, based on the MotivePy data of the arena rigid body"""
     for mesh in meshes:
         mesh.world.position = arena_rb.location
         mesh.world.rotation = arena_rb.rotation_global
-        mesh.world.rot_y += additional_rotation
+        mesh.world.rot_y += additional_rot_y_rotation
     return
