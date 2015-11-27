@@ -65,7 +65,7 @@ class Window(visual.Window):
         aa_texture_size = int(pow(2, ceil(log(max(self.size), 2))))  # Automatically get next power-of-2 size of monitor edge
         self.fbos = {'shadow': utils.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=5, color=False, depth=True),
                      'vrshadow': utils.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=6, color=False, depth=True),
-                     'cube': utils.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size, texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
+                     'cube': utils.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size*2, texture_size*2, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
                      'antialias': utils.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
                      }
         self.texture_size = 2048
