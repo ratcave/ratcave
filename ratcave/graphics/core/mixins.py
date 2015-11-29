@@ -100,7 +100,7 @@ class Physical(object):
 
         return np.dot(rot_mat, trans_mat)
 
-    def start(self):
+    def start(self, from_obj=None):
         """Interface for implementing physics. Subclassed Physical objects can take advantage of this."""
         pass
 
