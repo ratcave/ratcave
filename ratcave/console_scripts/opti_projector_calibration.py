@@ -179,7 +179,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', action='store_true', dest='human_scan', default=False,
                         help='This flag adds an extra stationary step where the experimenter can add some vertical lines of points to improve the projector estimate.')
 
-    parser.add_argument('--fov_y', action='store', type=float, dest='fov_y', default=27.35,
+    parser.add_argument('--fov_y', action='store', type=float, dest='fov_y', default=27.8,
                         help='Vertical field of view for the projector.  If known, please specify. (currently defaults with assumption of 1080x720 mode for ProPixx projector.')
 
     parser.add_argument('--silent', action='store_true', dest='silent_mode', default=False,
