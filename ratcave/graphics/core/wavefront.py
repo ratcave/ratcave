@@ -26,20 +26,6 @@ class WavefrontReader(object):
         self._parse_obj(file_name + '.obj')
         self._parse_mtl(file_name + '.mtl')
 
-    def get_mesh(self, mesh_name, **kwargs):
-        """
-        Returns a Mesh object for directly rendering in a scene.
-
-        :param mesh_name:
-        :param kwargs: All of Mesh's keword arguments will be applied to the Mesh, for convenient Mesh creation.
-        :return: Mesh
-        :rtype: Mesh
-        """
-        meshdata = self.meshdata[mesh_name]
-        material_name = self.mesh_material_names[mesh_name] if 'material_name' not in kwargs else kwargs['material_name']
-        material = self.materials[material_name]
-        return copy.deepcopy(Mesh(meshdata, material, **kwargs))  # TODO: Make Wavefront.get_mesh() automatically make new version of object.
-
     def _parse_obj(self, file_name):
 
         with open(file_name, 'r') as wavefront_file:
@@ -73,6 +59,20 @@ class WavefrontReader(object):
                     self.mesh_names.append(name)
 
                     props['f'] = []
+
+    def get_mesh(self, mesh_name, **kwargs):
+        """
+        Returns a Mesh object for directly rendering in a scene.
+
+        :param mesh_name:
+        :param kwargs: All of Mesh's keword arguments will be applied to the Mesh, for convenient Mesh creation.
+        :return: Mesh
+        :rtype: Mesh
+        """
+        meshdata = self.meshdata[mesh_name]
+        material_name = self.mesh_material_names[mesh_name] if 'material_name' not in kwargs else kwargs['material_name']
+        material = self.materials[material_name]
+        return copy.deepcopy(Mesh(meshdata, material, **kwargs))  # TODO: Make Wavefront.get_mesh() automatically make new version of object.
 
     def get_scene(self, include=[], exclude=[]):
         """
