@@ -74,6 +74,10 @@ class WavefrontReader(object):
         material = self.materials[material_name]
         return copy.deepcopy(Mesh(meshdata, material, **kwargs))  # TODO: Make Wavefront.get_mesh() automatically make new version of object.
 
+    def get_meshes(self, mesh_names, **kwargs):
+        """Returns a dictionary of meshes, with kwargs applied to all meshes identically, as in get_mesh()"""
+        return {name: self.get_mesh(name, **kwargs) for name in mesh_names}
+
     def get_scene(self, include=[], exclude=[]):
         """
         Return a Scene object containing the Meshes in the file.
