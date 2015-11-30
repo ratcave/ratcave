@@ -68,7 +68,7 @@ class Window(visual.Window):
                      'cube': utils.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size*2, texture_size*2, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
                      'antialias': utils.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
                      }
-        self.texture_size = 2048
+        self.texture_size = texture_size
 
         # Antialiasing attributes
         self.fullscreen_quad = fullscreen_quad
