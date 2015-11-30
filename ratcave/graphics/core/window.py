@@ -26,7 +26,7 @@ aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
 
 class Window(visual.Window):
     
-    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=2048, autoCam=False, *args, **kwargs):
+    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=1024, autoCam=False, *args, **kwargs):
         """
         The Window that everything gets drawn in.  
 
