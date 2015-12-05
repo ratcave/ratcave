@@ -53,7 +53,7 @@ def random_scan(window, n_points=300):
         # Update position of circle, and draw.
         circle.visible = True
         homogenous_pos = np.random.random(2) - .5
-        circle.local.position[[0, 1]] = homogenous_pos * [1.8, 1]
+        circle.local.x, circle.local.y = homogenous_pos * [1.8, 1]
         slow_draw(window)
         motive.update()
 
@@ -62,7 +62,7 @@ def random_scan(window, n_points=300):
             motive.update()
             markers = motive.get_unident_markers()
             if markers and markers[0][1] > 0.:
-                screenPos.append(circle.local.position[[0, 1]])
+                screenPos.append(circle.local.position[:2])
                 # Update Progress Bar
                 pointPos.append(markers[0])
                 pbar.widgets[2] = collect_fmt + str(len(pointPos))
@@ -92,7 +92,7 @@ def ray_scan(window):
     # Do some non-random points to so human can change height range.
     pointPos, screenPos = [], []
     for pos in [(0, 0), (-.5, 0), (.5, 0)]:
-        circle.local.position[[0, 1]] = pos
+        circle.local.x, circle.local.y = pos
         window.draw()
         window.flip()
         for _ in timers.countdown_timer(5, stop_iteration=True):
@@ -101,7 +101,7 @@ def ray_scan(window):
             old_time = motive.frame_time_stamp()
             if motive.frame_time_stamp() > old_time + .3 and len(markers) == 1:
                 if markers[0][1] > 0.1:
-                    screenPos.append(circle.local.position[[0, 1]])
+                    screenPos.append(circle.local.position[:2])
                     pointPos.append(markers[0])
                     old_time = motive.frame_time_stamp()
 
