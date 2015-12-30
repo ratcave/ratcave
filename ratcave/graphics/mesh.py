@@ -127,7 +127,7 @@ class Mesh(object):
 
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
-        self.vao = None
+        self.vao = utils.create_vao(self.data.vertices, self.data.normals, self.data.texture_uv)
         self.normal_matrix = None
         self.model_matrix = None
 
@@ -156,10 +156,6 @@ class Mesh(object):
         # Send Model and Normal Matrix to shader.
         shader.uniform_matrixf('model_matrix', self.model_matrix)
         shader.uniform_matrixf('normal_matrix', self.normal_matrix)
-
-        # Bind VAO data for rendering each vertex.
-        if not self.vao is None:
-            self.vao = utils.create_vao(self.data.vertices, self.data.normals, self.data.texture_uv)
 
         if self.drawstyle == 'point':
             gl.glEnable(gl.GL_POINT_SMOOTH)

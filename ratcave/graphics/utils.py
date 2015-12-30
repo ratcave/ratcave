@@ -129,7 +129,7 @@ def create_vao(vertices, normals, texture_uvs):
 
         # Upload Vertex Coordinates
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo[0])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * vertices,
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * vertices.size,
                         vec(vertices.ravel()), gl.GL_STATIC_DRAW)
         gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
         gl.glEnableVertexAttribArray(0)
