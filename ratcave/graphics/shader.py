@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 #
 # Copyright Tristam Macdonald 2008.
 #

@@ -1,23 +1,26 @@
+from __future__ import absolute_import
+
 __author__ = 'ratcave'
 
 """The grapihcs module."""
+
+
 
 # First import pyglet and turn off the debug_gl option.  This is great for performance!
 import pyglet
 pyglet.options['debug_gl'] = False
 
-from .core import utils
-import resources
-from .core import utils
-from .core.camera import Camera
-from .core.mesh import Mesh, MeshData, Material
-from .core.scene import Scene
-from .core.window import Window
-from .core.wavefront import WavefrontReader
-from .core.mixins import Physical
-from .core.logger import Logger
+from . import _transformations
+from . import resources
+from . import utils
+from .camera import Camera
+from .mesh import Mesh, MeshData, Material
+from .scene import Scene
+from .window import Window
+from .wavefront import WavefrontReader
+from .mixins import Physical
+from .logger import Logger
 
-from .core import _transformations
 
 # Create the projector
 def __build_projector():

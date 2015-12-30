@@ -1,9 +1,10 @@
+from __future__ import absolute_import
+
 from os import path
 import copy
-import numpy as np
 
-from ratcave.graphics.core.mesh import MeshData, Mesh, Material
-from ratcave.graphics.core.scene import Scene
+import numpy as np
+from . import Scene, Mesh, MeshData, Material
 
 class WavefrontReader(object):
 

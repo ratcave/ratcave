@@ -13,7 +13,7 @@ setup(name='ratcave',
       packages=find_packages(),
       include_package_data=True,
       package_data={'': ['graphics/assets/*.'+el for el in ['png', 'obj', 'mtl']] +
-                        ['graphics/core/shaders/*'+el for el in ['vert', 'frag']] +
+                        ['graphics/shaders/*'+el for el in ['vert', 'frag']] +
                         ['arduino_programs/s*']
                     },
       install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs', 'sklearn'],
@@ -23,6 +23,6 @@ setup(name='ratcave',
                'ratcave/console_scripts/opti_projector_rotation_calib.py',
                'ratcave/console_scripts/test_ratcave.py'
                 ],
-      ext_modules=[Extension('ratcave.graphics.core._transformations', sources=['ratcave/c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
+      ext_modules=[Extension('ratcave.graphics._transformations', sources=['ratcave/c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
       )
 

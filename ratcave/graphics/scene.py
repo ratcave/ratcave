@@ -1,6 +1,9 @@
-from . import mixins
-from .camera import Camera
+from __future__ import absolute_import
+
 import warnings
+
+from . import mixins, Camera
+
 
 class Scene(object):
 

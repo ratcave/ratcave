@@ -1,5 +1,4 @@
-__author__ = 'ratcave'
-
+from __future__ import absolute_import
 from os import path as __path
 from appdirs import user_data_dir as __data_dir
 

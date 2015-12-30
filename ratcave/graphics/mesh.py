@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 """
     mesh
     ~~~~
@@ -6,11 +8,9 @@
     This documentation was auto-generated from the mesh.py file.
 """
 import numpy as np
-
 from pyglet import gl, image
 
-from . import mixins
-from . import utils
+from . import utils, mixins
 
 
 class MeshData(object):

@@ -1,5 +1,4 @@
-__author__ = 'nickdg'
-
+from __future__ import absolute_import
 import numpy as np
 from . import _transformations as transformations
 import types

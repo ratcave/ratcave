@@ -33,7 +33,8 @@ sys.path.insert(0, os.path.abspath('../../../ratcave'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinxcontrib.napoleon',
-    'sphinx.ext.todo'
+    'sphinx.ext.todo',
+    'sphinx.ext.pngmath'
 ]
 
 autoclass_content = "both"

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import pyglet.gl as gl
 import numpy as np
 from collections import namedtuple

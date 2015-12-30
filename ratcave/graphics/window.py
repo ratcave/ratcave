@@ -1,4 +1,4 @@
-__author__ = 'nickdg'
+from __future__ import absolute_import
 
 from os.path import join, split
 from math import ceil, log
@@ -9,7 +9,7 @@ import pyglet.gl as gl
 from .camera import Camera
 from .shader import Shader
 from .mesh import fullscreen_quad
-from . import utils
+from ratcave.graphics import utils
 
 shader_path = join(split(__file__)[0], 'shaders')
 
