@@ -206,7 +206,7 @@ class Window(visual.Window):
         shader.uniform_matrixf('view_matrix', scene.camera.view_matrix.T.ravel())
 
         if send_light_and_camera_intrinsics:
-            shader.uniform_matrixf('projection_matrix', scene.camera._projmat_preset)
+            shader.uniform_matrixf('projection_matrix', scene.camera.projection_matrix)
 
             shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix.T.ravel())
             shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
