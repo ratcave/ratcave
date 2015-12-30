@@ -128,9 +128,8 @@ class Mesh(object):
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
         self.vao = None
-        self._normalmat_preset, self._modelmat_preset = None, None
-        self._manually_set_mats()
-
+        self.normal_matrix = None
+        self.model_matrix = None
 
     def __repr__(self):
         return "Mesh: {0}".format(self.data.name)
@@ -140,12 +139,12 @@ class Mesh(object):
         self.texture_filename = file_name
         self.texture = image.load(file_name).get_texture()
     
-    def _manually_set_mats(self):
+    def update_matrices(self):
         """Resets the model and normal matrices used internally for positioning and shading."""
 
         # Local then world
-        self._modelmat_preset = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
-        self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
+        self.model_matrix = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
+        self.normal_matrix = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
 
     @property
     def position(self):
@@ -155,8 +154,8 @@ class Mesh(object):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
 
         # Send Model and Normal Matrix to shader.
-        shader.uniform_matrixf('model_matrix', self._modelmat_preset)
-        shader.uniform_matrixf('normal_matrix', self._normalmat_preset)
+        shader.uniform_matrixf('model_matrix', self.model_matrix)
+        shader.uniform_matrixf('normal_matrix', self.normal_matrix)
 
         # Bind VAO data for rendering each vertex.
         if not self.vao is None:
