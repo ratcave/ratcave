@@ -75,8 +75,11 @@ class Window(visual.Window):
 
         # Shadow Rendering attributes
         self.shadow_rendering = shadow_rendering
-        self.__shadow_fov_y = shadow_fov_y
-        self.shadow_projection_matrix = Camera(fov_y=shadow_fov_y, aspect=1.).projection_matrix.T.ravel()
+        if shadow_rendering:
+            shadow_cam = Camera(fov_y=shadow_fov_y, aspect=1.)
+            shadow_cam.update_matrices()
+            self.__shadow_fov_y = shadow_fov_y
+            self.shadow_projection_matrix = shadow_cam.projection_matrix.T.ravel()
 
     @property
     def active_scene(self):
