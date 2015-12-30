@@ -44,6 +44,7 @@ class Physical(object):
 
     @property
     def position(self):
+        """xyz position"""
         return self.x, self.y, self.z
 
     @position.setter
@@ -52,6 +53,7 @@ class Physical(object):
 
     @property
     def rotation(self):
+        """XYZ Euler rotation, in degrees"""
         return self.rot_x, self.rot_y, self.rot_z
 
     @rotation.setter
