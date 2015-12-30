@@ -15,5 +15,7 @@ class Scene(object):
         self.light = mixins.Physical() if not light else light
         self.bgColor = mixins.Color(*bgColor)
 
-
-
+    def update_matrices(self):
+        """calls the "update_matrices" method on all meshes and camera, so that all data is current."""
+        for obj in self.meshes + [self.camera]:
+            obj.update_matrices()

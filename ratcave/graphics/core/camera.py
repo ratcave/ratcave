@@ -36,21 +36,17 @@ class Camera(mixins.Physical):
         self.x_shift = x_shift
         self.y_shift = y_shift
         self.ortho_mode = ortho_mode
-        self._projmat_preset = self.projection_matrix.T.ravel()
+        self.projection_matrix = None
+        self.shift_matrix = None
 
-    def preset_mats(self):
-        self._projmat_preset = self.projection_matrix.T.ravel()
-
-    @property
-    def shift_matrix(self):
+    def update_shift_matrix(self):
         """np.array: The Camera's lens-shift matrix."""
         return np.array([[1.,           0.,           self.x_shift, 0.],
                          [0.,           1.,           self.y_shift, 0.],
                          [0.,           0.,                     1., 0.],
                          [0.,           0.,                     0., 1.]])
 
-    @property
-    def projection_matrix(self):
+    def update_projection_matrix(self):
         """np.array: The Camera's Projection Matrix.  Will be an Orthographic matrix if ortho_mode is set to True."""
 
         zn, zf = self.zNear, self.zFar
@@ -73,7 +69,11 @@ class Camera(mixins.Physical):
                                   [             0.,    0.,             -1.,                 0.]])
             persp_mat = np.dot(persp_mat, self.shift_matrix)  # Apply lens shift
 
-        return persp_mat
+        return persp_mat.T.ravel()
 
+    def update_matrices(self):
+        """Convenience method. Calls all Camera.update_x() methods."""
+        self.projection_matrix = self.update_projection_matrix()
+        self.shift_matrix = self.update_shift_matrix()
 
 

@@ -158,17 +158,11 @@ class Window(visual.Window):
         put the lights for the active and virtual scene to the active scene's camera position (useful for convenient CAVE
         api.)"""
 
-        # Pre-set model and normal matrices to increase draw time performance
-        self.active_scene.camera.preset_mats()
-        for mesh in self.active_scene.meshes:
-            mesh.update_matrices()
+        # Pre-set all model, normal, and perspective matrices to increase draw time performance
+        for scene in [self.active_scene, self.virtual_scene] if self.virtual_scene else [self.active_scene]:
+            scene.update_matrices()
 
         if self.virtual_scene:
-
-            # Pre-set model and normal matrices to increase draw time performance
-            self.virtual_scene.camera.preset_mats()
-            for mesh in self.virtual_scene.meshes:
-                mesh.update_matrices()
 
             if self.autoCam:
                 # Put virtual scene's light in active scene's camera position before rendering.
