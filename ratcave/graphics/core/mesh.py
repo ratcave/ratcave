@@ -10,7 +10,7 @@ import numpy as np
 from pyglet import gl, image
 
 from . import mixins
-from .utils import vec, create_opengl_object
+from . import utils
 
 
 class MeshData(object):
@@ -139,42 +139,6 @@ class Mesh(object):
         """Loads a texture from an image file into OpenGL and applies it to the Mesh for rendering."""
         self.texture_filename = file_name
         self.texture = image.load(file_name).get_texture()
-
-    def _create_vao(self):
-        """Puts the MeshData into a Vertex Array Object for OpenGl, saving it in the GPU to be rendered later."""
-
-        # Create Vertex Array Object and Bind it
-        self.vao = create_opengl_object(gl.glGenVertexArrays)
-        gl.glBindVertexArray(self.vao)
-
-        # Create Vertex Buffer Object and Bind it (Vertices)
-        self.vbo = create_opengl_object(gl.glGenBuffers, 3)
-
-        # Upload Vertex Coordinates
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo[0])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * self.data.vertices.size,
-                        vec(self.data.vertices.ravel()), gl.GL_STATIC_DRAW)
-        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-        gl.glEnableVertexAttribArray(0)
-
-        # Upload Normal Coordinates
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo[1])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * self.data.normals.size,
-                        vec(self.data.normals.ravel()), gl.GL_STATIC_DRAW)
-        gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-        gl.glEnableVertexAttribArray(1)
-
-        # Upload Texture UV Coordinates
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo[2])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * self.data.texture_uv.size,
-                        vec(self.data.texture_uv.ravel()), gl.GL_STATIC_DRAW)
-        gl.glVertexAttribPointer(2, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-        gl.glEnableVertexAttribArray(2)
-
-        # Everything is now assigned and all data passed to the GPU.  Can unbind VAO and VBO now.
-        gl.glBindVertexArray(0)
-
-        self.__loaded = True
     
     def _manually_set_mats(self):
         """Resets the model and normal matrices used internally for positioning and shading."""
@@ -200,7 +164,8 @@ class Mesh(object):
 
         # Bind VAO data for rendering each vertex.
         if not self.__loaded:
-            self._create_vao()
+            self.vao = utils.create_vao(self.data.vertices, self.data.normals, self.data.texture_uv)
+            self.__loaded = True
 
         if self.drawstyle == 'point':
             gl.glEnable(gl.GL_POINT_SMOOTH)

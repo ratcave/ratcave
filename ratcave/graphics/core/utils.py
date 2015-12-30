@@ -105,6 +105,53 @@ def vec(floatlist, newtype='float'):
         elif 'int' in newtype:
             return (gl.GLuint * len(floatlist))(*list(floatlist))
 
+def create_vao(vertices, normals, texture_uvs):
+        """
+        Puts mesh vertex data and puts it into an OpenGL Vertex Array Object.
+
+        Args:
+            vertices (Nx3 NumPy Array): 3D vertex positions
+            normals (Nx3 NumPy Array): 3D normal directions, one for each vertex
+            texture_uvs (Nx2 NumPy Array): 2D texture UV coordinates, one for each vertex.
+
+        Returns:
+            vao
+        """
+
+        # Create Vertex Array Object and Bind it
+        vao = create_opengl_object(gl.glGenVertexArrays)
+        gl.glBindVertexArray(vao)
+
+        # Create Vertex Buffer Object and Bind it (Vertices)
+        vbo = create_opengl_object(gl.glGenBuffers, 3)
+
+        # Upload Vertex Coordinates
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo[0])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * vertices,
+                        vec(vertices.ravel()), gl.GL_STATIC_DRAW)
+        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+        gl.glEnableVertexAttribArray(0)
+
+        # Upload Normal Coordinates
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo[1])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * normals.size,
+                        vec(normals.ravel()), gl.GL_STATIC_DRAW)
+        gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+        gl.glEnableVertexAttribArray(1)
+
+        # Upload Texture UV Coordinates
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo[2])
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * texture_uvs.size,
+                        vec(texture_uvs.ravel()), gl.GL_STATIC_DRAW)
+        gl.glVertexAttribPointer(2, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+        gl.glEnableVertexAttribArray(2)
+
+        # Everything is now assigned and all data passed to the GPU.  Can unbind VAO and VBO now.
+        gl.glBindVertexArray(0)
+
+        return vao
+
+
 def setpriority(pid=None,priority=1):
     
     """ Set The Priority of a Windows Process.  Priority is a value between 0-5 where
