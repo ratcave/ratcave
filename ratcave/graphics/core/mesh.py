@@ -127,7 +127,7 @@ class Mesh(object):
 
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
-        self.__loaded = False  # If mesh data is loaded into OpenGL yet.
+        self.vao = None
         self._normalmat_preset, self._modelmat_preset = None, None
         self._manually_set_mats()
 
@@ -163,16 +163,14 @@ class Mesh(object):
         shader.uniform_matrixf('normal_matrix', self._normalmat_preset)
 
         # Bind VAO data for rendering each vertex.
-        if not self.__loaded:
+        if not self.vao is None:
             self.vao = utils.create_vao(self.data.vertices, self.data.normals, self.data.texture_uv)
-            self.__loaded = True
 
         if self.drawstyle == 'point':
             gl.glEnable(gl.GL_POINT_SMOOTH)
             gl.glPointSize(int(self.point_size))
 
         gl.glBindVertexArray(self.vao)
-
 
         gl.glDrawArrays(drawstyle[self.drawstyle], 0, self.data.vertices.size)
 
