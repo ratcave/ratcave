@@ -143,10 +143,6 @@ class Mesh(object):
     def _manually_set_mats(self):
         """Resets the model and normal matrices used internally for positioning and shading."""
 
-        # World then local
-        #self._modelmat_preset = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
-        #self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
-
         # Local then world
         self._modelmat_preset = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
         self._normalmat_preset = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
