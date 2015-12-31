@@ -16,12 +16,12 @@ setup(name='ratcave',
                         ['graphics/shaders/*'+el for el in ['vert', 'frag']]
                     },
       install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs', 'sklearn'],
-      scripts=['ratcave/console_scripts/arena_scanner.py',
-               'ratcave/console_scripts/newexp.py',
-               'ratcave/console_scripts/opti_projector_calibration.py',
-               'ratcave/console_scripts/opti_projector_rotation_calib.py',
-               'ratcave/console_scripts/test_ratcave.py'
+      scripts=['console_scripts/arena_scanner.py',
+               'console_scripts/newexp.py',
+               'console_scripts/opti_projector_calibration.py',
+               'console_scripts/opti_projector_rotation_calib.py',
+               'console_scripts/test_ratcave.py'
                 ],
-      ext_modules=[Extension('ratcave.graphics._transformations', sources=['ratcave/c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
+      ext_modules=[Extension('ratcave.graphics._transformations', sources=['c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
       )
 
