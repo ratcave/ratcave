@@ -1,5 +1,5 @@
-ratcave package
-===============
+API Documentation
+=================
 
 Subpackages
 -----------
@@ -7,5 +7,4 @@ Subpackages
 .. toctree::
 
     ratcave.graphics
-    ratcave.devices
     ratcave.utils

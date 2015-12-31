@@ -19,7 +19,6 @@ Table of Contents:
 
    introduction
    tutorials
-   ratcave.devices
    ratcave.graphics
    ratcave.utils
 
