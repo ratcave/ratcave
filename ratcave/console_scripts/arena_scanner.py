@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 
 from ratcave import graphics
 from ratcave import utils
-from ratcave.graphics.core._transformations import rotation_matrix
+from ratcave.graphics._transformations import rotation_matrix
 
 import motive
 

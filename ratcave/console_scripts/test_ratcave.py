@@ -4,7 +4,6 @@
 from ratcave import graphics
 from psychopy import event
 import math
-import pdb
 import time
 
 reader = graphics.WavefrontReader(graphics.resources.obj_primitives)
