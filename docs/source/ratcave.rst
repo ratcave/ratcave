@@ -6,7 +6,6 @@ Subpackages
 
 .. toctree::
 
-    ratcave.devices
     ratcave.graphics
     ratcave.utils
 
