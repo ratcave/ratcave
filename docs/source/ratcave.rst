@@ -7,12 +7,5 @@ Subpackages
 .. toctree::
 
     ratcave.graphics
+    ratcave.devices
     ratcave.utils
-
-Module contents
----------------
-
-.. automodule:: ratcave
-    :members:
-    :undoc-members:
-    :show-inheritance:
