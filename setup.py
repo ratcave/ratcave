@@ -13,8 +13,7 @@ setup(name='ratcave',
       packages=find_packages(),
       include_package_data=True,
       package_data={'': ['graphics/assets/*.'+el for el in ['png', 'obj', 'mtl']] +
-                        ['graphics/shaders/*'+el for el in ['vert', 'frag']] +
-                        ['arduino_programs/s*']
+                        ['graphics/shaders/*'+el for el in ['vert', 'frag']]
                     },
       install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs', 'sklearn'],
       scripts=['ratcave/console_scripts/arena_scanner.py',
