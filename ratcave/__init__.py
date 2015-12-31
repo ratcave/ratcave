@@ -1,7 +1,6 @@
 __author__ = 'ratcave'
 
 import graphics
-import devices
 import utils
 
 # Check for Data Directory.  If not made, then
