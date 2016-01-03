@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 __author__ = 'ratcave'
 
-"""The grapihcs module."""
+"""The graphics module."""
 
 
 
