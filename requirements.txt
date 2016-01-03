@@ -1,1 +1,4 @@
 sphinxcontrib-napoleon
+numpy
+psychopy
+appdirs
