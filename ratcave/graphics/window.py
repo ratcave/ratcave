@@ -150,6 +150,8 @@ class Window(visual.Window):
         aaShader.uniformi('image_texture', 0)
         aaShader.uniformi('grayscale', int(self.grayscale))
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.fbos['antialias'].texture)
+        if not self.fullscreen_quad.vao:
+            self.fullscreen_quad.vao = utils.create_vao(*self.fullscreen_quad.get_vertex_data())
 
         self.fullscreen_quad.render(aaShader)
         aaShader.unbind()
@@ -249,6 +251,8 @@ class Window(visual.Window):
                     gl.glActiveTexture(gl.GL_TEXTURE0)
 
                 # Draw the Mesh
+                if not mesh.vao:
+                    mesh.vao = utils.create_vao(*mesh.get_vertex_data())
                 mesh.render(shader)  # Bind VAO.
 
         # Unbind Shader

@@ -128,7 +128,7 @@ class Mesh(object):
 
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
-        self.vao = utils.create_vao(self.data.vertices, self.data.normals, self.data.texture_uv)
+        self.vao = None  # utils.create_vao(self.data.vertices, self.data.normals, self.data.texture_uv)
         self.normal_matrix = None
         self.model_matrix = None
 
@@ -166,6 +166,8 @@ class Mesh(object):
             gl.glEnable(gl.GL_POINT_SMOOTH)
             gl.glPointSize(int(self.point_size))
 
+        import pdb
+        pdb.set_trace()
         gl.glBindVertexArray(self.vao)
 
         gl.glDrawArrays(drawstyle[self.drawstyle], 0, self.data.vertices.size)
