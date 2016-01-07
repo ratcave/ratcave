@@ -74,26 +74,13 @@ class Window(visual.Window):
         # Shadow Rendering attributes
         self.shadow_rendering = shadow_rendering
         if shadow_rendering:
-            shadow_cam = Camera(fov_y=shadow_fov_y, aspect=1.)
-            shadow_cam.update_matrices()
-            self.__shadow_fov_y = shadow_fov_y
-            self.shadow_projection_matrix = shadow_cam.projection_matrix.T.ravel()
+            self.shadow_cam = Camera(fov_y=shadow_fov_y, aspect=1.)
 
     def resize(self):
         self.active_scene.camera.aspect = float(self.size[0]) / self.size[1]  # Camera aspect ratio should match screen size, at least for the active scene.
         if self.virtual_scene:
             self.virtual_scene.camera.fov_y = 90.
             self.virtual_scene.camera.aspect = 1.
-
-    @property
-    def shadow_fov_y(self):
-        """Fov_y for calculating shadow area.  Automatically updates shadow_projection_matrix when set."""
-        return self.__shadow_fov_y
-
-    @shadow_fov_y.setter
-    def shadow_fov_y(self, value):
-        self.shadow_projection_matrix = Camera(fov_y=value, aspect=1.).projection_matrix
-        self.__shadow_fov_y = value
 
     def render_mesh(self, mesh, shader):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
@@ -123,7 +110,7 @@ class Window(visual.Window):
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
             shadowShader.bind()
             shadowShader.uniform_matrixf('view_matrix', scene.light.view_matrix.T.ravel())
-            shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
+            shadowShader.uniform_matrixf('projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
             for mesh in scene.meshes:
                 if not mesh.vao:
                     mesh.vao = utils.create_vao(*mesh.get_vertex_data())
@@ -207,7 +194,7 @@ class Window(visual.Window):
             shader.uniform_matrixf('projection_matrix', scene.camera.projection_matrix)
 
             if self.shadow_rendering:
-                shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix.T.ravel())
+                shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
                 shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
 
             shader.uniformf('light_position', *scene.light.position)
