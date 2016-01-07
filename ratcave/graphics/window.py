@@ -29,7 +29,7 @@ drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINT
 
 class Window(visual.Window):
     
-    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=1024, autoCam=False, *args, **kwargs):
+    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=1024, *args, **kwargs):
         """
         The Window that everything gets drawn in.  
 
@@ -40,7 +40,6 @@ class Window(visual.Window):
             shadow_rendering (bool): Whether to render shadows from the Scenes' :py:class:`.Light` position.
             shadow_fov_y (float): How wide an area to render shadows--too small and their may be weird squares projected, but larger numbers result in lower quality shadows.
             texture_size (int): How big the shadow and cube textures should be on a side.  For performance reasons, should be set to a value that is a power of two.
-            autoCam (bool):
             fullscr (bool): Defaults to False, allows a full screen to be used.
             screen (int): Which number screen to place the window on.
             size (tuple): Size of the window in pixels (X, Y). Defaults to (800, 600)
@@ -57,9 +56,6 @@ class Window(visual.Window):
         if virtual_scene:
             self.virtual_scene = virtual_scene
         self.resize()
-
-        self.autoCam = autoCam  # Convenience attribute for moving virtual scene's light to the active scene's position.
-
 
         if grayscale:
             raise NotImplementedError("Grayscale not quite properly working yet.  To be fixed!")
@@ -180,11 +176,6 @@ class Window(visual.Window):
             scene.update_matrices()
 
         if self.virtual_scene:
-
-            if self.autoCam:
-                # Put virtual scene's light in active scene's camera position before rendering.
-                self.virtual_scene.light.position[:] = self.active_scene.camera.position[:]
-                self.active_scene.light.position[:] = self.active_scene.camera.position[:]
 
             # Render shadow and cubemap from virtual camera's position.
             if self.shadow_rendering:
