@@ -8,9 +8,9 @@ from __future__ import absolute_import
     This documentation was auto-generated from the mesh.py file.
 """
 import numpy as np
-from pyglet import gl, image
+from pyglet import image
 
-from . import utils, mixins
+from . import mixins
 
 
 class MeshData(object):
