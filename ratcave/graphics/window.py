@@ -54,11 +54,9 @@ class Window(visual.Window):
 
         # Assign data to window after OpenGL context initialization
         self.active_scene = active_scene  # For normal rendering.
-        self.resize()
-
-        self._virtual_scene = None
         if virtual_scene:
             self.virtual_scene = virtual_scene
+        self.resize()
 
         self.autoCam = autoCam  # Convenience attribute for moving virtual scene's light to the active scene's position.
 
@@ -87,16 +85,9 @@ class Window(visual.Window):
 
     def resize(self):
         self.active_scene.camera.aspect = float(self.size[0]) / self.size[1]  # Camera aspect ratio should match screen size, at least for the active scene.
-
-    @property
-    def virtual_scene(self):
-        return self._virtual_scene
-
-    @virtual_scene.setter
-    def virtual_scene(self, scene):
-        scene.camera.fov_y = 90.
-        scene.camera.aspect = 1.
-        self._virtual_scene = scene
+        if self.virtual_scene:
+            self.virtual_scene.camera.fov_y = 90.
+            self.virtual_scene.camera.aspect = 1.
 
     @property
     def shadow_fov_y(self):
