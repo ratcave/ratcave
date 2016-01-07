@@ -84,6 +84,8 @@ class Window(visual.Window):
 
     def render_mesh(self, mesh, shader):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
+        if not mesh.vao:
+            mesh.vao = utils.create_vao(*mesh.get_vertex_data())
 
         # Send Model and Normal Matrix to shader.
         shader.uniform_matrixf('model_matrix', mesh.model_matrix)
@@ -111,9 +113,7 @@ class Window(visual.Window):
             shadowShader.bind()
             shadowShader.uniform_matrixf('view_matrix', scene.light.view_matrix.T.ravel())
             shadowShader.uniform_matrixf('projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
-            for mesh in scene.meshes:
-                if not mesh.vao:
-                    mesh.vao = utils.create_vao(*mesh.get_vertex_data())
+
             [self.render_mesh(mesh, shadowShader) for mesh in scene.meshes if mesh.visible]
             shadowShader.unbind()
 
@@ -145,8 +145,6 @@ class Window(visual.Window):
         aaShader.uniformi('image_texture', 0)
         aaShader.uniformi('grayscale', int(self.grayscale))
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.fbos['antialias'].texture)
-        if not self.fullscreen_quad.vao:
-            self.fullscreen_quad.vao = utils.create_vao(*self.fullscreen_quad.get_vertex_data())
 
         self.render_mesh(self.fullscreen_quad, aaShader)
         aaShader.unbind()
@@ -234,8 +232,6 @@ class Window(visual.Window):
                     gl.glActiveTexture(gl.GL_TEXTURE0)
 
                 # Draw the Mesh
-                if not mesh.vao:
-                    mesh.vao = utils.create_vao(*mesh.get_vertex_data())
                 self.render_mesh(mesh, shader)  # Bind VAO.
 
         # Unbind Shader
