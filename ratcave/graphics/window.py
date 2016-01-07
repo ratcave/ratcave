@@ -14,7 +14,7 @@ from ratcave.graphics import utils
 shader_path = join(split(__file__)[0], 'shaders')
 
 
-    # General, Normal Shader
+# General, Normal Shader
 genShader = Shader(open(join(shader_path, 'combShader.vert')).read(),
                    open(join(shader_path, 'combShader.frag')).read())
 
@@ -77,7 +77,8 @@ class Window(visual.Window):
             self.shadow_cam = Camera(fov_y=shadow_fov_y, aspect=1.)
 
     def resize(self):
-        self.active_scene.camera.aspect = float(self.size[0]) / self.size[1]  # Camera aspect ratio should match screen size, at least for the active scene.
+        """Resize Active Scenes' Cameras to Window dimensions.  Virtual Scenes' Cameras should always be square."""
+        self.active_scene.camera.aspect = float(self.size[0]) / self.size[1]
         if self.virtual_scene:
             self.virtual_scene.camera.fov_y = 90.
             self.virtual_scene.camera.aspect = 1.
@@ -117,7 +118,6 @@ class Window(visual.Window):
             [self.render_mesh(mesh, shadowShader) for mesh in scene.meshes if mesh.visible]
             shadowShader.unbind()
 
-
     def render_to_cubemap(self, scene):
         """Renders the scene 360-degrees about the camera's position onto a cubemap texture."""
 
@@ -129,7 +129,7 @@ class Window(visual.Window):
                 gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
                                              gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                                              self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
-                self._draw(scene, genShader, send_light_and_camera_intrinsics=(face==0))  # Render
+                self._draw(scene, genShader, send_light_and_camera_intrinsics=(face == 0))  # Render
 
     def render_to_antialias(self, scene):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
@@ -137,7 +137,7 @@ class Window(visual.Window):
         with utils.render_to_fbo(self, self.fbos['antialias']):
             self._draw(scene, genShader)
 
-        #Then, Render the antialias texture to the screen on a fullscreen quad mesh.
+        # Then, Render the antialias texture to the screen on a full-screen quad mesh.
         gl.glClearColor(1., .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         aaShader.bind()
@@ -149,7 +149,6 @@ class Window(visual.Window):
         self.render_mesh(self.fullscreen_quad, aaShader)
         aaShader.unbind()
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
-
 
     def draw(self):
         """Active scene drawn, virtual scene is rendered to a cubemap. iF auto_light_position is True, then automatically
@@ -167,8 +166,7 @@ class Window(visual.Window):
 
         # Render to Fullscreen Quad, for deferred shading (for antialiasing)
         self.render_to_antialias(self.active_scene)
-        #self._draw(self.active_scene, genShader)
-
+        # self._draw(self.active_scene, genShader)
 
     def _draw(self, scene, shader, send_light_and_camera_intrinsics=True):
 
