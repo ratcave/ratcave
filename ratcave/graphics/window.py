@@ -174,20 +174,13 @@ class Window(visual.Window):
         # Pre-set all model, normal, and perspective matrices to increase draw time performance
         for scene in [self.active_scene, self.virtual_scene] if self.virtual_scene else [self.active_scene]:
             scene.update_matrices()
+            self.render_shadow(scene)
 
+        # Render to cubemap texture.
         if self.virtual_scene:
-
-            # Render shadow and cubemap from virtual camera's position.
-            if self.shadow_rendering:
-                self.render_shadow(self.active_scene)
-                self.render_shadow(self.virtual_scene)
-
-            # Render to cubemap texture.
             self.render_to_cubemap(self.virtual_scene)
 
-        elif self.shadow_rendering:
-            self.render_shadow(self.active_scene)
-
+        # Render to Fullscreen Quad, for deferred shading (for antialiasing)
         self.render_to_antialias(self.active_scene)
         #self._draw(self.active_scene, genShader)
 

@@ -31,7 +31,7 @@ virScene = graphics.Scene([monkey, plane2])
 virScene.bgColor.rgba = 1., 0., 1., 1.
 
 win = graphics.Window(scene, virtual_scene=virScene,
-grayscale=False, fullscr=False, shadow_rendering=True, shadow_fov_y = 80, autoCam=False)
+grayscale=False, fullscr=False, shadow_rendering=True, shadow_fov_y=80)
 
 
 aa = 0.
