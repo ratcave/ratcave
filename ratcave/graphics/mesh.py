@@ -69,8 +69,9 @@ class Material(object):
             raise NotImplementedError("Material.dissolve not yet implemented.  Please see Mesh.visible for hiding Meshes.")
 
 
-drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS
-        }
+drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
+
+
 class Mesh(object):
 
     def __init__(self, mesh_data, material=Material(), scale=1.0, centered=False, lighting=True,

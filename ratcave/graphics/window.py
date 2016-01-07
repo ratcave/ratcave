@@ -143,7 +143,7 @@ class Window(visual.Window):
             self._draw(scene, genShader)
 
         #Then, Render the antialias texture to the screen on a fullscreen quad mesh.
-        gl.glClearColor(.5, .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
+        gl.glClearColor(1., .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         aaShader.bind()
         aaShader.uniformf('frameBufSize', *self.size)
@@ -208,8 +208,9 @@ class Window(visual.Window):
         if send_light_and_camera_intrinsics:
             shader.uniform_matrixf('projection_matrix', scene.camera.projection_matrix)
 
-            shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix.T.ravel())
-            shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
+            if self.shadow_rendering:
+                shader.uniform_matrixf('shadow_projection_matrix', self.shadow_projection_matrix.T.ravel())
+                shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
 
             shader.uniformf('light_position', *scene.light.position)
             shader.uniformf('camera_position', *scene.camera.position)
