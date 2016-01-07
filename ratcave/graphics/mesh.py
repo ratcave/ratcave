@@ -69,8 +69,6 @@ class Material(object):
             raise NotImplementedError("Material.dissolve not yet implemented.  Please see Mesh.visible for hiding Meshes.")
 
 
-drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
-
 
 class Mesh(object):
 
@@ -154,28 +152,6 @@ class Mesh(object):
     def get_vertex_data(self):
         """Returns (vertex, normal, texture_uv) arrays."""
         return self.data.vertices, self.data.normals, self.data.texture_uv
-
-    def render(self, shader):
-        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
-
-        # Send Model and Normal Matrix to shader.
-        shader.uniform_matrixf('model_matrix', self.model_matrix)
-        shader.uniform_matrixf('normal_matrix', self.normal_matrix)
-
-        if self.drawstyle == 'point':
-            gl.glEnable(gl.GL_POINT_SMOOTH)
-            gl.glPointSize(int(self.point_size))
-
-        import pdb
-        pdb.set_trace()
-        gl.glBindVertexArray(self.vao)
-
-        gl.glDrawArrays(drawstyle[self.drawstyle], 0, self.data.vertices.size)
-
-        if self.drawstyle == 'point':
-            gl.glDisable(gl.GL_POINT_SMOOTH)
-
-        gl.glBindVertexArray(0)
 
 
 fullscreen_quad = None

@@ -24,6 +24,9 @@ shadowShader = Shader(open(join(shader_path, 'shadowShader.vert')).read(),
 aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                   open(join(shader_path, 'antialiasShader.frag')).read())
 
+drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
+
+
 class Window(visual.Window):
     
     def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=1024, autoCam=False, *args, **kwargs):
@@ -110,6 +113,26 @@ class Window(visual.Window):
         self.shadow_projection_matrix = Camera(fov_y=value, aspect=1.).projection_matrix
         self.__shadow_fov_y = value
 
+    def render_mesh(self, mesh, shader):
+        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
+
+        # Send Model and Normal Matrix to shader.
+        shader.uniform_matrixf('model_matrix', mesh.model_matrix)
+        shader.uniform_matrixf('normal_matrix', mesh.normal_matrix)
+
+        if mesh.drawstyle == 'point':
+            gl.glEnable(gl.GL_POINT_SMOOTH)
+            gl.glPointSize(int(mesh.point_size))
+
+        gl.glBindVertexArray(mesh.vao)
+
+        gl.glDrawArrays(drawstyle[mesh.drawstyle], 0, mesh.data.vertices.size)
+
+        if mesh.drawstyle == 'point':
+            gl.glDisable(gl.GL_POINT_SMOOTH)
+
+        gl.glBindVertexArray(0)
+
     def render_shadow(self, scene):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
         #scene.light.rotation[:] = scene.camera.rotation[:]  # only works while spotlights aren't implemented, otherwise may have to be careful.
@@ -119,7 +142,10 @@ class Window(visual.Window):
             shadowShader.bind()
             shadowShader.uniform_matrixf('view_matrix', scene.light.view_matrix.T.ravel())
             shadowShader.uniform_matrixf('projection_matrix', self.shadow_projection_matrix)
-            [mesh.render(shadowShader) for mesh in scene.meshes if mesh.visible]
+            for mesh in scene.meshes:
+                if not mesh.vao:
+                    mesh.vao = utils.create_vao(*mesh.get_vertex_data())
+            [self.render_mesh(mesh, shadowShader) for mesh in scene.meshes if mesh.visible]
             shadowShader.unbind()
 
 
@@ -153,7 +179,7 @@ class Window(visual.Window):
         if not self.fullscreen_quad.vao:
             self.fullscreen_quad.vao = utils.create_vao(*self.fullscreen_quad.get_vertex_data())
 
-        self.fullscreen_quad.render(aaShader)
+        self.render_mesh(self.fullscreen_quad, aaShader)
         aaShader.unbind()
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
@@ -253,7 +279,7 @@ class Window(visual.Window):
                 # Draw the Mesh
                 if not mesh.vao:
                     mesh.vao = utils.create_vao(*mesh.get_vertex_data())
-                mesh.render(shader)  # Bind VAO.
+                self.render_mesh(mesh, shader)  # Bind VAO.
 
         # Unbind Shader
         shader.unbind()
