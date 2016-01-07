@@ -151,6 +151,10 @@ class Mesh(object):
     def position(self):
         return np.dot(self.world.model_matrix, self.local.model_matrix)[:3, -1].tolist()
 
+    def get_vertex_data(self):
+        """Returns (vertex, normal, texture_uv) arrays."""
+        return self.data.vertices, self.data.normals, self.data.texture_uv
+
     def render(self, shader):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
 
