@@ -1,6 +1,8 @@
 Tutorial 3: Using Cubemapping to Render a CAVE VR System
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+.. warning:: This Tutorial is currently out of date.
+
 CAVE VR relies on position updates from head trackers to render a virtual scene from the subject's perspective in virtual space, then to warp a video projection so that to the viewer the virtual scene appears to be geometrically correct  We use a cubemapping approach to do just that:
   - :py:class:`.Mesh` objects are placed into the virtual :py:class:`.Scene` object as in the previous two tutorials. However, this :py:class:`.Scene` is placed in the :py:attr:`.Window.virtual_scene` attribute, instead of the :py:attr:`.Window.active_scene` attribute.
   - The screen itself, being the thing that is actually projected by the display, is placed in as the :py:meth:`.Window.active_scene`.  This :py:class:`.Scene` contains 3D-Modeled version of the the projected surface as a :py:class:`.Mesh` object, and its :py:meth:`.Mesh.cubemap` attribute is set to True. The *Active Scene's* :py:class:`.Camera` is then set to be in the same position, rotation, and other properties as the projector itself.  Getting accurate measurements of your projection surface and projector can be challenging, so ratCAVE comes with a few console scripts to give you an idea of how this can be made to work (and, if you're from the Sirota lab at LMU, you can even use these scripts to automatically calibrate them both!).  Future versions will include a more general approach for different setups.

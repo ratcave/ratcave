@@ -12,6 +12,14 @@ ratcave.utils.eulerangles module
     :undoc-members:
     :show-inheritance:
 
+ratcave.utils.gl module
+-----------------------
+
+.. automodule:: ratcave.utils.gl
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 ratcave.utils.orienting module
 ------------------------------
 

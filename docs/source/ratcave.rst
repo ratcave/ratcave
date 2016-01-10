@@ -1,18 +1,16 @@
 ratcave package
 ===============
 
+.. automodule:: ratcave
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Subpackages
 -----------
 
 .. toctree::
 
-    ratcave.graphics
     ratcave.utils
 
-Module contents
----------------
-
-.. automodule:: ratcave
-    :members:
-    :undoc-members:
-    :show-inheritance:

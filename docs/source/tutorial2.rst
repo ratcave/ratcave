@@ -15,8 +15,8 @@ Let's insert a couple Meshes from our obj_reader WavefrontReader object into a c
   wire_monkey = obj_reader.get_mesh("Monkey", centered=True, drawstyle='lines', position=(0, 0, -2)
 
   # Create Scenes with Meshes.  
-  scene1 = graphics.Scene([monkey, cube])
-  scene2 = graphics.Scene([wire_monkey, torus])
+  scene1 = rc.Scene([monkey, cube])
+  scene2 = rc.Scene([wire_monkey, torus])
 
 Moving a Mesh
 -------------
@@ -26,7 +26,7 @@ Now, we'll animate the Meshes by changing their position and rotation attributes
   from psychopy import events
   import math
 
-  window = graphics.Window(Scene)
+  window = rc.Window(Scene)
 
   theta = 0
   while True:
@@ -75,13 +75,13 @@ Summary
 
 Here's the full code from Tutorial 2::
 
-  from ratcave import graphics
+  import ratcave as rc
   from psychopy import events
   import math
 
   # Insert filename into WavefrontReader.
-  obj_filename = graphics.resources.obj_primitives
-  obj_reader = graphics.WavefrontReader(obj_filename)
+  obj_filename = rc.resources.obj_primitives
+  obj_reader = rc.WavefrontReader(obj_filename)
   
   # Create Meshes from WavefrontReader
   monkey = obj_reader.get_mesh("Monkey", centered=True, position=(0, 0, -1.5))
@@ -90,9 +90,9 @@ Here's the full code from Tutorial 2::
   wire_monkey = obj_reader.get_mesh("Monkey", centered=True, drawstyle='lines', position=(0, 0, -2)
 
   # Create Scenes with Meshes.  
-  scene1 = graphics.Scene([monkey, cube])
-  scene2 = graphics.Scene([wire_monkey, torus])
-  window = graphics.Window(Scene)
+  scene1 = rc.Scene([monkey, cube])
+  scene2 = rc.Scene([wire_monkey, torus])
+  window = rc.Window(Scene)
 
   # Main Loop
   theta = 0
