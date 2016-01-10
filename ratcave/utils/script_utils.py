@@ -1,6 +1,5 @@
 __author__ = 'ratcave'
 import numpy as np
-from .. import graphics
 import orienting
 
 def motive_camera_vislight_configure():
@@ -27,19 +26,13 @@ def correct_orientation_motivepy(rb, n_attempts=3):
     additional_rotation = orienting.rotate_to_var(np.array(rb.point_cloud_markers))
     return additional_rotation
 
+
 def correct_orientation_natnet(rb, n_attempts=3):
     """Assumes the orientation is reset already (need MotivePy to do it automatically) to account for between-session arena shifts"""
     print("Warning: Assuming that the orientation has been reset to 0,0,0 for the {} rigid body".format(rb.name))
     additional_rotation = orienting.rotate_to_var(np.array([m.position for m in rb.markers]))
     return additional_rotation
 
-
-def get_arena_from(file_name=graphics.resources.obj_arena, cubemap=True):
-    """Just returns the arena mesh from a .obj file."""
-    reader = graphics.WavefrontReader(file_name)
-    arena = reader.get_mesh('Arena', lighting=True, centered=False)
-    arena.cubemap = cubemap
-    return arena
 
 def update_world_position_motivepy(meshes, arena_rb, additional_rot_y_rotation):
     """# Update the positions of everything, based on the MotivePy data of the arena rigid body"""
@@ -48,6 +41,7 @@ def update_world_position_motivepy(meshes, arena_rb, additional_rot_y_rotation):
         mesh.world.rotation = arena_rb.rotation_global
         mesh.world.rot_y += additional_rot_y_rotation
     return
+
 
 def update_world_position_natnet(meshes, arena_rb, additional_rot_y_rotation):
     """# Update the positions of everything, based on the MotivePy data of the arena rigid body"""
