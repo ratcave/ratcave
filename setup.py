@@ -14,7 +14,7 @@ setup(name='ratcave',
       package_data={'': ['graphics/assets/*.'+el for el in ['png', 'obj', 'mtl']] +
                         ['graphics/shaders/*'+el for el in ['vert', 'frag']]
                     },
-      install_requires=['pyglet', 'numpy', 'psychopy', 'appdirs'],
+      install_requires=['pyglet', 'numpy', 'psychopy'],
       scripts=['console_scripts/newexp.py',
                'console_scripts/test_ratcave.py'
                 ],
