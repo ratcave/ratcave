@@ -12,26 +12,10 @@ ratcave.utils.eulerangles module
     :undoc-members:
     :show-inheritance:
 
-ratcave.utils.filters module
-----------------------------
-
-.. automodule:: ratcave.utils.filters
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 ratcave.utils.orienting module
 ------------------------------
 
 .. automodule:: ratcave.utils.orienting
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ratcave.utils.plotting module
------------------------------
-
-.. automodule:: ratcave.utils.plotting
     :members:
     :undoc-members:
     :show-inheritance:

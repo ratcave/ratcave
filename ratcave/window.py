@@ -9,7 +9,7 @@ import pyglet.gl as gl
 from .camera import Camera
 from .shader import Shader
 from .mesh import fullscreen_quad
-from ratcave.graphics import utils
+from .utils import gl as ugl
 
 shader_path = join(split(__file__)[0], 'shaders')
 
@@ -61,10 +61,10 @@ class Window(visual.Window):
             raise NotImplementedError("Grayscale not quite properly working yet.  To be fixed!")
         self.grayscale = grayscale
         aa_texture_size = int(pow(2, ceil(log(max(self.size), 2))))  # Automatically get next power-of-2 size of monitor edge
-        self.fbos = {'shadow': utils.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=5, color=False, depth=True),
-                     'vrshadow': utils.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=6, color=False, depth=True),
-                     'cube': utils.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size*2, texture_size*2, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
-                     'antialias': utils.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
+        self.fbos = {'shadow': ugl.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=5, color=False, depth=True),
+                     'vrshadow': ugl.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=6, color=False, depth=True),
+                     'cube': ugl.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size*2, texture_size*2, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
+                     'antialias': ugl.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
                      }
         self.texture_size = texture_size
 
@@ -86,7 +86,7 @@ class Window(visual.Window):
     def render_mesh(self, mesh, shader):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
         if not mesh.vao:
-            mesh.vao = utils.create_vao(*mesh.get_vertex_data())
+            mesh.vao = ugl.create_vao(*mesh.get_vertex_data())
 
         # Send Model and Normal Matrix to shader.
         shader.uniform_matrixf('model_matrix', mesh.model_matrix)
@@ -109,7 +109,7 @@ class Window(visual.Window):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
         #scene.light.rotation[:] = scene.camera.rotation[:]  # only works while spotlights aren't implemented, otherwise may have to be careful.
         fbo = self.fbos['shadow'] if scene == self.active_scene else self.fbos['vrshadow']
-        with utils.render_to_fbo(self, fbo):
+        with ugl.render_to_fbo(self, fbo):
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
             shadowShader.bind()
             shadowShader.uniform_matrixf('view_matrix', scene.light.view_matrix.T.ravel())
@@ -123,7 +123,7 @@ class Window(visual.Window):
 
         # TODO: Combat slowness of glUniformMat4v calls in Python by sending data to a Geometry shader to render all faces in a single pass.
         # Render the scene
-        with utils.render_to_fbo(self, self.fbos['cube']):
+        with ugl.render_to_fbo(self, self.fbos['cube']):
             for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
                 scene.camera.rotation = rotation
                 gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
@@ -134,7 +134,7 @@ class Window(visual.Window):
     def render_to_antialias(self, scene):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
         # First Render the scene to the antialias texture
-        with utils.render_to_fbo(self, self.fbos['antialias']):
+        with ugl.render_to_fbo(self, self.fbos['antialias']):
             self._draw(scene, genShader)
 
         # Then, Render the antialias texture to the screen on a full-screen quad mesh.
@@ -218,7 +218,7 @@ class Window(visual.Window):
                 shader.uniformi('hasCubeMap', int(mesh.cubemap))
                 if mesh.cubemap:
                     assert self.virtual_scene, "Window.virtual_scene must be set for cubemap to render!"
-                    shader.uniformf('playerPos', *utils.vec(self.virtual_scene.camera.position))
+                    shader.uniformf('playerPos', *ugl.vec(self.virtual_scene.camera.position))
                     gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
 
                 # Bind Textures and apply Material

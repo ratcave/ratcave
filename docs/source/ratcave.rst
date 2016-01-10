@@ -1,5 +1,5 @@
-API Documentation
-=================
+ratcave package
+===============
 
 Subpackages
 -----------
@@ -8,3 +8,11 @@ Subpackages
 
     ratcave.graphics
     ratcave.utils
+
+Module contents
+---------------
+
+.. automodule:: ratcave
+    :members:
+    :undoc-members:
+    :show-inheritance:

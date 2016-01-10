@@ -6,7 +6,7 @@ import time
 import os
 from json import encoder
 encoder.FLOAT_REPR = lambda x: "{0:.4f}".format(x).rstrip('0').rstrip('.')
-from . import mixins
+from .import mixins
 from pyglet import image
 
 physical_keys = sorted(key for key in mixins.Physical().__dict__.keys() if '_' not in key[0])
