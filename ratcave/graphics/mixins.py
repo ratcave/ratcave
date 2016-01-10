@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import numpy as np
 from . import _transformations as transformations
 import types
+import pickle
 
 class Color(object):
 
@@ -109,3 +110,16 @@ class Physical(object):
         """Interface for implementing physics. Subclassed Physical objects can take advantage of this."""
         pass
 
+
+class Picklable(object):
+
+    def save(self, filename):
+        """Save the object to a file.  Will be Pickled in the process, but can be loaded easily with Class.load()"""
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, filename):
+        with open(filename) as f:
+            obj = pickle.load(f)
+        return obj

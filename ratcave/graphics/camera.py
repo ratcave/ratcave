@@ -4,7 +4,7 @@ import numpy as np
 from . import mixins
 
 
-class Camera(mixins.Physical):
+class Camera(mixins.Physical, mixins.Picklable):
     """A convenient object for controlling the scene viewing angle."""
 
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), fov_y=60., aspect=1.778, z_near=.01, z_far=4.5,

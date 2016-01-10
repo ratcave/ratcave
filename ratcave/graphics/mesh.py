@@ -70,7 +70,7 @@ class Material(object):
 
 
 
-class Mesh(object):
+class Mesh(mixins.Picklable):
 
     def __init__(self, mesh_data, material=Material(), scale=1.0, centered=False, lighting=True,
                  drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
