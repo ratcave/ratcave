@@ -11,8 +11,8 @@ setup(name='ratcave',
       author_email='delgrosso@bio.lmu.de',
       packages=find_packages(),
       include_package_data=True,
-      package_data={'': ['graphics/assets/*.'+el for el in ['png', 'obj', 'mtl']] +
-                        ['graphics/shaders/*'+el for el in ['vert', 'frag']]
+      package_data={'': ['assets/*.'+el for el in ['png', 'obj', 'mtl']] +
+                        ['shaders/*'+el for el in ['vert', 'frag']]
                     },
       install_requires=['pyglet', 'numpy', 'psychopy'],
       scripts=['console_scripts/newexp.py',
