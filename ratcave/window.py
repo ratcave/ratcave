@@ -53,8 +53,7 @@ class Window(visual.Window):
 
         # Assign data to window after OpenGL context initialization
         self.active_scene = active_scene  # For normal rendering.
-        if virtual_scene:
-            self.virtual_scene = virtual_scene
+        self.virtual_scene = virtual_scene
         self.resize()
 
         if grayscale:
