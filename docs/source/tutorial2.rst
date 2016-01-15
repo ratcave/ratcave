@@ -12,7 +12,7 @@ Let's insert a couple Meshes from our obj_reader WavefrontReader object into a c
   monkey = obj_reader.get_mesh("Monkey", centered=True, position=(0, 0, -1.5))
   cube = obj_reader.get_mesh("Cube", centered=True, position=(1, 0, -1.5), scale=.2)
   torus = obj_reader.get_mesh("Torus", centered=True, position=(-1, 0, -1.5), scale=.2)
-  wire_monkey = obj_reader.get_mesh("Monkey", centered=True, drawstyle='lines', position=(0, 0, -2)
+  wire_monkey = obj_reader.get_mesh("Monkey", centered=True, position=(0, 0, -2))
 
   # Create Scenes with Meshes.  
   scene1 = rc.Scene([monkey, cube])
@@ -23,14 +23,15 @@ Moving a Mesh
 
 Now, we'll animate the Meshes by changing their position and rotation attributes. Note that these are found in both the local and world attributes, and it's very important to understand which is which.  But for now, let's just say that the easiest thing to do is to leave the world position and rotation at (0,0,0) and only modify the local attribute, to get the most intuitive results::
 
-  from psychopy import events
+  from psychopy import event
   import math
 
   window = rc.Window(Scene)
 
   theta = 0
+  aa = 0
   while True:
-      keys_pressed = events.getKeys()  # getKeys() will empty list each time it returns, so save it to reference it multiple times.
+      keys_pressed = event.getKeys()  # getKeys() will empty list each time it returns, so save it to reference it multiple times.
       if 'escape' in keys_pressed:
           window.close()
           break
@@ -76,7 +77,7 @@ Summary
 Here's the full code from Tutorial 2::
 
   import ratcave as rc
-  from psychopy import events
+  from psychopy import event
   import math
 
   # Insert filename into WavefrontReader.
@@ -87,18 +88,19 @@ Here's the full code from Tutorial 2::
   monkey = obj_reader.get_mesh("Monkey", centered=True, position=(0, 0, -1.5))
   cube = obj_reader.get_mesh("Cube", centered=True, position=(1, 0, -1.5), scale=.2)
   torus = obj_reader.get_mesh("Torus", centered=True, position=(-1, 0, -1.5), scale=.2)
-  wire_monkey = obj_reader.get_mesh("Monkey", centered=True, drawstyle='lines', position=(0, 0, -2)
+  wire_monkey = obj_reader.get_mesh("Monkey", centered=True, position=(0, 0, -2))
 
   # Create Scenes with Meshes.  
   scene1 = rc.Scene([monkey, cube])
   scene2 = rc.Scene([wire_monkey, torus])
-  window = rc.Window(Scene)
+  window = rc.Window(scene1)
 
   # Main Loop
   theta = 0
+  aa = 0
   while True:
 
-      keys_pressed = events.getKeys()  # getKeys() will empty list each time it returns, so save it to reference it multiple times.
+      keys_pressed = event.getKeys()  # getKeys() will empty list each time it returns, so save it to reference it multiple times.
 
       # End program and close window if escape key is pressed.
       if 'escape' in keys_pressed:
