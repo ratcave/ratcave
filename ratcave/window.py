@@ -148,29 +148,3 @@ class Window(visual.Window):
         self.render_mesh(self.fullscreen_quad, aaShader)
         aaShader.unbind()
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
-
-    def draw(self):
-        """Active scene drawn, virtual scene is rendered to a cubemap. iF auto_light_position is True, then automatically
-        put the lights for the active and virtual scene to the active scene's camera position (useful for convenient CAVE
-        api.)"""
-
-        # Pre-set all model, normal, and perspective matrices to increase draw time performance
-        for scene in [self.active_scene, self.virtual_scene] if self.virtual_scene else [self.active_scene]:
-            scene.update_matrices()
-            self.render_shadow(scene)
-
-        # Render to cubemap texture.
-        if self.virtual_scene:
-            self.render_to_cubemap(self.virtual_scene)
-
-        # Render to Fullscreen Quad, for deferred shading (for antialiasing)
-        self.render_to_antialias(self.active_scene)
-        # self._draw(self.active_scene, genShader)
-
-    def flip(self, *args, **kwargs):
-        """Sends the framebuffer contents to the display.  Call each frame after the draw method!"""
-        super(Window, self).flip(*args, **kwargs)
-
-    def close(self):
-        """Closes the window."""
-        super(Window, self).close()
