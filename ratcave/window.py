@@ -40,19 +40,6 @@ class Window(PygletWindow):
                      'antialias': ugl.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
                      }
 
-    def render_shadow(self, scene):
-        """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
-        #scene.light.rotation[:] = scene.camera.rotation[:]  # only works while spotlights aren't implemented, otherwise may have to be careful.
-        fbo = self.fbos['shadow'] if scene == self.active_scene else self.fbos['vrshadow']
-        with ugl.render_to_fbo(self, fbo):
-            gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-            shadowShader.bind()
-            shadowShader.uniform_matrixf('view_matrix', scene.light.view_matrix.T.ravel())
-            shadowShader.uniform_matrixf('projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
-
-            [self.render_mesh(mesh, shadowShader) for mesh in scene.meshes if mesh.visible]
-            shadowShader.unbind()
-
     def render_to_antialias(self, scene):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
         # First Render the scene to the antialias texture
