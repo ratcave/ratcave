@@ -39,22 +39,3 @@ class Window(PygletWindow):
                      'cube': ugl.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size*2, texture_size*2, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
                      'antialias': ugl.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
                      }
-
-    def render_to_antialias(self, scene):
-        """Render the scene to texture, then render the texture to screen after antialiasing it."""
-        # First Render the scene to the antialias texture
-        with ugl.render_to_fbo(self, self.fbos['antialias']):
-            self._draw(scene, genShader)
-
-        # Then, Render the antialias texture to the screen on a full-screen quad mesh.
-        gl.glClearColor(1., .5, .5, 1.)  # Make background color gray for debugging purposes, but won't matter.
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        aaShader.bind()
-        aaShader.uniformf('frameBufSize', *self.size)
-        aaShader.uniformi('image_texture', 0)
-        aaShader.uniformi('grayscale', int(self.grayscale))
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.fbos['antialias'].texture)
-
-        self.render_mesh(self.fullscreen_quad, aaShader)
-        aaShader.unbind()
-        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
