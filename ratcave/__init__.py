@@ -11,10 +11,9 @@ from . import resources
 from .camera import Camera
 from .mesh import Mesh, MeshData, Material
 from .scene import Scene
-from .window import Window
 from .wavefront import WavefrontReader
 from .mixins import Physical
 from .logger import Logger
 
 
-__all__ = ['Camera', 'Logger', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'Window', 'WavefrontReader', 'resources']
+__all__ = ['Camera', 'Logger', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'WavefrontReader', 'resources']
