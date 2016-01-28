@@ -6,7 +6,7 @@ from __future__ import absolute_import
 # Distributed under the Boost Software License, Version 1.0
 # (see http://www.boost.org/LICENSE_1_0.txt)
 #
- 
+
 from pyglet.gl import *
 from ctypes import *
 

@@ -8,6 +8,7 @@ pyglet.options['debug_gl'] = False
 
 from . import _transformations
 from . import resources
+from .shader import Shader
 from .camera import Camera
 from .mesh import Mesh, MeshData, Material
 from .scene import Scene
