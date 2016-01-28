@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from os.path import join, split
 from math import ceil, log
 
-from psychopy import visual
+from pyglet.window import Window as PygletWindow
 import pyglet.gl as gl
 
 from .camera import Camera
@@ -27,82 +27,18 @@ aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
 drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
 
 
-class Window(visual.Window):
+class Window(PygletWindow):
     
-    def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=1024, *args, **kwargs):
-        """
-        The Window that everything gets drawn in.  
-
-        Args:
-            active_scene (:py:class:`.Scene`): The scene that is rendered onto the Window.
-            virtual_scene (:py:class:`.Scene`): Used for VR, the scene that gets rendered onto :py:class:`.Mesh` objects that have :py:attr:`.Mesh.cubemap` set to True (usually the 3d-modeled arena).
-            grayscale (bool): Whether to render in grayscale or not--has some slight performance advantages, with more being planned in the future.
-            shadow_rendering (bool): Whether to render shadows from the Scenes' :py:class:`.Light` position.
-            shadow_fov_y (float): How wide an area to render shadows--too small and their may be weird squares projected, but larger numbers result in lower quality shadows.
-            texture_size (int): How big the shadow and cube textures should be on a side.  For performance reasons, should be set to a value that is a power of two.
-            fullscr (bool): Defaults to False, allows a full screen to be used.
-            screen (int): Which number screen to place the window on.
-            size (tuple): Size of the window in pixels (X, Y). Defaults to (800, 600)
-            pos (None or (x,y)): 
-        """
+    def __init__(self, *args, **kwargs):
     
         # Set default Window values for making sure Psychopy windows work with it.
-        kwargs['allowStencil'] = False
         super(Window, self).__init__(*args, **kwargs)
-        assert self.winType == 'pyglet', "Window Type must be 'pyglet' for ratCAVE to work."
 
-        # Assign data to window after OpenGL context initialization
-        self.active_scene = active_scene  # For normal rendering.
-        self.virtual_scene = virtual_scene
-        self.resize()
-
-        if grayscale:
-            raise NotImplementedError("Grayscale not quite properly working yet.  To be fixed!")
-        self.grayscale = grayscale
-        aa_texture_size = int(pow(2, ceil(log(max(self.size), 2))))  # Automatically get next power-of-2 size of monitor edge
         self.fbos = {'shadow': ugl.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=5, color=False, depth=True),
                      'vrshadow': ugl.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=6, color=False, depth=True),
                      'cube': ugl.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size*2, texture_size*2, texture_slot=0, color=True, depth=True, grayscale=self.grayscale),
                      'antialias': ugl.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0, color=True, depth=True, grayscale=self.grayscale)
                      }
-        self.texture_size = texture_size
-
-        # Antialiasing attributes
-        self.fullscreen_quad = fullscreen_quad
-
-        # Shadow Rendering attributes
-        self.shadow_rendering = shadow_rendering
-        if shadow_rendering:
-            self.shadow_cam = Camera(fov_y=shadow_fov_y, aspect=1.)
-
-    def resize(self):
-        """Resize Active Scenes' Cameras to Window dimensions.  Virtual Scenes' Cameras should always be square."""
-        self.active_scene.camera.aspect = float(self.size[0]) / self.size[1]
-        if self.virtual_scene:
-            self.virtual_scene.camera.fov_y = 90.
-            self.virtual_scene.camera.aspect = 1.
-
-    def render_mesh(self, mesh, shader):
-        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
-        if not mesh.vao:
-            mesh.vao = ugl.create_vao(*mesh.get_vertex_data())
-
-        # Send Model and Normal Matrix to shader.
-        shader.uniform_matrixf('model_matrix', mesh.model_matrix)
-        shader.uniform_matrixf('normal_matrix', mesh.normal_matrix)
-
-        if mesh.drawstyle == 'point':
-            gl.glEnable(gl.GL_POINT_SMOOTH)
-            gl.glPointSize(int(mesh.point_size))
-
-        gl.glBindVertexArray(mesh.vao)
-
-        gl.glDrawArrays(drawstyle[mesh.drawstyle], 0, mesh.data.vertices.size)
-
-        if mesh.drawstyle == 'point':
-            gl.glDisable(gl.GL_POINT_SMOOTH)
-
-        gl.glBindVertexArray(0)
 
     def render_shadow(self, scene):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""

@@ -8,10 +8,11 @@ from . import mixins, Camera
 
 class Scene(object):
 
-    def __init__(self, meshes=[], camera=None, light=None, bgColor=(0., 0., 0., 1.)):
+    def __init__(self, win, meshes=[], camera=None, light=None, bgColor=(0., 0., 0., 1.)):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
-
+        # TODO: provide help to make camera aspect and fov_y for cubemapped scenes!
         # Initialize List of all Meshes to draw
+        self.win = win
         self.meshes = list(meshes)
         if len(set(mesh.data.name for mesh in self.meshes)) != len(self.meshes):
             warnings.warn('Warning: Mesh.data.names not all unique--log data will overwrite some meshes!')
@@ -23,6 +24,9 @@ class Scene(object):
         """calls the "update_matrices" method on all meshes and camera, so that all data is current."""
         for obj in self.meshes + [self.camera]:
             obj.update_matrices()
+
+    def resize(self):
+        self.camera.aspect = float(self.win.size[0]) / self.win.size[1]
 
     def draw(self, dest, shader=None, userdata={}):
         """Draw each visible mesh in the scene."""
