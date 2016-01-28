@@ -24,6 +24,9 @@ shadowShader = Shader(open(join(shader_path, 'shadowShader.vert')).read(),
 aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                   open(join(shader_path, 'antialiasShader.frag')).read())
 
+drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
+
+
 class Window(visual.Window):
     
     def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=1024, *args, **kwargs):
@@ -78,6 +81,28 @@ class Window(visual.Window):
         if self.virtual_scene:
             self.virtual_scene.camera.fov_y = 90.
             self.virtual_scene.camera.aspect = 1.
+
+    def render_mesh(self, mesh, shader):
+        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
+        if not mesh.vao:
+            mesh.vao = ugl.create_vao(*mesh.get_vertex_data())
+
+        # Send Model and Normal Matrix to shader.
+        shader.uniform_matrixf('model_matrix', mesh.model_matrix)
+        shader.uniform_matrixf('normal_matrix', mesh.normal_matrix)
+
+        if mesh.drawstyle == 'point':
+            gl.glEnable(gl.GL_POINT_SMOOTH)
+            gl.glPointSize(int(mesh.point_size))
+
+        gl.glBindVertexArray(mesh.vao)
+
+        gl.glDrawArrays(drawstyle[mesh.drawstyle], 0, mesh.data.vertices.size)
+
+        if mesh.drawstyle == 'point':
+            gl.glDisable(gl.GL_POINT_SMOOTH)
+
+        gl.glBindVertexArray(0)
 
     def render_shadow(self, scene):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
@@ -141,48 +166,6 @@ class Window(visual.Window):
         # Render to Fullscreen Quad, for deferred shading (for antialiasing)
         self.render_to_antialias(self.active_scene)
         # self._draw(self.active_scene, genShader)
-
-    def _draw(self, scene, shader, send_light_and_camera_intrinsics=True):
-
-        # Enable 3D OpenGL
-        gl.glEnable(gl.GL_DEPTH_TEST)
-        #gl.glEnable(gl.GL_CULL_FACE)
-        gl.glEnable(gl.GL_TEXTURE_CUBE_MAP)
-        gl.glEnable(gl.GL_TEXTURE_2D)
-
-        # Clear and Refresh Screen
-        gl.glClearColor(*scene.bgColor.rgba)
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-
-        # Bind Shader
-        shader.bind()
-
-        # Send Uniforms that are constant across meshes.
-        shader.uniform_matrixf('view_matrix', scene.camera.view_matrix.T.ravel())
-
-        if send_light_and_camera_intrinsics:
-            shader.uniform_matrixf('projection_matrix', scene.camera.projection_matrix)
-
-            if self.shadow_rendering:
-                shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
-                shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
-
-            shader.uniformf('light_position', *scene.light.position)
-            shader.uniformf('camera_position', *scene.camera.position)
-
-            shader.uniformi('hasShadow', int(self.shadow_rendering))
-            shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
-            shader.uniformi('ShadowMap', shadow_slot)
-            shader.uniformi('grayscale', int(self.grayscale))
-
-        # Draw each visible mesh in the scene.
-        for mesh in scene.meshes:
-
-            # Draw the Mesh
-            mesh.draw(dest, shader=shader)
-
-        # Unbind Shader
-        shader.unbind()
 
     def flip(self, *args, **kwargs):
         """Sends the framebuffer contents to the display.  Call each frame after the draw method!"""

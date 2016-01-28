@@ -156,7 +156,7 @@ class Mesh(mixins.Picklable):
         """Returns (vertex, normal, texture_uv) arrays."""
         return self.data.vertices, self.data.normals, self.data.texture_uv
 
-    def draw(self, dest, shader=None, userdata={}):
+    def _draw(self, dest, shader=None):
 
         if self.visible:
 
