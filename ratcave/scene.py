@@ -65,3 +65,12 @@ class Scene(object):
 
         # Unbind Shader
         shader.unbind()
+
+    def draw360(self, *args, **kwargs):
+        # TODO: Solve provlem: FBO should be bound before glFramebufferTexture2DEXT is called.  How to solve?
+        for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
+            self.camera.rotation = rotation
+            gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
+                                         gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+                                         kwargs['dest'].texture,  0)  # Select face of cube texture to render to.
+            self.draw(scene, genShader, send_light_and_camera_intrinsics=(face == 0))  # Render

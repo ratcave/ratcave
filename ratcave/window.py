@@ -53,19 +53,6 @@ class Window(PygletWindow):
             [self.render_mesh(mesh, shadowShader) for mesh in scene.meshes if mesh.visible]
             shadowShader.unbind()
 
-    def render_to_cubemap(self, scene):
-        """Renders the scene 360-degrees about the camera's position onto a cubemap texture."""
-
-        # TODO: Combat slowness of glUniformMat4v calls in Python by sending data to a Geometry shader to render all faces in a single pass.
-        # Render the scene
-        with ugl.render_to_fbo(self, self.fbos['cube']):
-            for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
-                scene.camera.rotation = rotation
-                gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_COLOR_ATTACHMENT0_EXT,
-                                             gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                                             self.fbos['cube'].texture,  0)  # Select face of cube texture to render to.
-                self._draw(scene, genShader, send_light_and_camera_intrinsics=(face == 0))  # Render
-
     def render_to_antialias(self, scene):
         """Render the scene to texture, then render the texture to screen after antialiasing it."""
         # First Render the scene to the antialias texture
