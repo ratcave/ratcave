@@ -24,9 +24,6 @@ shadowShader = Shader(open(join(shader_path, 'shadowShader.vert')).read(),
 aaShader = Shader(open(join(shader_path, 'antialiasShader.vert')).read(),
                   open(join(shader_path, 'antialiasShader.frag')).read())
 
-drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
-
-
 class Window(visual.Window):
     
     def __init__(self, active_scene, virtual_scene=None, grayscale=False, shadow_rendering=True, shadow_fov_y=80., texture_size=1024, *args, **kwargs):
@@ -81,28 +78,6 @@ class Window(visual.Window):
         if self.virtual_scene:
             self.virtual_scene.camera.fov_y = 90.
             self.virtual_scene.camera.aspect = 1.
-
-    def render_mesh(self, mesh, shader):
-        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
-        if not mesh.vao:
-            mesh.vao = ugl.create_vao(*mesh.get_vertex_data())
-
-        # Send Model and Normal Matrix to shader.
-        shader.uniform_matrixf('model_matrix', mesh.model_matrix)
-        shader.uniform_matrixf('normal_matrix', mesh.normal_matrix)
-
-        if mesh.drawstyle == 'point':
-            gl.glEnable(gl.GL_POINT_SMOOTH)
-            gl.glPointSize(int(mesh.point_size))
-
-        gl.glBindVertexArray(mesh.vao)
-
-        gl.glDrawArrays(drawstyle[mesh.drawstyle], 0, mesh.data.vertices.size)
-
-        if mesh.drawstyle == 'point':
-            gl.glDisable(gl.GL_POINT_SMOOTH)
-
-        gl.glBindVertexArray(0)
 
     def render_shadow(self, scene):
         """Update light view matrix to match the camera's, then render to the Shadow FBO depth texture."""
@@ -203,33 +178,8 @@ class Window(visual.Window):
         # Draw each visible mesh in the scene.
         for mesh in scene.meshes:
 
-            if mesh.visible:
-
-                # Change Material to Mesh's
-                shader.uniformf('ambient', *mesh.material.ambient.rgb)
-                shader.uniformf('diffuse', *mesh.material.diffuse.rgb)
-                shader.uniformf('spec_color', *mesh.material.spec_color.rgb)
-                shader.uniformf('spec_weight', mesh.material.spec_weight)
-                shader.uniformf('opacity', mesh.material.diffuse.a)
-                shader.uniformi('hasLighting', mesh.lighting)
-
-                # Bind Cubemap if mesh is to be rendered with the cubemap.
-                shader.uniformi('hasCubeMap', int(mesh.cubemap))
-                if mesh.cubemap:
-                    assert self.virtual_scene, "Window.virtual_scene must be set for cubemap to render!"
-                    shader.uniformf('playerPos', *ugl.vec(self.virtual_scene.camera.position))
-                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
-
-                # Bind Textures and apply Material
-                shader.uniformi('hasTexture', int(bool(mesh.texture)))
-                shader.uniformi('ImageTextureMap', 2)
-                if mesh.texture:
-                    gl.glActiveTexture(gl.GL_TEXTURE2)
-                    gl.glBindTexture(gl.GL_TEXTURE_2D, mesh.texture.id)
-                    gl.glActiveTexture(gl.GL_TEXTURE0)
-
-                # Draw the Mesh
-                self.render_mesh(mesh, shader)  # Bind VAO.
+            # Draw the Mesh
+            mesh.draw(dest, shader=shader)
 
         # Unbind Shader
         shader.unbind()

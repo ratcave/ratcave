@@ -8,7 +8,8 @@ from __future__ import absolute_import
     This documentation was auto-generated from the mesh.py file.
 """
 import numpy as np
-from pyglet import image
+from pyglet import image, gl
+from .utils import gl as ugl
 
 from . import mixins
 
@@ -70,6 +71,8 @@ class Material(object):
 
 
 
+drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
+
 class Mesh(mixins.Picklable):
 
     def __init__(self, mesh_data, material=Material(), scale=1.0, centered=False, lighting=True,
@@ -130,8 +133,8 @@ class Mesh(mixins.Picklable):
         self.normal_matrix = None
         self.model_matrix = None
 
-    def __repr__(self):
-        return "Mesh: {0}".format(self.data.name)
+    # def __repr__(self):
+    #     return "Mesh: {0}".format(self.data.name)
 
     def load_texture(self, file_name):
         """Loads a texture from an image file into OpenGL and applies it to the Mesh for rendering."""
@@ -152,6 +155,55 @@ class Mesh(mixins.Picklable):
     def get_vertex_data(self):
         """Returns (vertex, normal, texture_uv) arrays."""
         return self.data.vertices, self.data.normals, self.data.texture_uv
+
+    def draw(self, dest, shader=None, userdata={}):
+
+        if self.visible:
+
+                # Change Material to Mesh's
+                shader.uniformf('ambient', *self.material.ambient.rgb)
+                shader.uniformf('diffuse', *self.material.diffuse.rgb)
+                shader.uniformf('spec_color', *self.material.spec_color.rgb)
+                shader.uniformf('spec_weight', self.material.spec_weight)
+                shader.uniformf('opacity', self.material.diffuse.a)
+                shader.uniformi('hasLighting', self.lighting)
+
+                # Bind Cubemap if mesh is to be rendered with the cubemap.
+                shader.uniformi('hasCubeMap', int(self.cubemap))
+                if self.cubemap:
+                    assert self.virtual_scene, "Window.virtual_scene must be set for cubemap to render!"
+                    shader.uniformf('playerPos', *ugl.vec(self.virtual_scene.camera.position))
+                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
+
+                # Bind Textures and apply Material
+                shader.uniformi('hasTexture', int(bool(self.texture)))
+                shader.uniformi('ImageTextureMap', 2)
+                if self.texture:
+                    gl.glActiveTexture(gl.GL_TEXTURE2)
+                    gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture.id)
+                    gl.glActiveTexture(gl.GL_TEXTURE0)
+
+
+        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
+        if not self.vao:
+            self.vao = ugl.create_vao(*self.get_vertex_data())
+
+        # Send Model and Normal Matrix to shader.
+        shader.uniform_matrixf('model_matrix', self.model_matrix)
+        shader.uniform_matrixf('normal_matrix', self.normal_matrix)
+
+        if self.drawstyle == 'point':
+            gl.glEnable(gl.GL_POINT_SMOOTH)
+            gl.glPointSize(int(self.point_size))
+
+        gl.glBindVertexArray(self.vao)
+
+        gl.glDrawArrays(drawstyle[self.drawstyle], 0, self.data.vertices.size)
+
+        if self.drawstyle == 'point':
+            gl.glDisable(gl.GL_POINT_SMOOTH)
+
+        gl.glBindVertexArray(0)
 
 
 fullscreen_quad = None
