@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 #
 # Copyright Tristam Macdonald 2008.
@@ -9,6 +10,7 @@ from __future__ import absolute_import
 
 from pyglet.gl import *
 from ctypes import *
+from six.moves import range
 
 class Shader:
     # vert, frag and geom take arrays of source strings
@@ -40,6 +42,7 @@ class Shader:
  
         # convert the source strings into a ctypes pointer-to-char array, and upload them
         # this is deep, dark, dangerous black magick - don't try stuff like this at home!
+        strings = [s.encode('ascii') for s in strings]  # Nick added, for python3
         src = (c_char_p * count)(*strings)
         glShaderSource(shader, count, cast(pointer(src), POINTER(POINTER(c_char))), None)
  
@@ -59,7 +62,7 @@ class Shader:
             # retrieve the log text
             glGetShaderInfoLog(shader, temp, None, buffer)
             # print the log to the console
-            print buffer.value
+            print(buffer.value)
         else:
             # all is well, so attach the shader to the program
             glAttachShader(self.handle, shader);
@@ -81,7 +84,7 @@ class Shader:
             # retrieve the log text
             glGetProgramInfoLog(self.handle, temp, None, buffer)
             # print the log to the console
-            print buffer.value
+            print(buffer.value)
         else:
             # all is well, so we are linked
             self.linked = True
@@ -106,7 +109,8 @@ class Shader:
                 3 : glUniform3f,
                 4 : glUniform4f
                 # retrieve the uniform location, and set
-            }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
+            # }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
+            }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
  
     # upload an integer uniform
     # this program must be currently bound
@@ -119,8 +123,9 @@ class Shader:
                 3 : glUniform3i,
                 4 : glUniform4i
                 # retrieve the uniform location, and set
-            }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
- 
+            # }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
+            }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
+
     # upload a uniform matrix
     # works with matrices stored as lists,
     # as well as euclid matrices

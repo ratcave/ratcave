@@ -143,7 +143,7 @@ class WavefrontReader(object):
                 rest = rest[0] if len(rest) == 1 else rest
             except ValueError:  # If not a sequence of numbers, but a string instead
                 rest = rest[:-1]
-                print rest
+                print(rest)
 
             props[prefix] = rest
 
