@@ -1,6 +1,6 @@
 __author__ = 'ratcave'
 import numpy as np
-import orienting
+from . import orienting
 
 def motive_camera_vislight_configure():
     import motive
