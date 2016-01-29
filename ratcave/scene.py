@@ -58,7 +58,7 @@ class Scene(object):
         shader.uniformi('hasShadow', int(self.shadow_rendering))
         shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
         shader.uniformi('ShadowMap', shadow_slot)
-        shader.uniformi('grayscale', int(self.grayscale)
+        shader.uniformi('grayscale', int(self.grayscale))
 
         for mesh in self.meshes:
             mesh._draw(dest=dest, shader=shader)

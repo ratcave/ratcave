@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from os import path
-from . import Shader
+from .shader import Shader
 import pyglet.gl as gl
 from .utils import gl as ugl
 
