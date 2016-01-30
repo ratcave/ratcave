@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import warnings
 import pyglet.gl as gl
 
-from . import mixins, Camera
+from . import mixins, Camera, Light
 
 
 class Scene(object):
@@ -17,7 +17,7 @@ class Scene(object):
         if len(set(mesh.data.name for mesh in self.meshes)) != len(self.meshes):
             warnings.warn('Warning: Mesh.data.names not all unique--log data will overwrite some meshes!')
         self.camera = Camera() if not camera else camera # create a default Camera object
-        self.light = mixins.Physical() if not light else light
+        self.light = Light() if not light else light
         self.bgColor = mixins.Color(*bgColor)
 
     def update_matrices(self):

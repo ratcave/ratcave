@@ -9,11 +9,13 @@ pyglet.options['debug_gl'] = False
 from . import _transformations
 from . import resources
 from .shader import Shader
+from .mixins import Physical
 from .camera import Camera
+from .light import Light
 from .mesh import Mesh, MeshData, Material
 from .scene import Scene
 from .wavefront import WavefrontReader
-from .mixins import Physical
+
 from .logger import Logger
 
 
