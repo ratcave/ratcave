@@ -3,7 +3,7 @@ from os import path
 from .shader import Shader
 import pyglet.gl as gl
 from .utils import gl as ugl
-
+from . import mesh
 
 """
 Here are some sample obj files for prototyping your app!
@@ -54,12 +54,12 @@ antialiasFBO = ugl.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size
 
 
 # Meshes
-fullscreen_quad_data = MeshData([-1, -1, 0, -1, 1, 0, 1, 1, 0,
+fullscreen_quad_data = mesh.MeshData([-1, -1, 0, -1, 1, 0, 1, 1, 0,
                                  -1, -1, 0,  1, 1, 0, 1, -1, 0],
                                 [0, 1, 2, 0, 2, 3],
                                 normals=[0, 0, -1]*6,
                                 # NEED NORMALS TO RENDER PROPERLY NOW!!
                                 texture_uv=[0, 0, 0, 1, 1, 1,
                                             0, 0, 1, 1, 1, 0])
-fullscreen_quad = Mesh(fullscreen_quad_data)
+fullscreen_quad = mesh.Mesh(fullscreen_quad_data)
 fullscreen_quad.update_matrices()
