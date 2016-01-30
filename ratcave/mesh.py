@@ -159,26 +159,26 @@ class Mesh(mixins.Picklable):
 
         if self.visible:
 
-                # Change Material to Mesh's
-                shader.uniformf('ambient', *self.material.ambient.rgb)
-                shader.uniformf('diffuse', *self.material.diffuse.rgb)
-                shader.uniformf('spec_color', *self.material.spec_color.rgb)
-                shader.uniformf('spec_weight', self.material.spec_weight)
-                shader.uniformf('opacity', self.material.diffuse.a)
-                shader.uniformi('hasLighting', self.lighting)
+            # Change Material to Mesh's
+            shader.uniformf('ambient', *self.material.ambient.rgb)
+            shader.uniformf('diffuse', *self.material.diffuse.rgb)
+            shader.uniformf('spec_color', *self.material.spec_color.rgb)
+            shader.uniformf('spec_weight', self.material.spec_weight)
+            shader.uniformf('opacity', self.material.diffuse.a)
+            shader.uniformi('hasLighting', self.lighting)
 
-                # Bind Cubemap if mesh is to be rendered with the cubemap.
-                shader.uniformi('hasCubeMap', int(self.cubemap))
-                if self.cubemap:
-                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, dest.texture)  # No ActiveTexture needed, because only one Cubemap.
+            # Bind Cubemap if mesh is to be rendered with the cubemap.
+            shader.uniformi('hasCubeMap', int(self.cubemap))
+            if self.cubemap:
+                gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, dest.texture)  # No ActiveTexture needed, because only one Cubemap.
 
-                # Bind Textures and apply Material
-                shader.uniformi('hasTexture', int(bool(self.texture)))
-                shader.uniformi('ImageTextureMap', 2)
-                if self.texture:
-                    gl.glActiveTexture(gl.GL_TEXTURE2)
-                    gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture.id)
-                    gl.glActiveTexture(gl.GL_TEXTURE0)
+            # Bind Textures and apply Material
+            shader.uniformi('hasTexture', int(bool(self.texture)))
+            shader.uniformi('ImageTextureMap', 2)
+            if self.texture:
+                gl.glActiveTexture(gl.GL_TEXTURE2)
+                gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture.id)
+                gl.glActiveTexture(gl.GL_TEXTURE0)
 
 
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
