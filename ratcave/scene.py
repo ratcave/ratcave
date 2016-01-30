@@ -48,17 +48,17 @@ class Scene(object):
         shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
         shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix)
 
-        if self.shadow_rendering:
-            shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
-            shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
+        # if self.shadow_rendering:
+        #     shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
+        #     shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
 
-        shader.uniformf('light_position', *scene.light.position)
-        shader.uniformf('camera_position', *scene.camera.position)
+        shader.uniformf('light_position', *self.light.position)
+        shader.uniformf('camera_position', *self.camera.position)
 
-        shader.uniformi('hasShadow', int(self.shadow_rendering))
-        shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
-        shader.uniformi('ShadowMap', shadow_slot)
-        shader.uniformi('grayscale', int(self.grayscale))
+        # shader.uniformi('hasShadow', int(self.shadow_rendering))
+        # shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
+        # shader.uniformi('ShadowMap', shadow_slot)
+        # shader.uniformi('grayscale', int(self.grayscale))
 
         for mesh in self.meshes:
             mesh._draw(dest=dest, shader=shader)

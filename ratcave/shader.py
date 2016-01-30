@@ -109,9 +109,9 @@ class Shader:
                 3 : glUniform3f,
                 4 : glUniform4f
                 # retrieve the uniform location, and set
-            # }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
-            }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
- 
+            }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
+            # }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
+
     # upload an integer uniform
     # this program must be currently bound
     def uniformi(self, name, *vals):
@@ -123,8 +123,8 @@ class Shader:
                 3 : glUniform3i,
                 4 : glUniform4i
                 # retrieve the uniform location, and set
-            # }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
-            }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
+            }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
+            # }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
 
     # upload a uniform matrix
     # works with matrices stored as lists,
