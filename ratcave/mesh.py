@@ -203,16 +203,3 @@ class Mesh(mixins.Picklable):
 
         gl.glBindVertexArray(0)
 
-
-fullscreen_quad = None
-
-# Some default objects
-fullscreen_quad_data = MeshData([-1, -1, 0, -1, 1, 0, 1, 1, 0,
-                                 -1, -1, 0,  1, 1, 0, 1, -1, 0],
-                                [0, 1, 2, 0, 2, 3],
-                                normals=[0, 0, -1]*6,
-                                # NEED NORMALS TO RENDER PROPERLY NOW!!
-                                texture_uv=[0, 0, 0, 1, 1, 1,
-                                            0, 0, 1, 1, 1, 0])
-fullscreen_quad = Mesh(fullscreen_quad_data)
-fullscreen_quad.update_matrices()

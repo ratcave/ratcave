@@ -51,3 +51,15 @@ cubeFBO = ugl.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size*2, texture_size*2,
 
 antialiasFBO = ugl.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0,
                               color=True, depth=True, grayscale=False)
+
+
+# Meshes
+fullscreen_quad_data = MeshData([-1, -1, 0, -1, 1, 0, 1, 1, 0,
+                                 -1, -1, 0,  1, 1, 0, 1, -1, 0],
+                                [0, 1, 2, 0, 2, 3],
+                                normals=[0, 0, -1]*6,
+                                # NEED NORMALS TO RENDER PROPERLY NOW!!
+                                texture_uv=[0, 0, 0, 1, 1, 1,
+                                            0, 0, 1, 1, 1, 0])
+fullscreen_quad = Mesh(fullscreen_quad_data)
+fullscreen_quad.update_matrices()
