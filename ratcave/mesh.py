@@ -171,9 +171,7 @@ class Mesh(mixins.Picklable):
                 # Bind Cubemap if mesh is to be rendered with the cubemap.
                 shader.uniformi('hasCubeMap', int(self.cubemap))
                 if self.cubemap:
-                    assert self.virtual_scene, "Window.virtual_scene must be set for cubemap to render!"
-                    shader.uniformf('playerPos', *ugl.vec(self.virtual_scene.camera.position))
-                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, self.fbos['cube'].texture)  # No ActiveTexture needed, because only one Cubemap.
+                    gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, dest.texture)  # No ActiveTexture needed, because only one Cubemap.
 
                 # Bind Textures and apply Material
                 shader.uniformi('hasTexture', int(bool(self.texture)))
