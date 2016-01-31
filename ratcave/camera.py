@@ -8,7 +8,7 @@ class Camera(mixins.Physical, mixins.Picklable):
     """A convenient object for controlling the scene viewing angle."""
 
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), fov_y=60., aspect=1.778, z_near=.01, z_far=4.5,
-                 x_shift=0., y_shift=0., ortho_mode=False):
+                 x_shift=0., y_shift=0., ortho_mode=False, *args, **kwargs):
         """
         My camera class.
 
@@ -27,7 +27,8 @@ class Camera(mixins.Physical, mixins.Picklable):
             Camera instance
         """
 
-        mixins.Physical.__init__(self, position=position, rotation=rotation)
+        # mixins.Physical.__init__(self, position=position, rotation=rotation)
+        super(Camera, self).__init__(position=position, rotation=rotation, *args, **kwargs)
 
         # Set intrinsic Camera attributes (must be manually applied using update() method during Scene.draw())
         self.fov_y = fov_y

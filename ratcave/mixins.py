@@ -6,8 +6,9 @@ from . import utils
 
 class Color(object):
 
-    def __init__(self, r, g, b, a=1.):
+    def __init__(self, r=0., g=0., b=0., a=1., *args, **kwargs):
         """Color object, defines rgba attributes"""
+        super(Color, self).__init__(*args, **kwargs)
         self.r, self.g, self.b, self.a = r, g, b, a
 
     @property
@@ -29,7 +30,7 @@ class Color(object):
 
 class Physical(object):
 
-    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1.):
+    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1., *args, **kwargs):
         """XYZ Position, Scale and XYZEuler Rotation Class.
 
         Args:
@@ -37,6 +38,7 @@ class Physical(object):
             rotation (list): (x, y, z) rotation values
             scale (float): uniform scale factor. 1 = no scaling.
         """
+        super(Physical, self).__init__(*args, **kwargs)
         self.x, self.y, self.z = position
         self.rot_x, self.rot_y, self.rot_z = rotation
         self._rot_matrix = None
