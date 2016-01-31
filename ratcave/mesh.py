@@ -183,7 +183,7 @@ class Mesh(mixins.Picklable):
 
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
         if not self.vao:
-            self.vao = ugl.create_vao(*self.get_vertex_data())
+            self.vao = ugl.VAO(*self.get_vertex_data())
 
         # Send Model and Normal Matrix to shader.
         shader.uniform_matrixf('model_matrix', self.model_matrix)
@@ -193,7 +193,7 @@ class Mesh(mixins.Picklable):
             gl.glEnable(gl.GL_POINT_SMOOTH)
             gl.glPointSize(int(self.point_size))
 
-        gl.glBindVertexArray(self.vao)
+        gl.glBindVertexArray(self.vao.id)
 
         gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
 

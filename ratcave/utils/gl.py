@@ -97,7 +97,6 @@ class render_to_fbo(object):
 
 
 def vec(floatlist, newtype='float'):
-
         """ Makes GLfloat or GLuint vector containing float or uint args.
         By default, newtype is 'float', but can be set to 'int' to make
         uint list. """
@@ -107,51 +106,34 @@ def vec(floatlist, newtype='float'):
         elif 'int' in newtype:
             return (gl.GLuint * len(floatlist))(*list(floatlist))
 
-def create_vao(vertices, normals, texture_uvs):
-        """
-        Puts mesh vertex data and puts it into an OpenGL Vertex Array Object.
 
-        Args:
-            vertices (Nx3 NumPy Array): 3D vertex positions
-            normals (Nx3 NumPy Array): 3D normal directions, one for each vertex
-            texture_uvs (Nx2 NumPy Array): 2D texture UV coordinates, one for each vertex.
 
-        Returns:
-            vao
-        """
+class VAO(object):
+
+    def __init__(self, vertices, normals, texture_uvs):
 
         # Create Vertex Array Object and Bind it
-        vao = create_opengl_object(gl.glGenVertexArrays)
-        gl.glBindVertexArray(vao)
+        self.id = create_opengl_object(gl.glGenVertexArrays)
+        gl.glBindVertexArray(self.id)
 
         # Create Vertex Buffer Object and Bind it (Vertices)
         vbo = create_opengl_object(gl.glGenBuffers, 3)
 
-        # Upload Vertex Coordinates
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo[0])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * vertices.size,
-                        vec(vertices.ravel()), gl.GL_STATIC_DRAW)
-        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-        gl.glEnableVertexAttribArray(0)
-
-        # Upload Normal Coordinates
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo[1])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * normals.size,
-                        vec(normals.ravel()), gl.GL_STATIC_DRAW)
-        gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-        gl.glEnableVertexAttribArray(1)
-
-        # Upload Texture UV Coordinates
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo[2])
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * texture_uvs.size,
-                        vec(texture_uvs.ravel()), gl.GL_STATIC_DRAW)
-        gl.glVertexAttribPointer(2, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-        gl.glEnableVertexAttribArray(2)
+        # Upload Data to the VBO
+        self._buffer_data(0, vbo[0], vertices)  # Vertex Coordinates
+        self._buffer_data(1, vbo[1], normals)  # Normal Coordinates
+        self._buffer_data(1, vbo[2], texture_uvs)  # Texture UV Coordinates
 
         # Everything is now assigned and all data passed to the GPU.  Can unbind VAO and VBO now.
         gl.glBindVertexArray(0)
 
-        return vao
+    def _buffer_data(self, el, vbo_id, array):
+        """Load data into a vbo"""
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo_id)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * array.size,
+                        vec(array.ravel()), gl.GL_STATIC_DRAW)
+        gl.glVertexAttribPointer(el, array.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+        gl.glEnableVertexAttribArray(el)
 
 
 def setpriority(pid=None,priority=1):
