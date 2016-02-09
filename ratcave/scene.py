@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import warnings
 import pyglet.gl as gl
 
-from . import mixins, Camera, Light
+from . import mixins, Camera, Light, resources
 
 
 class Scene(object):
@@ -28,7 +28,7 @@ class Scene(object):
     def resize(self):
         self.camera.aspect = float(self.win.size[0]) / self.win.size[1]
 
-    def draw(self, dest, shader=None, userdata={}):
+    def draw(self, dest, shader=resources.genShader, userdata={}):
         """Draw each visible mesh in the scene."""
 
         # Enable 3D OpenGL
@@ -65,6 +65,12 @@ class Scene(object):
 
         # Unbind Shader
         shader.unbind()
+
+        # Enable 3D OpenGL
+        gl.glDisable(gl.GL_DEPTH_TEST)
+        # gl.glEnable(gl.GL_CULL_FACE)
+        gl.glDisable(gl.GL_TEXTURE_CUBE_MAP)
+        gl.glDisable(gl.GL_TEXTURE_2D)
 
     def draw360(self, *args, **kwargs):
         # TODO: Solve provlem: FBO should be bound before glFramebufferTexture2DEXT is called.  How to solve?
