@@ -4,6 +4,7 @@ import warnings
 import pyglet.gl as gl
 
 from . import mixins, Camera, Light, resources
+from .utils import gl as glutils
 
 
 class Scene(object):
@@ -31,46 +32,39 @@ class Scene(object):
     def draw(self, dest, shader=resources.genShader, userdata={}):
         """Draw each visible mesh in the scene."""
 
-        # Enable 3D OpenGL
-        gl.glEnable(gl.GL_DEPTH_TEST)
-        # gl.glEnable(gl.GL_CULL_FACE)
-        gl.glEnable(gl.GL_TEXTURE_CUBE_MAP)
-        gl.glEnable(gl.GL_TEXTURE_2D)
+        # Enable 3D OpenGL states (glEnable, then later glDisable)
+        states = [gl.GL_DEPTH_TEST, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]
+        with glutils.enable_states(states):
 
-        # Clear and Refresh Screen
-        gl.glClearColor(*self.bgColor.rgba)
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+            # Clear and Refresh Screen
+            gl.glClearColor(*self.bgColor.rgba)
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-        # Bind Shader
-        shader.bind()
+            # Bind Shader
+            shader.bind()
 
-        # Send Uniforms that are constant across meshes.
-        shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
-        shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix)
+            # Send Uniforms that are constant across meshes.
+            shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
+            shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix)
 
-        # if self.shadow_rendering:
-        #     shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
-        #     shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
+            # if self.shadow_rendering:
+            #     shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
+            #     shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
 
-        shader.uniformf('light_position', *self.light.position)
-        shader.uniformf('camera_position', *self.camera.position)
+            shader.uniformf('light_position', *self.light.position)
+            shader.uniformf('camera_position', *self.camera.position)
 
-        # shader.uniformi('hasShadow', int(self.shadow_rendering))
-        # shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
-        # shader.uniformi('ShadowMap', shadow_slot)
-        # shader.uniformi('grayscale', int(self.grayscale))
+            # shader.uniformi('hasShadow', int(self.shadow_rendering))
+            # shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
+            # shader.uniformi('ShadowMap', shadow_slot)
+            # shader.uniformi('grayscale', int(self.grayscale))
 
-        for mesh in self.meshes:
-            mesh._draw(dest=dest, shader=shader)
+            for mesh in self.meshes:
+                mesh._draw(dest=dest, shader=shader)
 
-        # Unbind Shader
-        shader.unbind()
+            # Unbind Shader
+            shader.unbind()
 
-        # Enable 3D OpenGL
-        gl.glDisable(gl.GL_DEPTH_TEST)
-        # gl.glEnable(gl.GL_CULL_FACE)
-        gl.glDisable(gl.GL_TEXTURE_CUBE_MAP)
-        gl.glDisable(gl.GL_TEXTURE_2D)
 
     def draw360(self, *args, **kwargs):
         # TODO: Solve provlem: FBO should be bound before glFramebufferTexture2DEXT is called.  How to solve?

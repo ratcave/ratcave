@@ -4,6 +4,7 @@ import pyglet.gl as gl
 import numpy as np
 from collections import namedtuple
 from ctypes import byref
+import contextlib
 
 import pdb
 
@@ -16,6 +17,15 @@ def create_opengl_object(gl_gen_function, n=1):
     else:
         return handle.value  # Return handle value
 
+
+@contextlib.contextmanager
+def enable_states(gl_states):
+    """Context Manager that calls glEnable and glDisable on a list of gl states."""
+    for state in gl_states:
+        gl.glEnable(state)
+    yield
+    for state in gl_states:
+        gl.glDisable(state)
 
 FBO = namedtuple('FBO', 'id texture texture_slot size')
 def create_fbo(texture_type, width, height, texture_slot=0, color=True, depth=True, grayscale=False):
