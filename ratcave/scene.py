@@ -29,15 +29,15 @@ class Scene(object):
     def resize(self):
         self.camera.aspect = float(self.win.size[0]) / self.win.size[1]
 
-    def draw(self, dest, shader=resources.genShader, userdata={}):
+    def draw(self, dest, shader=resources.genShader,
+             userdata={}, gl_states=[gl.GL_DEPTH_TEST, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]):
         """Draw each visible mesh in the scene."""
 
         # Enable 3D OpenGL states (glEnable, then later glDisable)
-        states = [gl.GL_DEPTH_TEST, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]
-        with glutils.enable_states(states):
+        with glutils.enable_states(gl_states):
 
             # Clear and Refresh Screen
-            gl.glClearColor(*self.bgColor.rgba)
+            gl.glClearColor(*self.bgColor)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
             # Bind Shader

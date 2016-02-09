@@ -2,31 +2,10 @@ from __future__ import absolute_import
 import numpy as np
 import pickle
 from . import utils
+import collections
 
-
-class Color(object):
-
-    def __init__(self, r=0., g=0., b=0., a=1., *args, **kwargs):
-        """Color object, defines rgba attributes"""
-        super(Color, self).__init__(*args, **kwargs)
-        self.r, self.g, self.b, self.a = r, g, b, a
-
-    @property
-    def rgb(self):
-        return self.r, self.g, self.b
-
-    @rgb.setter
-    def rgb(self, value):
-        self.r, self.g, self.b = value
-
-    @property
-    def rgba(self):
-        return self.r, self.g, self.b, self.a
-
-    @rgba.setter
-    def rgba(self, value):
-        self.r, self.g, self.b, self.a = value
-
+Color = collections.namedtuple('Color', 'r g b a')
+Color.__new__.__defaults__ = (0., 0., 0., 1.)
 
 class Physical(object):
 

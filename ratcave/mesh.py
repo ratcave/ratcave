@@ -160,9 +160,9 @@ class Mesh(mixins.Picklable):
         if self.visible:
 
             # Change Material to Mesh's
-            shader.uniformf('ambient', *self.material.ambient.rgb)
-            shader.uniformf('diffuse', *self.material.diffuse.rgb)
-            shader.uniformf('spec_color', *self.material.spec_color.rgb)
+            shader.uniformf('ambient', *self.material.ambient)
+            shader.uniformf('diffuse', *self.material.diffuse)
+            shader.uniformf('spec_color', *self.material.spec_color)
             shader.uniformf('spec_weight', self.material.spec_weight)
             shader.uniformf('opacity', self.material.diffuse.a)
             shader.uniformi('hasLighting', self.lighting)
