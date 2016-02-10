@@ -36,11 +36,12 @@ class MeshData(object):
 
 
 gray_material = shader.create_uniform_group(diffuse=[.8, .8, .8, 1.], spec_weight=0.,
-                                            spec_color=[0., 0., 0., 1.], ambient=[0., 0., 0., 1.])
+                                            spec_color=[0., 0., 0., 1.], ambient=[0., 0., 0., 1.],
+                                            hasLighting=1, hasCubemap=0, )
 
 class Mesh(mixins.Picklable):
 
-    drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
+    drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
     def __init__(self, mesh_data, material=gray_material, scale=1.0, centered=False, lighting=True,
                  drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
@@ -90,7 +91,6 @@ class Mesh(mixins.Picklable):
         self.texture = None
         self.texture_filename = None
         self.cubemap = cubemap
-        self.lighting = lighting
         self.drawstyle = drawstyle
         self.point_size = point_size
 
@@ -130,10 +130,9 @@ class Mesh(mixins.Picklable):
             # Change Material to Mesh's
             self.material.send_to(shader.handle)
             shader.uniformf('opacity', self.material.diffuse.a)
-            shader.uniformi('hasLighting', self.lighting)
 
             # Bind Cubemap if mesh is to be rendered with the cubemap.
-            shader.uniformi('hasCubeMap', int(self.cubemap))
+            # TODO: Find better link for textures and UniformGroups
             if self.cubemap:
                 gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, dest.texture)  # No ActiveTexture needed, because only one Cubemap.
 
