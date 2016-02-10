@@ -90,19 +90,15 @@ class Mesh(mixins.Picklable):
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         self.texture = None
-        self.texture_filename = None
         self.cubemap = cubemap
         self.drawstyle = drawstyle
         self.point_size = point_size
 
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
-        self.vao = ugl.VAO(*self.get_vertex_data())
+        self.vao = ugl.VAO(self.data.vertices, self.data.normals, self.data.texture_uv)
         self.normal_matrix = None
         self.model_matrix = None
-
-    # def __repr__(self):
-    #     return "Mesh: {0}".format(self.data.name)
     
     def update_matrices(self):
         """Resets the model and normal matrices used internally for positioning and shading."""
@@ -114,10 +110,6 @@ class Mesh(mixins.Picklable):
     @property
     def position(self):
         return np.dot(self.world.model_matrix, self.local.model_matrix)[:3, -1].tolist()
-
-    def get_vertex_data(self):
-        """Returns (vertex, normal, texture_uv) arrays."""
-        return self.data.vertices, self.data.normals, self.data.texture_uv
 
     def _draw(self, dest, shader=None):
 
