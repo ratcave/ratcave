@@ -11,6 +11,34 @@ from __future__ import print_function
 from pyglet.gl import *
 from ctypes import *
 from six.moves import range
+import numpy as np
+
+class Uniform(object):
+
+    _sendfuns = {'f': [glUniform1f, glUniform2f, glUniform3f, glUniform4f],
+                'i':   [glUniform1i, glUniform2i, glUniform3i, glUniform4i]
+                }
+
+    def __init__(self, name, *vals):
+        """An array with a paired glUniform function, for quick shader data sending."""
+        self.name = name
+        assert len(vals) > 0 and len(vals) <= 4
+        self._value = np.array(vals)  # A semi-mutable array, in that its length can't be modified.
+        self.sendfun = Uniform._sendfuns[self._value.dtype.kind][len(self._value) - 1]
+
+    @property
+    def value(self):
+        return self._value
+
+    def __repr__(self):
+        return '{}{}'.format(self.name, tuple(self.value.tolist()))
+
+    def __getitem__(self, item):
+        return self.value[item]
+
+    def __setitem__(self, item, value):
+        self.value[item] = value
+
 
 class Shader:
     # vert, frag and geom take arrays of source strings
@@ -134,3 +162,7 @@ class Shader:
         loc = glGetUniformLocation(self.handle, name)
         # uplaod the 4x4 floating point matrix
         glUniformMatrix4fv(loc, 1, False, (c_float * 16)(*mat))
+
+    def uniform_gen(self, uniform):
+        """Sends the data in a Uniform object"""
+        uniform.sendfun(glGetUniformLocation(self.handle, uniform.name), uniform.value)
