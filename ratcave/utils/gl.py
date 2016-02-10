@@ -6,24 +6,31 @@ from collections import namedtuple
 from ctypes import byref
 import contextlib
 
-import pdb
-
 class Texture(object):
 
-    def __init__(self, target, id):
+    def __init__(self, target, id, slot=2, uniform_name='TextureMap'):
         self.target = target
         self.id = id
+        self.slot = slot
+        self.uniform_name = uniform_name
 
     def __enter__(self):
         gl.glBindTexture(self.target, self.id)
+        gl.glActiveTexture(getattr(gl, 'GL_TEXTURE{}'.format(self.slot)))
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        gl.glActiveTexture(gl.GL_TEXTURE0)
         gl.glBindTexture(self.target, 0)
+
+    def send_to(self, shaderHandle):
+           gl.glUniform1i(gl.glGetUniformLocation(shaderHandle, self.uniform_name), self.slot)
+
 
 
 class TextureCube(Texture):
-    def __init__(self, id):
-        super(TextureCube, self).__init__(target=gl.GL_TEXTURE_CUBE_MAP, id=id)
+    def __init__(self, *args, **kwargs):
+        super(TextureCube, self).__init__(*args, target=gl.GL_TEXTURE_CUBE_MAP, **kwargs)
 
 
 def create_opengl_object(gl_gen_function, n=1):

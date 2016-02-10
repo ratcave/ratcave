@@ -8,9 +8,10 @@ from __future__ import absolute_import
     This documentation was auto-generated from the mesh.py file.
 """
 import numpy as np
-from pyglet import image, gl
+from pyglet import gl
 from .utils import gl as ugl
-from . import mixins, shader
+from . import mixins
+from .utils import shader
 
 
 class MeshData(object):
@@ -125,18 +126,6 @@ class Mesh(mixins.Picklable):
             # Change Material to Mesh's
             self.material.send_to(shader.handle)
 
-            # Bind Cubemap if mesh is to be rendered with the cubemap.
-            # TODO: Find better link for textures and UniformGroups
-
-            # Bind Textures and apply Material
-            shader.uniformi('hasTexture', int(bool(self.texture)))
-            shader.uniformi('ImageTextureMap', 2)
-            if self.texture:
-                gl.glActiveTexture(gl.GL_TEXTURE2)
-                gl.glBindTexture(self.texture.target, self.texture.id)
-                gl.glActiveTexture(gl.GL_TEXTURE0)
-
-
         # Send Model and Normal Matrix to shader.
         shader.uniform_matrixf('model_matrix', self.model_matrix)
         shader.uniform_matrixf('normal_matrix', self.normal_matrix)
@@ -147,6 +136,7 @@ class Mesh(mixins.Picklable):
         """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
         if not self.vao:
             self.vao = ugl.VAO(*self.get_vertex_data())
-        with self.vao:
+        with self.vao, self.texture as texture:
+            texture.send_to(shader.handle)
             gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
 

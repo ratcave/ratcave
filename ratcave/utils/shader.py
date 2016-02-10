@@ -12,7 +12,6 @@ from pyglet.gl import *
 from ctypes import *
 from six.moves import range
 import numpy as np
-from collections import namedtuple
 
 
 class Uniform(object):
