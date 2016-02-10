@@ -30,7 +30,7 @@ class Scene(object):
         self.camera.aspect = float(self.win.size[0]) / self.win.size[1]
 
     def draw(self, dest, shader=resources.genShader,
-             userdata={}, gl_states=[gl.GL_DEPTH_TEST, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]):
+             userdata={}, gl_states=[gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]):
         """Draw each visible mesh in the scene."""
 
         # Enable 3D OpenGL states (glEnable, then later glDisable)

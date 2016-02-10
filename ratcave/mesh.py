@@ -153,15 +153,12 @@ class Mesh(mixins.Picklable):
         shader.uniform_matrixf('normal_matrix', self.normal_matrix)
 
         if self.drawstyle == 'point':
-            gl.glEnable(gl.GL_POINT_SMOOTH)
             gl.glPointSize(int(self.point_size))
 
         gl.glBindVertexArray(self.vao.id)
 
         gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
 
-        if self.drawstyle == 'point':
-            gl.glDisable(gl.GL_POINT_SMOOTH)
 
         gl.glBindVertexArray(0)
 
