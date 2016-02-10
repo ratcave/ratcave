@@ -8,6 +8,24 @@ import contextlib
 
 import pdb
 
+class Texture(object):
+
+    def __init__(self, target, id):
+        self.target = target
+        self.id = id
+
+    def __enter__(self):
+        gl.glBindTexture(self.target, self.id)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        gl.glBindTexture(self.target, 0)
+
+
+class TextureCube(Texture):
+    def __init__(self, id):
+        super(TextureCube, self).__init__(target=gl.GL_TEXTURE_CUBE_MAP, id=id)
+
+
 def create_opengl_object(gl_gen_function, n=1):
     """Returns int pointing to an OpenGL texture"""
     handle = gl.GLuint(1)
@@ -135,6 +153,12 @@ class VAO(object):
         self._buffer_data(1, vbo[2], texture_uvs)  # Texture UV Coordinates
 
         # Everything is now assigned and all data passed to the GPU.  Can unbind VAO and VBO now.
+        gl.glBindVertexArray(0)
+
+    def __enter__(self):
+        gl.glBindVertexArray(self.id)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
         gl.glBindVertexArray(0)
 
     def _buffer_data(self, el, vbo_id, array):

@@ -102,11 +102,6 @@ class Mesh(mixins.Picklable):
 
     # def __repr__(self):
     #     return "Mesh: {0}".format(self.data.name)
-
-    def load_texture(self, file_name):
-        """Loads a texture from an image file into OpenGL and applies it to the Mesh for rendering."""
-        self.texture_filename = file_name
-        self.texture = image.load(file_name).get_texture()
     
     def update_matrices(self):
         """Resets the model and normal matrices used internally for positioning and shading."""
@@ -132,21 +127,15 @@ class Mesh(mixins.Picklable):
 
             # Bind Cubemap if mesh is to be rendered with the cubemap.
             # TODO: Find better link for textures and UniformGroups
-            if self.cubemap:
-                gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, dest.texture)  # No ActiveTexture needed, because only one Cubemap.
 
             # Bind Textures and apply Material
             shader.uniformi('hasTexture', int(bool(self.texture)))
             shader.uniformi('ImageTextureMap', 2)
             if self.texture:
                 gl.glActiveTexture(gl.GL_TEXTURE2)
-                gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture.id)
+                gl.glBindTexture(self.texture.target, self.texture.id)
                 gl.glActiveTexture(gl.GL_TEXTURE0)
 
-
-        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
-        if not self.vao:
-            self.vao = ugl.VAO(*self.get_vertex_data())
 
         # Send Model and Normal Matrix to shader.
         shader.uniform_matrixf('model_matrix', self.model_matrix)
@@ -155,10 +144,9 @@ class Mesh(mixins.Picklable):
         if self.drawstyle == 'point':
             gl.glPointSize(int(self.point_size))
 
-        gl.glBindVertexArray(self.vao.id)
-
-        gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
-
-
-        gl.glBindVertexArray(0)
+        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
+        if not self.vao:
+            self.vao = ugl.VAO(*self.get_vertex_data())
+        with self.vao:
+            gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
 
