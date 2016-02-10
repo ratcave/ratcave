@@ -10,6 +10,7 @@ from __future__ import absolute_import
 import numpy as np
 from pyglet import gl
 from .utils import gl as ugl
+from .utils.texture import TextureBase
 from . import mixins
 from .utils import shader
 
@@ -89,7 +90,7 @@ class Mesh(mixins.Picklable):
         self.material = material
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
-        self.texture = ugl.TextureBase()
+        self.texture = TextureBase()
         self.cubemap = cubemap
         self.drawstyle = drawstyle
         self.point_size = point_size
