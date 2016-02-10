@@ -97,7 +97,7 @@ class Mesh(mixins.Picklable):
 
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
-        self.vao = None  # utils.create_vao(self.data.vertices, self.data.normals, self.data.texture_uv)
+        self.vao = ugl.VAO(*self.get_vertex_data())
         self.normal_matrix = None
         self.model_matrix = None
 
@@ -126,17 +126,16 @@ class Mesh(mixins.Picklable):
             # Change Material to Mesh's
             self.material.send_to(shader.handle)
 
-        # Send Model and Normal Matrix to shader.
-        shader.uniform_matrixf('model_matrix', self.model_matrix)
-        shader.uniform_matrixf('normal_matrix', self.normal_matrix)
+            # Send Model and Normal Matrix to shader.
+            shader.uniform_matrixf('model_matrix', self.model_matrix)
+            shader.uniform_matrixf('normal_matrix', self.normal_matrix)
 
-        if self.drawstyle == 'point':
-            gl.glPointSize(int(self.point_size))
+            # Set Point Size, if drawing a point cloud
+            if self.drawstyle == 'point':
+                gl.glPointSize(int(self.point_size))
 
-        """Sends the Mesh's Model and Normal matrices to an already-bound Shader, and bind and render the Mesh's VAO."""
-        if not self.vao:
-            self.vao = ugl.VAO(*self.get_vertex_data())
-        with self.vao, self.texture as texture:
-            texture.send_to(shader.handle)
-            gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
+            # Bind the VAO and Texture, and draw.
+            with self.vao, self.texture as texture:
+                texture.send_to(shader.handle)
+                gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
 
