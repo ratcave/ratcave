@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 #
-# Copyright Tristam Macdonald 2008.
+# Copyright Tristam Macdonald 2008
 #
 # Distributed under the Boost Software License, Version 1.0
 # (see http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,8 @@ from pyglet.gl import *
 from ctypes import *
 from six.moves import range
 import numpy as np
+from collections import namedtuple
+
 
 class Uniform(object):
 
@@ -26,10 +28,6 @@ class Uniform(object):
         self._value = np.array(vals)  # A semi-mutable array, in that its length can't be modified.
         self.sendfun = Uniform._sendfuns[self._value.dtype.kind][len(self._value) - 1]
 
-    @property
-    def value(self):
-        return self._value
-
     def __repr__(self):
         return '{}{}'.format(self.name, tuple(self.value.tolist()))
 
@@ -38,6 +36,30 @@ class Uniform(object):
 
     def __setitem__(self, item, value):
         self.value[item] = value
+
+    @property
+    def value(self):
+        return self._value
+
+    def send_to(self, shaderHandle):
+        self.sendfun(glGetUniformLocation(shaderHandle, self.name), self.value)
+
+
+class UniformGroup(object):
+
+    def __init__(self, *uniforms):
+        """A collection of Uniforms, which has also has single send_to() method."""
+        self.uniforms = uniforms
+
+    def send_to(self, shaderHandle):
+        for uniform in self.uniforms:
+            uniform.send_to(shaderHandle)
+
+
+def create_uniform_group(**kwargs):
+    """A factory function that returns a UniformGroup from keyword arguments"""
+    uniforms = [Uniform(key, val) for key, val in kwargs.items()]
+    return UniformGroup(*uniforms)
 
 
 class Shader:

@@ -10,8 +10,7 @@ from __future__ import absolute_import
 import numpy as np
 from pyglet import image, gl
 from .utils import gl as ugl
-
-from . import mixins
+from . import mixins, shader
 
 
 class MeshData(object):
@@ -36,45 +35,14 @@ class MeshData(object):
         self.texture_uv = np.array(texture_uv, dtype=float).reshape((-1, 2))
 
 
-class Material(object):
-
-    """Contains material settings that it gets from a .mtl file
-    (must be same filename as .obj file). Currently requires all
-    material settings to create object, and relies on defaults to be set
-    in the object initialization!"""
-
-    def __init__(self, name='DefaultGray', diffuse=(.8, .8, .8, 1.), spec_weight=0, spec_color=(0, 0, 0, 1.), ambient=(0, 0, 0, 1.),
-                 dissolve=0):
-        """
-        Returns a Material object containing various Color properties for 3D shading in graphics packages.
-
-        Args:
-            name: (str): The name of the material
-            diffuse (tuple): (r,g,b) values for diffuse reflections.  Also used as color if flat shading is used.
-            spec_weight (float): falloff exponent for specular shading. if <= 1, specular lighting is not performed.
-            spec_color (tuple): (r,g,b) values for specular reflections
-            ambient (tuple): (r,g,b) values for ambient reflections.
-            dissolve (float): Dissolve transparancy level (0-1).  Not implemented for shading yet, though.
-
-        Returns:
-            Material instance
-
-        .. warning:: Transparancy hasn't been fully implemented yet.  If alpha values are changed from 1., unexpected outputs may occur.
-        """
-        self.name = name.split('\n')[0]
-        self.diffuse = mixins.Color(*diffuse)
-        self.spec_weight = spec_weight
-        self.spec_color = mixins.Color(*spec_color)
-        self.ambient = mixins.Color(*ambient)
-        if dissolve != 0:
-            raise NotImplementedError("Material.dissolve not yet implemented.  Please see Mesh.visible for hiding Meshes.")
-
+gray_material = shader.create_uniform_group(diffuse=[.8, .8, .8, 1.], spec_weight=0.,
+                                            spec_color=[0., 0., 0., 1.], ambient=[0., 0., 0., 1.])
 
 class Mesh(mixins.Picklable):
 
     drawstyle = {'fill':gl.GL_TRIANGLES, 'line':gl.GL_LINE_LOOP, 'point':gl.GL_POINTS}
 
-    def __init__(self, mesh_data, material=Material(), scale=1.0, centered=False, lighting=True,
+    def __init__(self, mesh_data, material=gray_material, scale=1.0, centered=False, lighting=True,
                  drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -160,10 +128,7 @@ class Mesh(mixins.Picklable):
         if self.visible:
 
             # Change Material to Mesh's
-            shader.uniformf('ambient', *self.material.ambient)
-            shader.uniformf('diffuse', *self.material.diffuse)
-            shader.uniformf('spec_color', *self.material.spec_color)
-            shader.uniformf('spec_weight', self.material.spec_weight)
+            self.material.send_to(shader.handle)
             shader.uniformf('opacity', self.material.diffuse.a)
             shader.uniformi('hasLighting', self.lighting)
 
