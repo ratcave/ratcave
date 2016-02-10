@@ -89,7 +89,7 @@ class Mesh(mixins.Picklable):
         self.material = material
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
-        self.texture = None
+        self.texture = ugl.TextureBase()
         self.cubemap = cubemap
         self.drawstyle = drawstyle
         self.point_size = point_size
@@ -109,7 +109,7 @@ class Mesh(mixins.Picklable):
 
     @property
     def position(self):
-        return np.dot(self.world.model_matrix, self.local.model_matrix)[:3, -1].tolist()
+        return tuple(np.dot(self.world.model_matrix, self.local.model_matrix)[:3, -1].tolist())
 
     def _draw(self, dest, shader=None):
 
