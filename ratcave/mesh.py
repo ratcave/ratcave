@@ -35,9 +35,9 @@ class MeshData(object):
         self.texture_uv = np.array(texture_uv, dtype=float).reshape((-1, 2))
 
 
-gray_material = shader.create_uniform_group(diffuse=[.8, .8, .8, 1.], spec_weight=0.,
-                                            spec_color=[0., 0., 0., 1.], ambient=[0., 0., 0., 1.],
-                                            hasLighting=1, hasCubemap=0, )
+gray_material = shader.create_uniform_group(diffuse=[.8, .8, .8], spec_weight=0.,
+                                            spec_color=[0., 0., 0.], ambient=[0., 0., 0.],
+                                            opacity=1., hasLighting=1)
 
 class Mesh(mixins.Picklable):
 
@@ -129,7 +129,6 @@ class Mesh(mixins.Picklable):
 
             # Change Material to Mesh's
             self.material.send_to(shader.handle)
-            shader.uniformf('opacity', self.material.diffuse.a)
 
             # Bind Cubemap if mesh is to be rendered with the cubemap.
             # TODO: Find better link for textures and UniformGroups
