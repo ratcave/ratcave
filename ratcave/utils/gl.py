@@ -5,7 +5,7 @@ import numpy as np
 from collections import namedtuple
 from ctypes import byref
 import contextlib
-
+from .texture import Texture, TextureCube
 
 def create_opengl_object(gl_gen_function, n=1):
     """Returns int pointing to an OpenGL texture"""
@@ -26,68 +26,70 @@ def enable_states(gl_states):
     for state in gl_states:
         gl.glDisable(state)
 
+
 FBO = namedtuple('FBO', 'id texture texture_slot size')
-def create_fbo(texture_type, width, height, texture_slot=0, color=True, depth=True, grayscale=False):
+class FBO(object):
 
-    assert color or depth, "at least one of the two data types, color or depth, must be set to True."
+    def __init__(self, texture_type, width, height, texture_slot=0, color=True, depth=True, grayscale=False):
 
-    # Make a texture and bind it.
-    gl.glActiveTexture(gl.GL_TEXTURE0 + texture_slot)
-    texture = create_opengl_object(gl.glGenTextures)  # Create a general texture
-    gl.glBindTexture(texture_type, texture)  # Bind it.
+        assert color or depth, "at least one of the two data types, color or depth, must be set to True."
 
-    # Apply texture settings for interpolation behavior (Required)
-    gl.glTexParameterf(texture_type, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-    gl.glTexParameterf(texture_type, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
-    gl.glTexParameterf(texture_type, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
-    gl.glTexParameterf(texture_type, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
-    if texture_type == gl.GL_TEXTURE_CUBE_MAP:
-        gl.glTexParameterf(texture_type, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE)
+        # Generate empty texture(s)
+        internal_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_R8 if grayscale else gl.GL_RGBA)
+        pixel_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_RED if grayscale else gl.GL_RGBA)
 
-    # Generate empty texture(s)
-    internal_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_R8 if grayscale else gl.GL_RGBA)
-    pixel_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_RED if grayscale else gl.GL_RGBA)
+        if texture_type == gl.GL_TEXTURE_2D:
+            texture = Texture.create_empty(texture_type, slot=texture_slot, width=width, height=height,
+                                           internal_fmt=internal_format, pixel_fmt=pixel_format)
+        elif texture_type == gl.GL_TEXTURE_CUBE_MAP:
+            texture = TextureCube.create_empty(texture_type, slot=texture_slot, width=width, height=height,
+                                           internal_fmt=internal_format, pixel_fmt=pixel_format)
 
-    if texture_type == gl.GL_TEXTURE_2D:
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, internal_format, width, height, 0,
-                pixel_format, gl.GL_UNSIGNED_BYTE, 0)
-    elif texture_type == gl.GL_TEXTURE_CUBE_MAP:
-        # Generate blank textures, one for each cube face.
-        for face in range(0, 6):
-            gl.glTexImage2D(gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, internal_format,
-                            width, height, 0, pixel_format, gl.GL_UNSIGNED_BYTE, 0)
+        texture.bind()
 
-    # Create FBO and bind it.
-    fbo = create_opengl_object(gl.glGenFramebuffersEXT)
-    gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, fbo)
+        # Create FBO and bind it.
+        self.id = create_opengl_object(gl.glGenFramebuffersEXT)
+        self.bind()
 
-    # Set Draw and Read locations for the FBO (mostly, turn off if not doing any color stuff)
-    if depth and not color:
-        gl.glDrawBuffer(gl.GL_NONE)  # No color in this buffer
-        gl.glReadBuffer(gl.GL_NONE)
+        # Set Draw and Read locations for the FBO (mostly, turn off if not doing any color stuff)
+        if depth and not color:
+            gl.glDrawBuffer(gl.GL_NONE)  # No color in this buffer
+            gl.glReadBuffer(gl.GL_NONE)
 
-    # Bind texture to FBO.
-    attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT if depth and not color else gl.GL_COLOR_ATTACHMENT0_EXT
-    attached_texture2D_type = gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X if texture_type==gl.GL_TEXTURE_CUBE_MAP else gl.GL_TEXTURE_2D
-    gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, attachment_point, attached_texture2D_type, texture, 0)
+        # Bind texture to FBO.
+        attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT if depth and not color else gl.GL_COLOR_ATTACHMENT0_EXT
+        attached_texture2D_type = gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X if texture_type==gl.GL_TEXTURE_CUBE_MAP else gl.GL_TEXTURE_2D
+        gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, attachment_point, attached_texture2D_type, texture, 0)
 
-    # create a render buffer as our temporary depth buffer, bind it, and attach it to the fbo
-    if color and depth:
-        renderbuffer = create_opengl_object(gl.glGenRenderbuffersEXT)
-        gl.glBindRenderbufferEXT(gl.GL_RENDERBUFFER_EXT, renderbuffer)
-        gl.glRenderbufferStorageEXT(gl.GL_RENDERBUFFER_EXT, gl.GL_DEPTH_COMPONENT24, width, height)
-        gl.glFramebufferRenderbufferEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_DEPTH_ATTACHMENT_EXT, gl.GL_RENDERBUFFER_EXT,
-                                        renderbuffer)
+        # create a render buffer as our temporary depth buffer, bind it, and attach it to the fbo
+        if color and depth:
+            renderbuffer = create_opengl_object(gl.glGenRenderbuffersEXT)
+            gl.glBindRenderbufferEXT(gl.GL_RENDERBUFFER_EXT, renderbuffer)
+            gl.glRenderbufferStorageEXT(gl.GL_RENDERBUFFER_EXT, gl.GL_DEPTH_COMPONENT24, width, height)
+            gl.glFramebufferRenderbufferEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_DEPTH_ATTACHMENT_EXT, gl.GL_RENDERBUFFER_EXT,
+                                            renderbuffer)
 
-    # check FBO status (warning appears for debugging)
-    FBOstatus = gl.glCheckFramebufferStatusEXT(gl.GL_FRAMEBUFFER_EXT)
-    if FBOstatus != gl.GL_FRAMEBUFFER_COMPLETE_EXT:
-        raise BufferError("GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO.\n{0}\n".format(FBOstatus))
+        # check FBO status (warning appears for debugging)
+        FBOstatus = gl.glCheckFramebufferStatusEXT(gl.GL_FRAMEBUFFER_EXT)
+        if FBOstatus != gl.GL_FRAMEBUFFER_COMPLETE_EXT:
+            raise BufferError("GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO.\n{0}\n".format(FBOstatus))
 
-    #Unbind FBO and return it and its texture
-    gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
+        #Unbind FBO and return it and its texture
+        self.unbind()
 
-    return FBO(fbo, texture, texture_slot, (width, height))
+        return FBO(fbo, texture, texture_slot, (width, height))
+
+    def __enter__(self):
+        self.bind()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.unbind()
+
+    def bind(self):
+        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.id)
+
+    def unbind(self):
+        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
 
 
 @contextlib.contextmanager
