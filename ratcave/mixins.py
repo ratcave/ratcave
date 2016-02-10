@@ -2,10 +2,7 @@ from __future__ import absolute_import
 import numpy as np
 import pickle
 from . import utils
-import collections
 
-Color = collections.namedtuple('Color', 'r g b a')
-Color.__new__.__defaults__ = (0., 0., 0., 1.)
 
 class Physical(object):
 
