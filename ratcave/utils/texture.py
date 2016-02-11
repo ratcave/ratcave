@@ -16,12 +16,15 @@ class TextureBase(object):
 
 class Texture(TextureBase):
 
-    def __init__(self, target, id, slot=2, uniform_name='TextureMap'):
+    def __init__(self, target, id, slot=2, uniform_name='TextureMap', attachment_point=gl.GL_COLOR_ATTACHMENT0_EXT,
+                 target0=gl.GL_TEXTURE_2D):
         super(Texture, self).__init__()
         self.target = target
         self.id = id
         self.slot = slot
         self.uniform_name = uniform_name
+        self.attachment_point = attachment_point
+        self.target0 = target0
 
         # Apply texture settings for interpolation behavior (Required)
         self.bind()
@@ -80,8 +83,30 @@ class Texture(TextureBase):
 class TextureCube(Texture):
 
     def __init__(self, *args, **kwargs):
-        super(TextureCube, self).__init__(*args, target=gl.GL_TEXTURE_CUBE_MAP, **kwargs)
+        super(TextureCube, self).__init__(*args, target=gl.GL_TEXTURE_CUBE_MAP, target0=gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+                                          **kwargs)
 
         self.bind()
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE)
         self.unbind()
+
+
+class RenderBuffer(object):
+
+    def __init__(self, target, id, width, height):
+
+        self.target = target
+        self.id = id
+        self.width = width
+        self.height = height
+        self.attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT
+
+    def bind(self):
+        gl.glBindRenderbufferEXT(self.target, self.id)
+
+    @classmethod
+    def create_empty(cls, width, height):
+        target = gl.GL_RENDERBUFFER_EXT
+        id = ugl.create_opengl_object(gl.glGenRenderbuffersEXT)
+        gl.glRenderbufferStorageEXT(target, gl.GL_DEPTH_COMPONENT24, width, height)
+        return cls(target, id, width, height)

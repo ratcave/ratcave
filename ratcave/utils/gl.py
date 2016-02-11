@@ -5,7 +5,7 @@ import numpy as np
 from collections import namedtuple
 from ctypes import byref
 import contextlib
-from .texture import Texture, TextureCube
+from .texture import Texture, TextureCube, RenderBuffer
 
 def create_opengl_object(gl_gen_function, n=1):
     """Returns int pointing to an OpenGL texture"""
@@ -37,18 +37,26 @@ class FBO(object):
         # Generate empty texture(s)
         internal_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_R8 if grayscale else gl.GL_RGBA)
         pixel_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_RED if grayscale else gl.GL_RGBA)
+        attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT if depth and not color else gl.GL_COLOR_ATTACHMENT0_EXT
 
         if texture_type == gl.GL_TEXTURE_2D:
             texture = Texture.create_empty(texture_type, slot=texture_slot, width=width, height=height,
-                                           internal_fmt=internal_format, pixel_fmt=pixel_format)
+                                           internal_fmt=internal_format, pixel_fmt=pixel_format,
+                                           attachment_point=attachment_point)
         elif texture_type == gl.GL_TEXTURE_CUBE_MAP:
             texture = TextureCube.create_empty(texture_type, slot=texture_slot, width=width, height=height,
-                                           internal_fmt=internal_format, pixel_fmt=pixel_format)
+                                           internal_fmt=internal_format, pixel_fmt=pixel_format,
+                                            attachment_point=attachment_point)
 
         texture.bind()
 
         # Create FBO and bind it.
+        self.target = gl.GL_FRAMEBUFFER_EXT
         self.id = create_opengl_object(gl.glGenFramebuffersEXT)
+        self.texture_slot = texture_slot
+        self.width = width
+        self.height = height
+
         self.bind()
 
         # Set Draw and Read locations for the FBO (mostly, turn off if not doing any color stuff)
@@ -57,16 +65,12 @@ class FBO(object):
             gl.glReadBuffer(gl.GL_NONE)
 
         # Bind texture to FBO.
-        attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT if depth and not color else gl.GL_COLOR_ATTACHMENT0_EXT
-        attached_texture2D_type = gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X if texture_type==gl.GL_TEXTURE_CUBE_MAP else gl.GL_TEXTURE_2D
-        gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, attachment_point, attached_texture2D_type, texture, 0)
+        gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, texture.attachment_point, texture.target0, texture.id, 0)
 
         # create a render buffer as our temporary depth buffer, bind it, and attach it to the fbo
         if color and depth:
-            renderbuffer = create_opengl_object(gl.glGenRenderbuffersEXT)
-            gl.glBindRenderbufferEXT(gl.GL_RENDERBUFFER_EXT, renderbuffer)
-            gl.glRenderbufferStorageEXT(gl.GL_RENDERBUFFER_EXT, gl.GL_DEPTH_COMPONENT24, width, height)
-            gl.glFramebufferRenderbufferEXT(gl.GL_FRAMEBUFFER_EXT, gl.GL_DEPTH_ATTACHMENT_EXT, gl.GL_RENDERBUFFER_EXT,
+            renderbuffer = RenderBuffer.create_empty(width, height)
+            gl.glFramebufferRenderbufferEXT(self.target, gl.GL_DEPTH_ATTACHMENT_EXT, gl.GL_RENDERBUFFER_EXT,
                                             renderbuffer)
 
         # check FBO status (warning appears for debugging)
@@ -96,10 +100,10 @@ class FBO(object):
 def render_to_fbo(window, fbo):
     """A context manager that sets the framebuffer target and resizes the viewport before and after the draw commands."""
     gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, fbo.id)  # Rendering off-screen
-    gl.glViewport(0, 0, fbo.size[0], fbo.size[1])
+    gl.glViewport(0, 0, fbo.width, fbo.height)
     yield
     gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
-    gl.glViewport(0, 0, self.window.size[0], self.window.size[1])
+    gl.glViewport(0, 0, self.window.width, self.window.height)
 
 
 def vec(floatlist, newtype='float'):
