@@ -27,8 +27,40 @@ def enable_states(gl_states):
         gl.glDisable(state)
 
 
-FBO = namedtuple('FBO', 'id texture texture_slot size')
 class FBO(object):
+
+    def __init__(self, texture=None, renderbuffer=None, slot=0, internal_fmt=gl.GL_RGBA, pixel_fmt=gl.gl.GL_RGBA,
+                 attachment_point=gl.GL_COLOR_ATTACHMENT0_EXT):
+        self.texture = texture
+        self.renderbuffer = renderbuffer
+        self.slot = slot
+
+        self.internal_fmt = internal_fmt
+        self.pixel_fmt = pixel_fmt
+        self.attachment_point = attachment_point
+
+
+    @classmethod
+    def create_color(cls, slot, width, height):
+        texture = Texture.create_empty(texture_type, slot=slot, width=width, height=height,
+                                           internal_fmt=gl.GL_RGBA, pixel_fmt=gl.gl.GL_RGBA,
+                                           attachment_point=gl.GL_COLOR_ATTACHMENT0_EXT)
+
+
+
+class FBODepth(FBO):
+
+    def __init__(self, *args, **kwargs):
+
+        assert not kwargs['texture']
+        kwargs['internal_fmt'] = gl.GL_DEPTH_COMPONENT
+        kwargs['pixel_fmt'] = gl.GL_DEPTH_COMPONENT
+        kwargs['attachment_point'] = gl.GL_DEPTH_ATTACHMENT_EXT
+        super(FBODepth, self).__init__(*args, **kwargs)
+
+
+
+class OldFBO(object):
 
     def __init__(self, texture_type, width, height, texture_slot=0, color=True, depth=True, grayscale=False):
 
