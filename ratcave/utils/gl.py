@@ -30,10 +30,10 @@ def enable_states(gl_states):
 
 class FBO(object):
 
+    target = gl.GL_FRAMEBUFFER_EXT
 
     def __init__(self, texture):
 
-        self.target = gl.GL_FRAMEBUFFER_EXT
         self.id = create_opengl_object(gl.glGenFramebuffersEXT)
         self.texture = texture
         self._old_viewport_size = (gl.GLint * 4)()

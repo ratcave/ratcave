@@ -116,6 +116,9 @@ class RenderBuffer(object):
     def bind(self):
         gl.glBindRenderbufferEXT(self.target, self.id)
 
+    def unbind(self):
+        gl.glBindRenderbufferEXT(self.target, 0)
+
     def _gen(self):
         gl.glRenderbufferStorageEXT(self.target, self.internal_fmt, self.width, self.height)
 
