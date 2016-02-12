@@ -36,6 +36,7 @@ class FBO(object):
         self.target = gl.GL_FRAMEBUFFER_EXT
         self.id = create_opengl_object(gl.glGenFramebuffersEXT)
         self.texture = texture
+        self._old_viewport_size = (gl.GLint * 4)()
 
         with self, texture:
 
@@ -64,23 +65,22 @@ class FBO(object):
         self.unbind()
 
     def bind(self):
-        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.id)
+        # Store current viewport size
+        gl.glGetIntegerv(gl.GL_VIEWPORT, self._old_viewport_size)
+
+        # Bind the FBO
+        gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.id)  # Rendering off-screen
+
+        # Change the Viewport to the texture's viewport size, to make it full-screen.
+        gl.glViewport(0, 0, self.texture.width, self.texture.height)
 
     def unbind(self):
+        # Unbind the FBO
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
 
+        # Restore the old viewport size
+        gl.glViewport(*old_viewport)
 
-
-
-
-@contextlib.contextmanager
-def render_to_fbo(window, fbo):
-    """A context manager that sets the framebuffer target and resizes the viewport before and after the draw commands."""
-    gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, fbo.id)  # Rendering off-screen
-    gl.glViewport(0, 0, fbo.texture.width, fbo.texture.height)
-    yield
-    gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
-    gl.glViewport(0, 0, self.window.width, self.window.height)
 
 
 def vec(floatlist, newtype='float'):
