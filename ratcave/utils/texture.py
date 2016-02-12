@@ -58,7 +58,6 @@ class Texture(object):
             gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
 
-
 class TextureCube(Texture):
 
     target = gl.GL_TEXTURE_CUBE_MAP
@@ -78,6 +77,21 @@ class TextureCube(Texture):
         for face in range(6):
             gl.glTexImage2D(cls.target0 + face, 0, cls.internal_fmt, width, height, 0,
                             cls.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
+
+
+class DepthTexture(Texture):
+    internal_fmt = gl.GL_DEPTH_COMPONENT
+    pixel_fmt = gl.GL_DEPTH_COMPONENT
+
+
+class GrayscaleTexture(Texture):
+    internal_fmt = gl.GL_R8
+    pixel_fmt = gl.GL_RED
+
+
+class GrayscaleTextureCube(TextureCube):
+    internal_fmt = gl.GL_R8
+    pixel_fmt = gl.GL_RED
 
 
 class RenderBuffer(object):
