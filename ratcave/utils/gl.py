@@ -101,18 +101,15 @@ class VAO(object):
 
         # Create Vertex Array Object and Bind it
         self.id = create_opengl_object(gl.glGenVertexArrays)
-        gl.glBindVertexArray(self.id)
 
-        # Create Vertex Buffer Object and Bind it (Vertices)
-        vbo = create_opengl_object(gl.glGenBuffers, 3)
+        # Create Vertex Buffer Objects and Bind them (Vertices)
+        with self:
+            vbo = create_opengl_object(gl.glGenBuffers, 3)
 
-        # Upload Data to the VBO
-        self._buffer_data(0, vbo[0], vertices)  # Vertex Coordinates
-        self._buffer_data(1, vbo[1], normals)  # Normal Coordinates
-        self._buffer_data(1, vbo[2], texture_uvs)  # Texture UV Coordinates
-
-        # Everything is now assigned and all data passed to the GPU.  Can unbind VAO and VBO now.
-        gl.glBindVertexArray(0)
+            # Upload Data to the VBO
+            self._buffer_data(0, vbo[0], vertices)  # Vertex Coordinates
+            self._buffer_data(1, vbo[1], normals)  # Normal Coordinates
+            self._buffer_data(1, vbo[2], texture_uvs)  # Texture UV Coordinates
 
     def __enter__(self):
         gl.glBindVertexArray(self.id)
