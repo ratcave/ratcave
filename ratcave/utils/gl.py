@@ -5,7 +5,7 @@ import numpy as np
 from collections import namedtuple
 from ctypes import byref
 import contextlib
-from .texture import Texture, TextureCube, RenderBuffer
+from . import texture as tex
 
 def create_opengl_object(gl_gen_function, n=1):
     """Returns int pointing to an OpenGL texture"""
@@ -30,60 +30,38 @@ def enable_states(gl_states):
 
 class FBO(object):
 
-    def __init__(self, width, height, color=True, cube=False, grayscale=False):
 
-        # Generate empty texture(s)
-        internal_format = gl.GL_DEPTH_COMPONENT if not color gl.GL_RGBA
-        pixel_format = gl.GL_DEPTH_COMPONENT if not color else gl.GL_RGBA
-        attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT not color else gl.GL_COLOR_ATTACHMENT0_EXT
-        texture_class = gl.GL_TEXTURE_2D if not cube else gl.GL_TEXTURE_CUBE_MAP
+    def __init__(self, texture):
 
-        texture = texture_class.create_empty(slot=texture_slot, width=width, height=height,
-                                           internal_fmt=internal_format, pixel_fmt=pixel_format,
-                                           attachment_point=attachment_point)
-
-        texture.bind()
-
-        # Create FBO and bind it.
         self.target = gl.GL_FRAMEBUFFER_EXT
         self.id = create_opengl_object(gl.glGenFramebuffersEXT)
-        self.width = width
-        self.height = height
+        self.texture = texture
 
-        self.bind()
+        with self, texture:
 
-        # Set Draw and Read locations for the FBO (mostly, turn off if not doing any color stuff)
-        if depth and not color:
-            gl.glDrawBuffer(gl.GL_NONE)  # No color in this buffer
-            gl.glReadBuffer(gl.GL_NONE)
+            # Set Draw and Read locations for the FBO (currently, just turn it off if not doing any color stuff)
+            texture.attach_to_fbo()
+            if isinstance(texture, tex.DepthTexture):
+                gl.glDrawBuffer(gl.GL_NONE)  # No color in this buffer
+                gl.glReadBuffer(gl.GL_NONE)
+            else:
+                 # create a render buffer as our temporary depth buffer, bind it, and attach.
+                renderbuffer = tex.RenderBuffer(texture.width, texture.height)
+                renderbuffer.attach_to_fbo()
 
-        # Bind texture to FBO.
-        gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, texture.attachment_point, texture.target0, texture.id, 0)
-
-        # create a render buffer as our temporary depth buffer, bind it, and attach it to the fbo
-        if color and depth:
-            renderbuffer = RenderBuffer.create_empty(width, height)
-            gl.glFramebufferRenderbufferEXT(self.target, gl.GL_DEPTH_ATTACHMENT_EXT, gl.GL_RENDERBUFFER_EXT,
-                                            renderbuffer)
 
         # check FBO status (warning appears for debugging)
         FBOstatus = gl.glCheckFramebufferStatusEXT(gl.GL_FRAMEBUFFER_EXT)
         if FBOstatus != gl.GL_FRAMEBUFFER_COMPLETE_EXT:
             raise BufferError("GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO.\n{0}\n".format(FBOstatus))
 
-        #Unbind FBO and return it and its texture
-        self.unbind()
 
-        return FBO(fbo, texture, texture_slot, (width, height))
 
     def __enter__(self):
         self.bind()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.unbind()
-
-    def get_texture(self):
-        return self.texture
 
     def bind(self):
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.id)
@@ -92,11 +70,14 @@ class FBO(object):
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
 
 
+
+
+
 @contextlib.contextmanager
 def render_to_fbo(window, fbo):
     """A context manager that sets the framebuffer target and resizes the viewport before and after the draw commands."""
     gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, fbo.id)  # Rendering off-screen
-    gl.glViewport(0, 0, fbo.width, fbo.height)
+    gl.glViewport(0, 0, fbo.texture.width, fbo.texture.height)
     yield
     gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
     gl.glViewport(0, 0, self.window.width, self.window.height)
