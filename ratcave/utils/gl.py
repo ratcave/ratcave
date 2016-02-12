@@ -97,33 +97,63 @@ def vec(floatlist, newtype='float'):
 
 class VAO(object):
 
-    def __init__(self, vertices, normals, texture_uvs):
+    def __init__(self, *ndarrays):
 
         # Create Vertex Array Object and Bind it
         self.id = create_opengl_object(gl.glGenVertexArrays)
 
-        # Create Vertex Buffer Objects and Bind them (Vertices)
+        # Create Vertex Buffer Objects and Upload data to them (Vertices)
         with self:
-            vbo = create_opengl_object(gl.glGenBuffers, 3)
-
-            # Upload Data to the VBO
-            self._buffer_data(0, vbo[0], vertices)  # Vertex Coordinates
-            self._buffer_data(1, vbo[1], normals)  # Normal Coordinates
-            self._buffer_data(1, vbo[2], texture_uvs)  # Texture UV Coordinates
+            for idx, ndarray in enumerate(ndarrays):
+                self._buffer_data(idx, ndarray)
 
     def __enter__(self):
-        gl.glBindVertexArray(self.id)
+        self.bind()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.unbind()
+
+    def bind(self):
+        gl.glBindVertexArray(self.id)
+
+    def unbind(self):
         gl.glBindVertexArray(0)
 
-    def _buffer_data(self, el, vbo_id, array):
+    def _buffer_data(self, el, ndarray):
         """Load data into a vbo"""
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo_id)
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * array.size,
-                        vec(array.ravel()), gl.GL_STATIC_DRAW)
-        gl.glVertexAttribPointer(el, array.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-        gl.glEnableVertexAttribArray(el)
+        with VBO() as vbo:
+            vbo.buffer_data(ndarray)
+            gl.glVertexAttribPointer(el, ndarray.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+            gl.glEnableVertexAttribArray(el)
+
+
+class VBO(object):
+
+    target = gl.GL_ARRAY_BUFFER
+
+    def __init__(self):
+
+        self.id = create_opengl_object(gl.glGenBuffers, 1)
+
+    def __enter__(self):
+        self.bind()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.unbind()
+
+    def bind(self):
+        gl.glBindBuffer(self.target, self.id)
+
+    def unbind(self):
+        gl.glBindBuffer(self.target, 0)
+
+    def buffer_data(self, ndarray):
+        """Sends 2D array (rows for each vertex, column for each coordinate) to the currently-bound VBO"""
+        gl.glBufferData(self.target, 4 * ndarray.size,
+                        vec(ndarray.ravel()), gl.GL_STATIC_DRAW)
+
 
 
 def setpriority(pid=None,priority=1):
