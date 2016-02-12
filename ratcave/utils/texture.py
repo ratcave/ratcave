@@ -2,93 +2,82 @@ import pyglet
 import pyglet.gl as gl
 from . import gl as ugl
 
-class TextureBase(object):
-    def __init__(self):
-        """Does nothing but solve missing conditional contex manager feature in Python 2.7"""
-        pass
+class Texture(object):
 
-    def __enter__(self):
-        pass
+    target = gl.GL_TEXTURE_2D
+    target0 = gl.GL_TEXTURE_2D
+    attachment_point = gl.GL_COLOR_ATTACHMENT0_EXT
+    internal_fmt = gl.GL_RGBA
+    pixel_fmt=gl.GL_RGBA
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+    def __init__(self, id=None, slot=1, uniform_name='TextureMap', width=1024, height=1024):
+        """Does nothing but solve missing conditional context manager feature in Python 2.7"""
 
+        if id:
+            self.id = id
+        else:
+            self.id = ugl.create_opengl_object(gl.glGenTextures)
+            self._genTex2D(width, height)
+            self._apply_filter_settings()
 
-class Texture(TextureBase):
-
-    def __init__(self, target, id, slot=2, uniform_name='TextureMap', attachment_point=gl.GL_COLOR_ATTACHMENT0_EXT,
-                 target0=gl.GL_TEXTURE_2D):
-        super(Texture, self).__init__()
-        self.target = target
-        self.id = id
         self.slot = slot
         self.uniform_name = uniform_name
-        self.attachment_point = attachment_point
-        self.target0 = target0
-
-        # Apply texture settings for interpolation behavior (Required)
-        self.bind()
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
-        self.unbind()
-
 
     def __enter__(self):
-        super(Texture, self).__enter__()
         self.bind()
-        gl.glActiveTexture(getattr(gl, 'GL_TEXTURE{}'.format(self.slot)))
+        gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        super(Texture, self).__exit__()
         gl.glActiveTexture(gl.GL_TEXTURE0)
         self.unbind()
 
     def bind(self):
         gl.glBindTexture(self.target, self.id)
 
-    def unbind(self):
-        gl.glBindTexture(self.target, 0)
+    @classmethod
+    def unbind(cls):
+        gl.glBindTexture(cls.target, 0)
 
     def send_to(self, shaderHandle):
            gl.glUniform1i(gl.glGetUniformLocation(shaderHandle, self.uniform_name), self.slot)
 
-    @classmethod
-    def from_image_file(cls, filename, **kwargs):
-        img = pyglet.image.load(filename)
-        texture = img.get_texture()
-        return cls(target=texture.target, id=texture.id, **kwargs)
+    @staticmethod
+    def _generate_id():
+        return ugl.create_opengl_object(gl.glGenTextures)
 
     @classmethod
-    def create_empty(cls, target, slot, width, height, internal_fmt, pixel_fmt, **kwargs):
-        gl.glActiveTexture(gl.GL_TEXTURE0 + slot)
-        id = ugl.create_opengl_object(gl.glGenTextures)
-        texture = cls(target=target, id=id, slot=slot, **kwargs)
+    def _genTex2D(cls, width, height):
+        gl.glTexImage2D(cls.target0, 0, cls.internal_fmt, width, height, 0, cls.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
 
-        # Generate blank textures
-        with texture as tex:
-            if tex.target == gl.GL_TEXTURE_2D:
-                gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, internal_fmt, width, height, 0,
-                    pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
-            elif tex.target == gl.GL_TEXTURE_CUBE_MAP:
-                for face in range(6):
-                    gl.glTexImage2D(gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, internal_fmt,
-                                    width, height, 0, pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
+    def _apply_filter_settings(self):
+        with self:
+            gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+            gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+            gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
+            gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
-        return texture
 
 
 class TextureCube(Texture):
 
-    def __init__(self, *args, **kwargs):
-        super(TextureCube, self).__init__(*args, target=gl.GL_TEXTURE_CUBE_MAP, target0=gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-                                          **kwargs)
+    target = gl.GL_TEXTURE_CUBE_MAP
+    target0 = gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X
 
-        self.bind()
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE)
-        self.unbind()
+    def __init__(self, *args, **kwargs):
+        super(TextureCube, self).__init__(*args, **kwargs)
+
+    def _apply_filter_settings(self, *args, **kwargs):
+        super(TextureCube, self)._apply_filter_settings()
+        with self:
+            gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE)
+
+    @classmethod
+    def _genTex2D(cls, width, height):
+        assert width == height, "Cubes must have square faces."
+        for face in range(6):
+            gl.glTexImage2D(cls.target0 + face, 0, cls.internal_fmt, width, height, 0,
+                            cls.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
 
 
 class RenderBuffer(object):

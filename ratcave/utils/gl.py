@@ -27,65 +27,26 @@ def enable_states(gl_states):
         gl.glDisable(state)
 
 
+
 class FBO(object):
 
-    def __init__(self, texture=None, renderbuffer=None, slot=0, internal_fmt=gl.GL_RGBA, pixel_fmt=gl.gl.GL_RGBA,
-                 attachment_point=gl.GL_COLOR_ATTACHMENT0_EXT):
-        self.texture = texture
-        self.renderbuffer = renderbuffer
-        self.slot = slot
-
-        self.internal_fmt = internal_fmt
-        self.pixel_fmt = pixel_fmt
-        self.attachment_point = attachment_point
-
-
-    @classmethod
-    def create_color(cls, slot, width, height):
-        texture = Texture.create_empty(texture_type, slot=slot, width=width, height=height,
-                                           internal_fmt=gl.GL_RGBA, pixel_fmt=gl.gl.GL_RGBA,
-                                           attachment_point=gl.GL_COLOR_ATTACHMENT0_EXT)
-
-
-
-class FBODepth(FBO):
-
-    def __init__(self, *args, **kwargs):
-
-        assert not kwargs['texture']
-        kwargs['internal_fmt'] = gl.GL_DEPTH_COMPONENT
-        kwargs['pixel_fmt'] = gl.GL_DEPTH_COMPONENT
-        kwargs['attachment_point'] = gl.GL_DEPTH_ATTACHMENT_EXT
-        super(FBODepth, self).__init__(*args, **kwargs)
-
-
-
-class OldFBO(object):
-
-    def __init__(self, texture_type, width, height, texture_slot=0, color=True, depth=True, grayscale=False):
-
-        assert color or depth, "at least one of the two data types, color or depth, must be set to True."
+    def __init__(self, width, height, color=True, cube=False, grayscale=False):
 
         # Generate empty texture(s)
-        internal_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_R8 if grayscale else gl.GL_RGBA)
-        pixel_format = gl.GL_DEPTH_COMPONENT if depth and not color else (gl.GL_RED if grayscale else gl.GL_RGBA)
-        attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT if depth and not color else gl.GL_COLOR_ATTACHMENT0_EXT
+        internal_format = gl.GL_DEPTH_COMPONENT if not color gl.GL_RGBA
+        pixel_format = gl.GL_DEPTH_COMPONENT if not color else gl.GL_RGBA
+        attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT not color else gl.GL_COLOR_ATTACHMENT0_EXT
+        texture_class = gl.GL_TEXTURE_2D if not cube else gl.GL_TEXTURE_CUBE_MAP
 
-        if texture_type == gl.GL_TEXTURE_2D:
-            texture = Texture.create_empty(texture_type, slot=texture_slot, width=width, height=height,
+        texture = texture_class.create_empty(slot=texture_slot, width=width, height=height,
                                            internal_fmt=internal_format, pixel_fmt=pixel_format,
                                            attachment_point=attachment_point)
-        elif texture_type == gl.GL_TEXTURE_CUBE_MAP:
-            texture = TextureCube.create_empty(texture_type, slot=texture_slot, width=width, height=height,
-                                           internal_fmt=internal_format, pixel_fmt=pixel_format,
-                                            attachment_point=attachment_point)
 
         texture.bind()
 
         # Create FBO and bind it.
         self.target = gl.GL_FRAMEBUFFER_EXT
         self.id = create_opengl_object(gl.glGenFramebuffersEXT)
-        self.texture_slot = texture_slot
         self.width = width
         self.height = height
 
@@ -120,6 +81,9 @@ class OldFBO(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.unbind()
+
+    def get_texture(self):
+        return self.texture
 
     def bind(self):
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.id)
