@@ -34,8 +34,10 @@ class Texture(object):
             self.id = ugl.create_opengl_object(gl.glGenTextures)
             self.width = width
             self.height = height
-            self._genTex2D()
+            self.bind()
             self._apply_filter_settings()
+            self._genTex2D()
+
 
 
     def __enter__(self):
@@ -62,11 +64,10 @@ class Texture(object):
         gl.glTexImage2D(self.target0, 0, self.internal_fmt, self.width, self.height, 0, self.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
 
     def _apply_filter_settings(self):
-        with self:
-            gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-            gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
-            gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
-            gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
+        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+        gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
+        gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
     def send_to(self, shaderHandle):
            gl.glUniform1i(gl.glGetUniformLocation(shaderHandle, self.uniform_name), self.slot)
@@ -116,7 +117,7 @@ class GrayscaleTextureCube(TextureCube):
 class RenderBuffer(object):
 
     target = gl.GL_RENDERBUFFER_EXT
-    attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT
+    attachment_point = gl.GL_DEPTH_ATTACHMENT
     internal_fmt = gl.GL_DEPTH_COMPONENT24
 
     def __init__(self, width, height):

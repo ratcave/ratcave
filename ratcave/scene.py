@@ -19,7 +19,7 @@ class Scene(object):
             warnings.warn('Warning: Mesh.data.names not all unique--log data will overwrite some meshes!')
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
-        self.bgColor = mixins.Color(*bgColor)
+        self.bgColor = bgColor
 
     def update_matrices(self):
         """calls the "update_matrices" method on all meshes and camera, so that all data is current."""
@@ -37,7 +37,7 @@ class Scene(object):
         with glutils.enable_states(gl_states):
 
             # Clear and Refresh Screen
-            gl.glClearColor(*self.bgColor)
+            gl.glClearColor(*(self.bgColor + (1.,)))
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
             # Bind Shader

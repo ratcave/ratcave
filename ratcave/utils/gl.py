@@ -34,27 +34,30 @@ class FBO(object):
 
     def __init__(self, texture):
 
-        self.id = create_opengl_object(gl.glGenFramebuffersEXT)
-        self.texture = texture
         self._old_viewport_size = (gl.GLint * 4)()
+        self.texture = texture
+        with self.texture:
 
-        with self, texture:
+            self.id = create_opengl_object(gl.glGenFramebuffersEXT)
 
-            # Set Draw and Read locations for the FBO (currently, just turn it off if not doing any color stuff)
-            texture.attach_to_fbo()
-            if isinstance(texture, tex.DepthTexture):
-                gl.glDrawBuffer(gl.GL_NONE)  # No color in this buffer
-                gl.glReadBuffer(gl.GL_NONE)
-            else:
-                 # create a render buffer as our temporary depth buffer, bind it, and attach.
-                renderbuffer = tex.RenderBuffer(texture.width, texture.height)
-                renderbuffer.attach_to_fbo()
+            with self:
+
+                # Set Draw and Read locations for the FBO (currently, just turn it off if not doing any color stuff)
+                texture.attach_to_fbo()
+
+                if isinstance(texture, tex.DepthTexture):
+                    gl.glDrawBuffer(gl.GL_NONE)  # No color in this buffer
+                    gl.glReadBuffer(gl.GL_NONE)
+                else:
+                     # create a render buffer as our temporary depth buffer, bind it, and attach.
+                    renderbuffer = tex.RenderBuffer(texture.width, texture.height)
+                    renderbuffer.attach_to_fbo()
 
 
-        # check FBO status (warning appears for debugging)
-        FBOstatus = gl.glCheckFramebufferStatusEXT(gl.GL_FRAMEBUFFER_EXT)
-        if FBOstatus != gl.GL_FRAMEBUFFER_COMPLETE_EXT:
-            raise BufferError("GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO.\n{0}\n".format(FBOstatus))
+            # check FBO status (warning appears for debugging)
+            FBOstatus = gl.glCheckFramebufferStatusEXT(gl.GL_FRAMEBUFFER_EXT)
+            if FBOstatus != gl.GL_FRAMEBUFFER_COMPLETE_EXT:
+                raise BufferError("GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO.\n{0}\n".format(FBOstatus))
 
 
 
