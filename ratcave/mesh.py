@@ -97,7 +97,7 @@ class Mesh(mixins.Picklable):
 
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
-        self.vao = ugl.VAO(self.data.vertices, self.data.normals, self.data.texture_uv)
+        self.vao = self.vao = ugl.VAO(self.data.vertices, self.data.normals, self.data.texture_uv)
         self.normal_matrix = None
         self.model_matrix = None
     
@@ -113,11 +113,13 @@ class Mesh(mixins.Picklable):
         return tuple(np.dot(self.world.model_matrix, self.local.model_matrix)[:3, -1].tolist())
 
     def _draw(self, shader=None):
+        # if not self.vao:
+        #     self.vao = ugl.VAO(self.data.vertices, self.data.normals, self.data.texture_uv)
 
         if self.visible:
 
             # Change Material to Mesh's
-            self.material.send_to(shader.handle)
+            # self.material.send_to(shader.handle)
 
             # Send Model and Normal Matrix to shader.
             shader.uniform_matrixf('model_matrix', self.model_matrix)
