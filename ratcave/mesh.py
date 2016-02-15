@@ -119,7 +119,7 @@ class Mesh(mixins.Picklable):
         if self.visible:
 
             # Change Material to Mesh's
-            # self.material.send_to(shader.handle)
+            self.material.send_to(shader.handle)
 
             # Send Model and Normal Matrix to shader.
             shader.uniform_matrixf('model_matrix', self.model_matrix)
