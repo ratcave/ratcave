@@ -9,11 +9,11 @@ from .utils import gl as glutils
 
 class Scene(object):
 
-    def __init__(self, win, meshes=[], camera=None, light=None, bgColor=(0., 0., 0., 1.)):
+    def __init__(self, meshes=[], camera=None, light=None, bgColor=(0., 0., 0., 1.)):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
         # TODO: provide help to make camera aspect and fov_y for cubemapped scenes!
         # Initialize List of all Meshes to draw
-        self.win = win
+
         self.meshes = list(meshes)
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
@@ -25,10 +25,13 @@ class Scene(object):
             obj.update_matrices()
 
     def resize(self):
-        self.camera.aspect = float(self.win.size[0]) / self.win.size[1]
+        # Get new vieport size
+        viewport_size = (gl.GLint * 4)()
+        gl.glGetIntegerv(gl.GL_VIEWPORT, self._old_viewport_size)
+        self.camera.aspect = float(viewport_size[2]) / viewport_size[3]
 
-    def draw(self, shader=resources.genShader,
-             userdata={}, gl_states=[gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]):
+    def draw(self, shader=resources.genShader, userdata={},
+             gl_states=[gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]):
         """Draw each visible mesh in the scene."""
 
         # Enable 3D OpenGL states (glEnable, then later glDisable)
