@@ -10,7 +10,7 @@ from __future__ import print_function
 
 from pyglet.gl import *
 from ctypes import *
-from six.moves import range
+# from six.moves import range
 import numpy as np
 
 
@@ -41,7 +41,7 @@ class Uniform(object):
         return self._value
 
     def send_to(self, shaderHandle):
-        self.sendfun(glGetUniformLocation(shaderHandle, self.name), self.value)
+        self.sendfun(glGetUniformLocation(shaderHandle, self.name), *self.value)
 
 
 class UniformGroup(object):
@@ -54,11 +54,17 @@ class UniformGroup(object):
         for uniform in self.uniforms:
             uniform.send_to(shaderHandle)
 
+    @classmethod
+    def from_keywords(cls, **kwargs):
+        """A factory function that returns a UniformGroup from keyword arguments"""
+        # Change all kwarg values to a sequence, to be put into Uniform
+        for key, val in kwargs.items():
+            if not isinstance(val, (list, tuple)):
+                kwargs[key] = [val]
 
-def create_uniform_group(**kwargs):
-    """A factory function that returns a UniformGroup from keyword arguments"""
-    uniforms = [Uniform(key, val) for key, val in kwargs.items()]
-    return UniformGroup(*uniforms)
+        uniforms = [Uniform(key, *val) for key, val in kwargs.items()]
+
+        return cls(*uniforms)
 
 
 class Shader:
