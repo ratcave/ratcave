@@ -112,7 +112,7 @@ class Mesh(mixins.Picklable):
     def position(self):
         return tuple(np.dot(self.world.model_matrix, self.local.model_matrix)[:3, -1].tolist())
 
-    def _draw(self, dest, shader=None):
+    def _draw(self, shader=None):
 
         if self.visible:
 

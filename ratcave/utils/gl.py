@@ -78,6 +78,22 @@ class FBO(object):
         # Restore the old viewport size
         gl.glViewport(*self._old_viewport_size)
 
+    @classmethod
+    def create_color_fbo(cls, width, height, texturename='ColorMap'):
+        color_tex = tex.Texture(width=width, height=height, uniform_name=texturename)
+        return cls(color_tex)
+
+    @classmethod
+    def create_shadow_fbo(cls, width, height, texturename='ShadowMap'):
+        depth_tex = tex.DepthTexture(width=width, height=height, uniform_name=texturename)
+        return cls(depth_tex)
+
+    @classmethod
+    def create_cube_fbo(cls, width, height, texturename='CubeMap'):
+        cube_tex = tex.TextureCube(width=width, height=height, uniform_name=texturename)
+        return cls(cube_tex)
+
+
 
 
 def vec(floatlist, newtype='float'):

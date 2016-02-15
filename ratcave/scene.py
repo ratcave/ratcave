@@ -29,7 +29,7 @@ class Scene(object):
     def resize(self):
         self.camera.aspect = float(self.win.size[0]) / self.win.size[1]
 
-    def draw(self, dest, shader=resources.genShader,
+    def draw(self, shader=resources.genShader,
              userdata={}, gl_states=[gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]):
         """Draw each visible mesh in the scene."""
 
@@ -60,7 +60,7 @@ class Scene(object):
             # shader.uniformi('grayscale', int(self.grayscale))
 
             for mesh in self.meshes:
-                mesh._draw(dest=dest, shader=shader)
+                mesh._draw(shader=shader)
 
             # Unbind Shader
             shader.unbind()
