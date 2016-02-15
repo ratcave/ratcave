@@ -15,8 +15,6 @@ class Scene(object):
         # Initialize List of all Meshes to draw
         self.win = win
         self.meshes = list(meshes)
-        if len(set(mesh.data.name for mesh in self.meshes)) != len(self.meshes):
-            warnings.warn('Warning: Mesh.data.names not all unique--log data will overwrite some meshes!')
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
         self.bgColor = bgColor
