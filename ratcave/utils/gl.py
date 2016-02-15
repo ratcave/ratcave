@@ -79,7 +79,7 @@ class FBO(object):
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
 
         # Restore the old viewport size
-        gl.glViewport(*old_viewport)
+        gl.glViewport(*self._old_viewport_size)
 
 
 

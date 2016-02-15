@@ -42,17 +42,17 @@ aaShader = Shader(open(path.join(shader_path, 'antialiasShader.vert')).read(),
 texture_size = 1024
 aa_texture_size = 1024
 
-shadowFBO = ugl.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=5,
-                           color=False, depth=True)
-
-vrShadowFBO = ugl.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=6,
-                             color=False, depth=True)
-
-cubeFBO = ugl.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size*2, texture_size*2, texture_slot=0,
-                         color=True, depth=True, grayscale=False)
-
-antialiasFBO = ugl.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0,
-                              color=True, depth=True, grayscale=False)
+# shadowFBO = ugl.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=5,
+#                            color=False, depth=True)
+#
+# vrShadowFBO = ugl.create_fbo(gl.GL_TEXTURE_2D, texture_size, texture_size, texture_slot=6,
+#                              color=False, depth=True)
+#
+# cubeFBO = ugl.create_fbo(gl.GL_TEXTURE_CUBE_MAP, texture_size*2, texture_size*2, texture_slot=0,
+#                          color=True, depth=True, grayscale=False)
+#
+# antialiasFBO = ugl.create_fbo(gl.GL_TEXTURE_2D, aa_texture_size, aa_texture_size, texture_slot=0,
+#                               color=True, depth=True, grayscale=False)
 
 
 # Meshes

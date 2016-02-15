@@ -4,7 +4,8 @@ from os import path
 import copy
 
 import numpy as np
-from . import Scene, Mesh, MeshData, Material
+from .mesh import Mesh, MeshData #, Material
+from .scene import Scene
 
 class WavefrontReader(object):
 

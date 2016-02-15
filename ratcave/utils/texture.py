@@ -1,6 +1,18 @@
+
+import gl as ugl
 import pyglet
 import pyglet.gl as gl
-from . import gl as ugl
+
+class MockTexture(object):
+
+    def __init__(self):
+        pass
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
 class Texture(object):
 
@@ -13,17 +25,18 @@ class Texture(object):
     def __init__(self, id=None, slot=1, uniform_name='TextureMap', width=1024, height=1024):
         """Does nothing but solve missing conditional context manager feature in Python 2.7"""
 
+        self.slot = slot
+        self.uniform_name = uniform_name
+
         if id:
             self.id = id
         else:
             self.id = ugl.create_opengl_object(gl.glGenTextures)
-            self._genTex2D(width, height)
-            self._apply_filter_settings()
             self.width = width
             self.height = height
+            self._genTex2D()
+            self._apply_filter_settings()
 
-        self.slot = slot
-        self.uniform_name = uniform_name
 
     def __enter__(self):
         self.bind()
@@ -111,6 +124,7 @@ class RenderBuffer(object):
         self.id = ugl.create_opengl_object(gl.glGenRenderbuffersEXT)
         self.width = width
         self.height = height
+        self.bind()
         self._gen()
 
     def bind(self):
@@ -118,6 +132,14 @@ class RenderBuffer(object):
 
     def unbind(self):
         gl.glBindRenderbufferEXT(self.target, 0)
+
+    def __enter__(self):
+        self.bind()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.unbind()
+        return self
 
     def _gen(self):
         gl.glRenderbufferStorageEXT(self.target, self.internal_fmt, self.width, self.height)
