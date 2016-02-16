@@ -2,6 +2,7 @@
 import gl as ugl
 import pyglet
 import pyglet.gl as gl
+from . import shader
 
 class MockTexture(object):
 
@@ -24,12 +25,13 @@ class Texture(object):
     attachment_point = gl.GL_COLOR_ATTACHMENT0_EXT
     internal_fmt = gl.GL_RGBA
     pixel_fmt=gl.GL_RGBA
+    _all_slots = range(1, 25)[::-1]
 
-    def __init__(self, id=None, slot=1, uniform_name='TextureMap', width=1024, height=1024):
+    def __init__(self, id=None, uniform_name='TextureMap', width=1024, height=1024):
         """Does nothing but solve missing conditional context manager feature in Python 2.7"""
 
-        self.slot = slot
-        self.uniform_name = uniform_name
+        self.__slot = self._all_slots.pop()
+        self.uniform = shader.Uniform(uniform_name, self.__slot)
 
         if id:
             self.id = id
@@ -42,10 +44,14 @@ class Texture(object):
             self._genTex2D()
 
 
+    @property
+    def slot(self):
+        return self.__slot
 
     def __enter__(self):
-        self.bind()
         gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
+        self.bind()
+
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -72,18 +78,17 @@ class Texture(object):
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
-    def send_to(self, shader):
-        uniform_loc = gl.glGetUniformLocation(shader.handle, self.uniform_name)
-        gl.glUniform1i(uniform_loc, self.slot)
+    def send_to(self, *args, **kwargs):
+        self.uniform.send_to(*args, **kwargs)
 
     def attach_to_fbo(self):
         gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, self.attachment_point, self.target0, self.id, 0)
 
     @classmethod
-    def from_image(cls, img_filename):
+    def from_image(cls, img_filename, **kwargs):
         """Uses Pyglet's image.load function to generate a Texture"""
         img = pyglet.image.load('colorgrid.png')
-        return cls(id=img.get_texture().id)
+        return cls(id=img.get_texture().id, **kwargs)
 
 
 class TextureCube(Texture):
