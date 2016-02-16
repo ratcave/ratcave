@@ -79,7 +79,11 @@ class Texture(object):
     def attach_to_fbo(self):
         gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, self.attachment_point, self.target0, self.id, 0)
 
-
+    @classmethod
+    def from_image(cls, img_filename):
+        """Uses Pyglet's image.load function to generate a Texture"""
+        img = pyglet.image.load('colorgrid.png')
+        return cls(id=img.get_texture().id)
 
 
 class TextureCube(Texture):
@@ -101,6 +105,9 @@ class TextureCube(Texture):
             gl.glTexImage2D(self.target0 + face, 0, self.internal_fmt, self.width, self.height, 0,
                             self.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
 
+    @classmethod
+    def from_image(cls, img_filename):
+        raise NotImplementedError()
 
 class DepthTexture(Texture):
     internal_fmt = gl.GL_DEPTH_COMPONENT
