@@ -55,8 +55,8 @@ class Texture(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        gl.glActiveTexture(gl.GL_TEXTURE0)
         self.unbind()
+        gl.glActiveTexture(gl.GL_TEXTURE0)
 
     def bind(self):
         gl.glBindTexture(self.target, self.id)
