@@ -72,8 +72,9 @@ class Texture(object):
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
-    def send_to(self, shaderHandle):
-           gl.glUniform1i(gl.glGetUniformLocation(shaderHandle, self.uniform_name), self.slot)
+    def send_to(self, shader):
+        uniform_loc = gl.glGetUniformLocation(shader.handle, self.uniform_name)
+        gl.glUniform1i(uniform_loc, self.slot)
 
     def attach_to_fbo(self):
         gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, self.attachment_point, self.target0, self.id, 0)

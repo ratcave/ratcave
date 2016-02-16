@@ -40,8 +40,8 @@ class Uniform(object):
     def value(self):
         return self._value
 
-    def send_to(self, shaderHandle):
-        self.sendfun(glGetUniformLocation(shaderHandle, self.name), *self.value)
+    def send_to(self, shader):
+        self.sendfun(glGetUniformLocation(shader.handle, self.name), *self.value)
 
 
 class UniformGroup(object):
@@ -50,9 +50,10 @@ class UniformGroup(object):
         """A collection of Uniforms, which has also has single send_to() method."""
         self.uniforms = uniforms
 
-    def send_to(self, shaderHandle):
+    def send_to(self, shader):
+        "Sends all uniforms to a bound Shader object."
         for uniform in self.uniforms:
-            uniform.send_to(shaderHandle)
+            uniform.send_to(shader)
 
     @classmethod
     def from_keywords(cls, **kwargs):
@@ -85,6 +86,13 @@ class Shader:
  
         # attempt to link the program
         self.link()
+
+    def __enter__(self):
+        self.bind()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.unbind()
  
     def createShader(self, strings, type):
         count = len(strings)
