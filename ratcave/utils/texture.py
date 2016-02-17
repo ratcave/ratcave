@@ -33,7 +33,7 @@ class Texture(object):
         self.__slot = self._all_slots.pop()
         self.uniform = shader.Uniform(uniform_name, self.__slot)
 
-        if id:
+        if id == None:
             self.id = id
         else:
             self.id = ugl.create_opengl_object(gl.glGenTextures)
@@ -87,7 +87,7 @@ class Texture(object):
     @classmethod
     def from_image(cls, img_filename, **kwargs):
         """Uses Pyglet's image.load function to generate a Texture"""
-        img = pyglet.image.load('colorgrid.png')
+        img = pyglet.image.load(img_filename)
         return cls(id=img.get_texture().id, **kwargs)
 
 

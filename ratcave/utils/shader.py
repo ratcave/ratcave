@@ -41,7 +41,10 @@ class Uniform(object):
         return self._value
 
     def send_to(self, shader):
-        self.sendfun(glGetUniformLocation(shader.handle, self.name), *self.value)
+        """Sends uniform to a currently-bound shader, returning its location (-1 means not sent)"""
+        uniform_loc = glGetUniformLocation(shader.handle, self.name)
+        self.sendfun(uniform_loc, *self.value)
+        return uniform_loc
 
 
 class UniformGroup(object):
