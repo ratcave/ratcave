@@ -27,14 +27,15 @@ class Texture(object):
     pixel_fmt=gl.GL_RGBA
     _all_slots = range(1, 25)[::-1]
 
-    def __init__(self, id=None, uniform_name='TextureMap', width=1024, height=1024):
+    def __init__(self, id=None, uniform_name='TextureMap', width=1024, height=1024, data=None):
         """Does nothing but solve missing conditional context manager feature in Python 2.7"""
 
         self.__slot = self._all_slots.pop()
         self.uniform = shader.Uniform(uniform_name, self.__slot)
 
-        if id == None:
+        if id != None:
             self.id = id
+            self.data = data  # This is used for anything that might be garbage collected (i.e. pyglet textures)
         else:
             self.id = ugl.create_opengl_object(gl.glGenTextures)
             self.width = width
@@ -88,7 +89,8 @@ class Texture(object):
     def from_image(cls, img_filename, **kwargs):
         """Uses Pyglet's image.load function to generate a Texture"""
         img = pyglet.image.load(img_filename)
-        return cls(id=img.get_texture().id, **kwargs)
+        tex = img.get_texture()
+        return cls(id=tex.id, data=tex, **kwargs)
 
 
 class TextureCube(Texture):

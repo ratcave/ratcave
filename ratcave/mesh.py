@@ -133,4 +133,3 @@ class Mesh(mixins.Picklable):
             with self.vao, self.texture as texture:
                 texture.send_to(shader)
                 gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
-
