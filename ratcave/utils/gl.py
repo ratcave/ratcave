@@ -79,18 +79,18 @@ class FBO(object):
         gl.glViewport(*self._old_viewport_size)
 
     @classmethod
-    def create_color_fbo(cls, width, height, texturename='ColorMap'):
-        color_tex = tex.Texture(width=width, height=height, uniform_name=texturename)
+    def create_color_fbo(cls, **kwargs):
+        color_tex = tex.Texture(**kwargs)
         return cls(color_tex)
 
     @classmethod
-    def create_shadow_fbo(cls, width, height, texturename='ShadowMap'):
-        depth_tex = tex.DepthTexture(width=width, height=height, uniform_name=texturename)
+    def create_shadow_fbo(cls, **kwargs):
+        depth_tex = tex.DepthTexture(**kwargs)
         return cls(depth_tex)
 
     @classmethod
-    def create_cube_fbo(cls, width, height, texturename='CubeMap'):
-        cube_tex = tex.TextureCube(width=width, height=height, uniform_name=texturename)
+    def create_cube_fbo(cls, **kwargs):
+        cube_tex = tex.TextureCube(**kwargs)
         return cls(cube_tex)
 
 
