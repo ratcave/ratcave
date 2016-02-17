@@ -87,9 +87,11 @@ class Texture(object):
 
     @classmethod
     def from_image(cls, img_filename, **kwargs):
+
         """Uses Pyglet's image.load function to generate a Texture"""
         img = pyglet.image.load(img_filename)
         tex = img.get_texture()
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
         return cls(id=tex.id, data=tex, **kwargs)
 
 
