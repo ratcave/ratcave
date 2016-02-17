@@ -1,5 +1,5 @@
 
-import gl as ugl
+from.utils import gl as ugl
 import pyglet
 import pyglet.gl as gl
 from . import shader

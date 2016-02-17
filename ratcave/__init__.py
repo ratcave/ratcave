@@ -7,7 +7,9 @@ import pyglet
 pyglet.options['debug_gl'] = False
 
 from . import resources
-from .utils.shader import Shader
+from .shader import Shader, Uniform, UniformGroup
+from .fbo import FBO
+from.texture import Texture
 from .mixins import Physical
 from .camera import Camera
 from .light import Light
