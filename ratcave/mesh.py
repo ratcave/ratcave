@@ -45,7 +45,7 @@ class Mesh(mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, mesh_data, material=gray_material, scale=1.0, centered=False, lighting=True,
+    def __init__(self, mesh_data, uniforms=[gray_material], scale=1.0, centered=False, lighting=True,
                  drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -87,7 +87,7 @@ class Mesh(mixins.Picklable):
         #: Local Mesh coordinates (Physical type)
         self.local = mixins.Physical(position=local_position, rotation=rotation, scale=scale)
 
-        self.material = material
+        self.uniforms = uniforms
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         self.texture = MockTexture()
@@ -119,7 +119,8 @@ class Mesh(mixins.Picklable):
         if self.visible:
 
             # Change Material to Mesh's
-            self.material.send_to(shader)
+            for uniform in self.uniforms:
+                uniform.send_to(shader)
 
             # Send Model and Normal Matrix to shader.
             shader.uniform_matrixf('model_matrix', self.model_matrix)
