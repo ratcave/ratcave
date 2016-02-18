@@ -37,9 +37,9 @@ class MeshData(object):
         self.texture_uv = np.array(texture_uv, dtype=float).reshape((-1, 2))
 
 
-gray_material = shader.UniformGroup.from_keywords(diffuse=[.8, .8, .8], spec_weight=0.,
+gray_material = shader.UniformGroup.from_dict(dict(diffuse=[.8, .8, .8], spec_weight=0.,
                                             spec_color=[0., 0., 0.], ambient=[0., 0., 0.],
-                                            opacity=1., hasLighting=1)
+                                            opacity=1., hasLighting=1))
 
 class Mesh(mixins.Picklable):
 
