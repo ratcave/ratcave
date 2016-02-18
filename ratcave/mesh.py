@@ -45,8 +45,8 @@ class Mesh(mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, mesh_data, uniforms=[gray_material], scale=1.0, centered=False, lighting=True,
-                 drawstyle='fill', cubemap=False, position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
+    def __init__(self, mesh_data, uniforms=[gray_material], scale=1.0, centered=False,
+                 drawstyle='fill', position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -57,12 +57,10 @@ class Mesh(mixins.Picklable):
 
         Args:
             mesh_data (MeshData): MeshData object containing the vertex data to be displayed.
-            material (Material): Material object containing the color data for how the Mesh should be lit.
+            uniforms (list): List of Uniform or UniformGroup instances, containing data to send to shader when drawing the Mesh.
             scale (float): local size scaling factor (1.0 is normal size)
             centered (bool): if True, sets local position to 0 after mean-centering the vertices. If false, sets it to the mean.
-            lighting (bool):Whether 3D shading should be done when rendering the mesh. If not, will be rendered with flat shading in its diffuse color.
             drawstyle (str): 'point': only vertices, 'line': points and edges, 'fill': points, edges, and faces (full)
-            cubemap (bool): whether the cubemap texture will be applied to this Mesh.
             position (tuple): the local (x,y,z) position of the Mesh (default 0,0,0)
             rotation (tuple): the local (x,y,z) rotation of the Mesh, in degrees (default 0,0,0)
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
@@ -91,7 +89,6 @@ class Mesh(mixins.Picklable):
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         self.texture = MockTexture()
-        self.cubemap = cubemap
         self.drawstyle = drawstyle
         self.point_size = point_size
 
