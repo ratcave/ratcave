@@ -59,14 +59,14 @@ class UniformGroup(object):
             uniform.send_to(shader)
 
     @classmethod
-    def from_keywords(cls, **kwargs):
+    def from_dict(cls, data_dict):
         """A factory function that returns a UniformGroup from keyword arguments"""
         # Change all kwarg values to a sequence, to be put into Uniform
-        for key, val in kwargs.items():
+        for key, val in data_dict.items():
             if not isinstance(val, (list, tuple)):
-                kwargs[key] = [val]
+                data_dict[key] = [val]
 
-        uniforms = [Uniform(key, *val) for key, val in kwargs.items()]
+        uniforms = [Uniform(key, *val) for key, val in data_dict.items()]
 
         return cls(*uniforms)
 
