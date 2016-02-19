@@ -7,6 +7,7 @@ import numpy as np
 from .mesh import Mesh, MeshData #, Material
 from .scene import Scene
 
+
 class WavefrontReader(object):
 
     def __init__(self, file_name):

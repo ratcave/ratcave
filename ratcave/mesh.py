@@ -37,15 +37,36 @@ class MeshData(object):
         self.texture_uv = np.array(texture_uv, dtype=float).reshape((-1, 2))
 
 
-gray_material = shader.UniformGroup.from_dict(dict(diffuse=[.8, .8, .8], spec_weight=0.,
-                                            spec_color=[0., 0., 0.], ambient=[0., 0., 0.],
-                                            opacity=1., hasLighting=1))
+class Material(object):
+
+    def __init__(self, diffuse=[.8, .8, .8], spec_weight=0., specular=[0., 0., 0.],
+                 ambient=[0., 0., 0.], opacity=1., flat_shading=False):
+        self.diffuse = diffuse,
+        self.spec_weight = spec_weight
+        self.specular = specular
+        self.ambient = ambient
+        self.opacity = opacity
+        self.flat_shading = flat_shading
+
+
+class MeshLoader(object):
+
+    def __init__(self, meshdata, material=None):
+        """Creates various types of Meshes from MeshData and Material objects."""
+
+        self.meshdata = meshdata
+        self.material = material
+
+    def load_mesh(self):
+
+        unigroup = None
+
 
 class Mesh(mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, mesh_data, uniforms=[gray_material], scale=1.0, centered=False,
+    def __init__(self, vertices, normals, texcoords, uniforms=(), scale=1.0, centered=False,
                  drawstyle='fill', position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -73,8 +94,9 @@ class Mesh(mixins.Picklable):
         """
 
         # Mesh Data
-        assert isinstance(mesh_data, MeshData), "Mesh object requires a MeshData object as input."
-        self.data = mesh_data
+        self.vertices = vertices
+        self.normals = normals
+        self.texcoords = texcoords
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.data.vertices, axis=0)
@@ -108,6 +130,7 @@ class Mesh(mixins.Picklable):
     @property
     def position(self):
         return tuple(np.dot(self.world.model_matrix, self.local.model_matrix)[:3, -1].tolist())
+
 
     def _draw(self, shader=None):
         if not self.vao:
