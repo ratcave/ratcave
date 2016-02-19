@@ -42,13 +42,10 @@ aaShader = Shader(open(path.join(shader_path, 'antialiasShader.vert')).read(),
 
 # Meshes
 def gen_fullscreen_quad():
-    fullscreen_quad_data = mesh.MeshData([-1, -1, 0, -1, 1, 0, 1, 1, 0,
-                                 -1, -1, 0,  1, 1, 0, 1, -1, 0],
-                                [0, 1, 2, 0, 2, 3],
-                                normals=[0, 0, -1]*6,
-                                # NEED NORMALS TO RENDER PROPERLY NOW!!
-                                texture_uv=[0, 0, 0, 1, 1, 1,
-                                            0, 0, 1, 1, 1, 0])
-    fullscreen_quad = mesh.Mesh(fullscreen_quad_data)
+    fullscreen_quad_data = mesh.MeshData(vertices=[-1, -1, 0, -1, 1, 0, 1, 1, 0, -1, -1, 0,  1, 1, 0, 1, -1, 0],
+                                         face_indices=[0, 1, 2, 0, 2, 3],
+                                         normals=[0, 0, -1] * 6,
+                                         texcoords=[0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0])
+    fullscreen_quad = mesh.MeshLoader(fullscreen_quad_data).load_mesh()
     fullscreen_quad.update_matrices()
     return fullscreen_quad

@@ -46,29 +46,15 @@ class Uniform(object):
         self.sendfun(uniform_loc, *self.value)
         return uniform_loc
 
-
-class UniformGroup(object):
-
-    def __init__(self, *uniforms):
-        """A collection of Uniforms, which has also has single send_to() method."""
-        self.uniforms = uniforms
-
-    def send_to(self, shader):
-        "Sends all uniforms to a bound Shader object."
-        for uniform in self.uniforms:
-            uniform.send_to(shader)
-
     @classmethod
     def from_dict(cls, data_dict):
-        """A factory function that returns a UniformGroup from keyword arguments"""
+        """A factory function that can build multiple uniforms from a name: val dictionary"""
         # Change all kwarg values to a sequence, to be put into Uniform
         for key, val in data_dict.items():
             if not isinstance(val, (list, tuple)):
                 data_dict[key] = [val]
 
-        uniforms = [Uniform(key, *val) for key, val in data_dict.items()]
-
-        return cls(*uniforms)
+        return [cls(key, *val) for key, val in data_dict.items()]
 
 
 class Shader:

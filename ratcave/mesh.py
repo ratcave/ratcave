@@ -12,12 +12,12 @@ from pyglet import gl
 from .utils import gl as ugl
 from .utils.texture import MockTexture
 from . import mixins
-from .utils import shader
+from . import shader
 
 
 class MeshData(object):
 
-    def __init__(self, vertices, face_indices, normals, texture_uv):
+    def __init__(self, vertices, face_indices, normals, texcoords):
         """
         Collects all vertex data for rendering in 3D graphics packages.
 
@@ -34,7 +34,7 @@ class MeshData(object):
         self.vertices = np.array(vertices, dtype=float).reshape((-1, 3))
         self.face_indices = np.array(face_indices, dtype=int)
         self.normals = np.array(normals, dtype=float).reshape((-1, 3))
-        self.texture_uv = np.array(texture_uv, dtype=float).reshape((-1, 2))
+        self.texcoords = np.array(texcoords, dtype=float).reshape((-1, 2))
 
 
 class Material(object):
@@ -51,22 +51,25 @@ class Material(object):
 
 class MeshLoader(object):
 
-    def __init__(self, meshdata, material=None):
+    def __init__(self, meshdata, material=list()):
         """Creates various types of Meshes from MeshData and Material objects."""
 
         self.meshdata = meshdata
         self.material = material
 
-    def load_mesh(self):
+    def load_mesh(self, **kwargs):
+        """Construct a Mesh object"""
 
-        unigroup = None
+        uniforms = [shader.Uniform(key, *val) for key, val in self.material.__dict__.items()]
+        return Mesh(self.meshdata.vertices, self.meshdata.normals, self.meshdata.texcoords, uniforms=uniforms, **kwargs)
+
 
 
 class Mesh(mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, vertices, normals, texcoords, uniforms=(), scale=1.0, centered=False,
+    def __init__(self, vertices, normals, texcoords, uniforms=list(), scale=1.0, centered=False,
                  drawstyle='fill', position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -99,8 +102,8 @@ class Mesh(mixins.Picklable):
         self.texcoords = texcoords
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
-        vertex_mean = np.mean(self.data.vertices, axis=0)
-        self.data.vertices -= vertex_mean
+        vertex_mean = np.mean(self.vertices, axis=0)
+        self.vertices -= vertex_mean
         local_position = position if centered else tuple(vertex_mean)
         #: :py:class:`.Physical`, World Mesh coordinates
         self.world = mixins.Physical(position=(0., 0., 0.))
@@ -134,7 +137,7 @@ class Mesh(mixins.Picklable):
 
     def _draw(self, shader=None):
         if not self.vao:
-            self.vao = ugl.VAO(self.data.vertices, self.data.normals, self.data.texture_uv)
+            self.vao = ugl.VAO(self.vertices, self.normals, self.texcoords)
 
         if self.visible:
 
@@ -153,4 +156,4 @@ class Mesh(mixins.Picklable):
             # Bind the VAO and Texture, and draw.
             with self.vao, self.texture as texture:
                 texture.send_to(shader)
-                gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.data.vertices.size)
+                gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
