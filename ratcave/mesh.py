@@ -51,7 +51,7 @@ class Material(object):
 
 class MeshLoader(object):
 
-    def __init__(self, meshdata, material=list()):
+    def __init__(self, meshdata, material=None):
         """Creates various types of Meshes from MeshData and Material objects."""
 
         self.meshdata = meshdata
@@ -59,8 +59,10 @@ class MeshLoader(object):
 
     def load_mesh(self, **kwargs):
         """Construct a Mesh object"""
-
-        uniforms = [shader.Uniform(key, *val) for key, val in self.material.__dict__.items()]
+        if self.material:
+            uniforms = [shader.Uniform(key, *val) for key, val in self.material.__dict__.items()]
+        else:
+            uniforms = []
         return Mesh(self.meshdata.vertices, self.meshdata.normals, self.meshdata.texcoords, uniforms=uniforms, **kwargs)
 
 
