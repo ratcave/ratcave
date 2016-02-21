@@ -10,7 +10,7 @@ from __future__ import absolute_import
 import numpy as np
 from pyglet import gl
 from .utils import gl as ugl
-from .utils.texture import MockTexture
+from .texture import MockTexture
 from . import mixins
 from . import shader
 
