@@ -3,6 +3,36 @@ import numpy as np
 import pickle
 from . import utils
 
+class SceneRoot(object):
+
+    def __init__(self):
+        """The Root Node of the Scenegraph.  Has children, but no parent."""
+        self.children = set()
+        self.__parent = None
+
+    @property
+    def parent(self):
+        return self.__parent
+
+class SceneNode(SceneRoot):
+
+    def __init__(self, parent):
+        """Adds itself as a child to a parent (required) and stores the parent object."""
+        super(SceneNode, self).__init__()
+        self.parent = parent
+
+    @property
+    def parent(self):
+        return self.__parent
+
+    @parent.setter
+    def parent(self, value):
+        assert isinstance(value, SceneNode)
+        if self.__parent is not None:
+            self.__parent.children.remove(self)
+        self.__parent = value
+        self.__parent.children.add(self)
+
 
 class Physical(object):
 
@@ -14,7 +44,7 @@ class Physical(object):
             rotation (list): (x, y, z) rotation values
             scale (float): uniform scale factor. 1 = no scaling.
         """
-        super(Physical, self).__init__(*args, **kwargs)
+        super(Physical, self).__init__()
         self.x, self.y, self.z = position
         self.rot_x, self.rot_y, self.rot_z = rotation
         self._rot_matrix = None
@@ -27,6 +57,8 @@ class Physical(object):
         self.view_matrix_global = np.zeros((4,4))
 
         self.update_matrices()
+
+
 
     @property
     def position(self):
@@ -65,13 +97,12 @@ class Physical(object):
         raise NotImplementedError()
 
 
-root = Physical()
 
-class PhysicalNode(Physical):
+class PhysicalNode(Physical, SceneNode):
 
     def __init__(self, *args, **kwargs):
+        assert isinstance(kwargs['parent'], Physical), "Must have a Physical parent!"
         super(PhysicalNode, self).__init__(*args, **kwargs)
-        self.update_matrices()
 
     def update_matrices_global(self):
         self.model_matrix_global = np.dot(self.parent.model_matrix_global, self.model_matrix)
@@ -81,6 +112,7 @@ class PhysicalNode(Physical):
     @property
     def position_global(self):
         self.update_matrices()
+        self.update_matrices_global()
         return tuple(self.model_matrix_global[:3, -1].tolist())
 
 
