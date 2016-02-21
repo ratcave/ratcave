@@ -124,7 +124,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.visible = visible
         self.vao = None
 
-    def _draw(self, *args, **kwargs):
+    def _draw(self, shader=None, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
 
         if not self.vao:
@@ -137,8 +137,8 @@ class Mesh(EmptyMesh, mixins.Picklable):
                 uniform.send_to(shader)
 
             # Send Model and Normal Matrix to shader.
-            shader.uniform_matrixf('model_matrix', self.model_matrix_global)
-            shader.uniform_matrixf('normal_matrix', self.normal_matrix_global)
+            shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel())
+            shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel())
 
             # Set Point Size, if drawing a point cloud
             if self.drawstyle == 'point':

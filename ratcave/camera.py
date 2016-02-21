@@ -28,7 +28,7 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
         """
 
         # mixins.Physical.__init__(self, position=position, rotation=rotation)
-        super(Camera, self).__init__(**kwargs)
+
 
         # Set intrinsic Camera attributes (must be manually applied using update() method during Scene.draw())
         self.fov_y = fov_y
@@ -39,10 +39,12 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
         self.y_shift = y_shift
         self.ortho_mode = ortho_mode
 
+
         # Assign matrix attributes, then set them with the update_matrices() method.
         self.projection_matrix = None
         self.shift_matrix = None
-        self.update_matrices()
+
+        super(Camera, self).__init__(**kwargs)
 
     def update_shift_matrix(self):
         """np.array: The Camera's lens-shift matrix."""
