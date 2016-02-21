@@ -3,35 +3,39 @@ import numpy as np
 import pickle
 from . import utils
 
-class SceneRoot(object):
+# TODO: Check for loops and duplicate nodes in the Scene graph
+class SceneNode(object):
 
     def __init__(self):
         """The Root Node of the Scenegraph.  Has children, but no parent."""
-        self.children = set()
-        self.__parent = None
+        self._children = []
+        self._parent = None
 
     @property
     def parent(self):
-        return self.__parent
-
-class SceneNode(SceneRoot):
-
-    def __init__(self, parent):
-        """Adds itself as a child to a parent (required) and stores the parent object."""
-        super(SceneNode, self).__init__()
-        self.parent = parent
-
-    @property
-    def parent(self):
-        return self.__parent
+        return self._parent
 
     @parent.setter
     def parent(self, value):
         assert isinstance(value, SceneNode)
-        if self.__parent is not None:
-            self.__parent.children.remove(self)
-        self.__parent = value
-        self.__parent.children.add(self)
+        if self._parent is not None:
+            self._parent._children.remove(self)
+        self._parent = value
+        self._parent._children.append(self)
+
+    def add_children(self, children):
+        for child in children:
+            child._parent = self
+            self._children.append(child)
+
+    def remove_children(self, children):
+        for child in children:
+            child._parent = None
+            self._children.remove(child)
+
+    @property
+    def children(self):
+        return tuple(self._children)
 
 
 class Physical(object):
@@ -52,9 +56,6 @@ class Physical(object):
         self.model_matrix = np.zeros((4,4))
         self.normal_matrix = np.zeros((4,4))
         self.view_matrix = np.zeros((4,4))
-        self.model_matrix_global = np.zeros((4,4))
-        self.normal_matrix_global = np.zeros((4,4))
-        self.view_matrix_global = np.zeros((4,4))
 
         self.update_matrices()
 
@@ -77,14 +78,10 @@ class Physical(object):
         self.rot_x, self.rot_y, self.rot_z = value
 
     def update_matrices(self):
+        """Calculate model, normal, and view matrices from position, rotation, and scale data."""
         self.model_matrix = utils.orienting.calculate_model_matrix(self.position, self.rotation, self.scale)
         self.normal_matrix = np.linalg.inv(self.model_matrix.T)
         self.view_matrix = utils.orienting.calculate_view_matrix(self.position, self.rotation)
-
-    def update_matrices_global(self):
-        self.model_matrix_global = self.model_matrix.copy()
-        self.normal_matrix_global = self.normal_matrix.copy()
-        self.view_matrix_global = self.view_matrix.copy()
 
     def start(self, *args, **kwargs):
         """Interface for implementing physics. Subclassed Physical objects can take advantage of this."""
@@ -95,17 +92,26 @@ class Physical(object):
         raise NotImplementedError()
 
 
-
 class PhysicalNode(Physical, SceneNode):
 
     def __init__(self, *args, **kwargs):
-        assert isinstance(kwargs['parent'], Physical), "Must have a Physical parent!"
         super(PhysicalNode, self).__init__(*args, **kwargs)
+        self.model_matrix_global = np.zeros((4,4))
+        self.normal_matrix_global = np.zeros((4,4))
+        self.view_matrix_global = np.zeros((4,4))
+
+        self.update_matrices_global()
 
     def update_matrices_global(self):
-        self.model_matrix_global = np.dot(self.parent.model_matrix_global, self.model_matrix)
-        self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
-        self.view_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+        """Calculate world matrix values from the dot product of the parent."""
+        if self.parent:
+            self.model_matrix_global = np.dot(self.parent.model_matrix_global, self.model_matrix)
+            self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+            self.view_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+        else:
+            self.model_matrix_global = self.model_matrix
+            self.normal_matrix_global = self.normal_matrix
+            self.view_matrix_global = self.view_matrix
 
     @property
     def position_global(self):
