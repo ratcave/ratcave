@@ -65,11 +65,12 @@ class MeshLoader(object):
 
 
 
-class Mesh(mixins.Picklable):
+class Mesh(mixins.PhysicalNode, mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, vertices, normals, texcoords, uniforms=list(), drawstyle='fill', visible=True, point_size=4):
+    def __init__(self, vertices, normals, texcoords, uniforms=list(), drawstyle='fill', visible=True, point_size=4,
+                 **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -90,20 +91,18 @@ class Mesh(mixins.Picklable):
         Returns:
             Mesh instance
         """
+        super(Mesh, self).__init__(**kwargs)
 
         # Mesh Data
-        self.vertices = vertices.copy()
-        self.normals = normals.copy()
-        self.texcoords = texcoords.copy()
+        self.vertices = np.array(vertices, dtype=float)
+        self.normals = np.array(normals, dtype=float)
+        self.texcoords = np.array(texcoords, dtype=float)
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.vertices, axis=0)
         self.vertices -= vertex_mean
         #: :py:class:`.Physical`, World Mesh coordinates
-        self.world = mixins.Physical()
         #: Local Mesh coordinates (Physical type)
-        self.local = mixins.Physical(position=tuple(vertex_mean))
-
         self.uniforms = uniforms
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
@@ -114,20 +113,6 @@ class Mesh(mixins.Picklable):
         #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
         self.visible = visible
         self.vao = None
-        self.normal_matrix = None
-        self.model_matrix = None
-    
-    def update_matrices(self):
-        """Resets the model and normal matrices used internally for positioning and shading."""
-
-        # Local then world
-        self.model_matrix = np.dot(self.world.model_matrix, self.local.model_matrix).T.ravel()
-        self.normal_matrix = np.dot(self.world.normal_matrix, self.local.normal_matrix).T.ravel()
-
-    @property
-    def position(self):
-        return tuple(np.dot(self.world.model_matrix, self.local.model_matrix)[:3, -1].tolist())
-
 
     def _draw(self, shader=None):
         if not self.vao:
@@ -140,8 +125,8 @@ class Mesh(mixins.Picklable):
                 uniform.send_to(shader)
 
             # Send Model and Normal Matrix to shader.
-            shader.uniform_matrixf('model_matrix', self.model_matrix)
-            shader.uniform_matrixf('normal_matrix', self.normal_matrix)
+            shader.uniform_matrixf('model_matrix', self.model_matrix_global)
+            shader.uniform_matrixf('normal_matrix', self.normal_matrix_global)
 
             # Set Point Size, if drawing a point cloud
             if self.drawstyle == 'point':
