@@ -69,8 +69,7 @@ class Mesh(mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, vertices, normals, texcoords, uniforms=list(), scale=1.0, centered=False,
-                 drawstyle='fill', position=(0,0,0), rotation=(0,0,0), visible=True, point_size=4):
+    def __init__(self, vertices, normals, texcoords, uniforms=list(), drawstyle='fill', visible=True, point_size=4):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -82,11 +81,7 @@ class Mesh(mixins.Picklable):
         Args:
             mesh_data (MeshData): MeshData object containing the vertex data to be displayed.
             uniforms (list): List of Uniform or UniformGroup instances, containing data to send to shader when drawing the Mesh.
-            scale (float): local size scaling factor (1.0 is normal size)
-            centered (bool): if True, sets local position to 0 after mean-centering the vertices. If false, sets it to the mean.
             drawstyle (str): 'point': only vertices, 'line': points and edges, 'fill': points, edges, and faces (full)
-            position (tuple): the local (x,y,z) position of the Mesh (default 0,0,0)
-            rotation (tuple): the local (x,y,z) rotation of the Mesh, in degrees (default 0,0,0)
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
 
         Attributes:
@@ -97,18 +92,17 @@ class Mesh(mixins.Picklable):
         """
 
         # Mesh Data
-        self.vertices = vertices
-        self.normals = normals
-        self.texcoords = texcoords
+        self.vertices = vertices.copy()
+        self.normals = normals.copy()
+        self.texcoords = texcoords.copy()
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.vertices, axis=0)
         self.vertices -= vertex_mean
-        local_position = position if centered else tuple(vertex_mean)
         #: :py:class:`.Physical`, World Mesh coordinates
-        self.world = mixins.Physical(position=(0., 0., 0.))
+        self.world = mixins.Physical()
         #: Local Mesh coordinates (Physical type)
-        self.local = mixins.Physical(position=local_position, rotation=rotation, scale=scale)
+        self.local = mixins.Physical(position=tuple(vertex_mean))
 
         self.uniforms = uniforms
 
