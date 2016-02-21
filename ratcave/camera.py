@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import numpy as np
 from . import mixins
-
+import pyglet.gl as gl
 
 class Camera(mixins.Physical, mixins.Picklable):
     """A convenient object for controlling the scene viewing angle."""
@@ -81,5 +81,10 @@ class Camera(mixins.Physical, mixins.Picklable):
         self.update_shift_matrix()
         self.update_projection_matrix()
 
+    def resize_aspect_to_viewport(self):
+        """Changes the camera aspect ratio to match the viewport's."""
+        viewport_size = (gl.GLint * 4)()
+        gl.glGetIntegerv(gl.GL_VIEWPORT, viewport_size)
+        self.aspect = float(viewport_size[2]) / viewport_size[3]
 
 

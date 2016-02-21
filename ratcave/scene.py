@@ -24,12 +24,6 @@ class Scene(object):
         for obj in self.meshes + [self.camera]:
             obj.update_matrices()
 
-    def resize(self):
-        # Get new vieport size
-        viewport_size = (gl.GLint * 4)()
-        gl.glGetIntegerv(gl.GL_VIEWPORT, self._old_viewport_size)
-        self.camera.aspect = float(viewport_size[2]) / viewport_size[3]
-
     def draw(self, shader=resources.genShader, userdata={},
              gl_states=[gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]):
         """Draw each visible mesh in the scene."""
