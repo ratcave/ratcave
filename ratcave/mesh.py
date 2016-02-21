@@ -64,8 +64,16 @@ class MeshLoader(object):
         return Mesh(self.meshdata.vertices, self.meshdata.normals, self.meshdata.texcoords, uniforms=uniforms, **kwargs)
 
 
+class EmptyMesh(mixins.PhysicalNode):
 
-class Mesh(mixins.PhysicalNode, mixins.Picklable):
+    def __init__(self, *args, **kwargs):
+        super(EmptyMesh, self).__init__(*args, **kwargs)
+
+    def _draw(self, shader=None):
+        pass
+
+
+class Mesh(EmptyMesh, mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
@@ -114,7 +122,9 @@ class Mesh(mixins.PhysicalNode, mixins.Picklable):
         self.visible = visible
         self.vao = None
 
-    def _draw(self, shader=None):
+    def _draw(self, *args, **kwargs):
+        super(Mesh, self)._draw(*args, **kwargs)
+
         if not self.vao:
             self.vao = ugl.VAO(self.vertices, self.normals, self.texcoords)
 

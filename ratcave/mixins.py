@@ -6,10 +6,14 @@ from . import utils
 # TODO: Check for loops and duplicate nodes in the Scene graph
 class SceneNode(object):
 
-    def __init__(self):
+    def __init__(self, parent=None, children=None):
         """The Root Node of the Scenegraph.  Has children, but no parent."""
         self._children = []
         self._parent = None
+        if parent:
+            self.parent = parent
+        if children:
+            self.add_children(children)
 
     @property
     def parent(self):
@@ -48,7 +52,7 @@ class Physical(object):
             rotation (list): (x, y, z) rotation values
             scale (float): uniform scale factor. 1 = no scaling.
         """
-        super(Physical, self).__init__()
+        super(Physical, self).__init__(*args, **kwargs)
         self.x, self.y, self.z = position
         self.rot_x, self.rot_y, self.rot_z = rotation
         self._rot_matrix = None
