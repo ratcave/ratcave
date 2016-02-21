@@ -77,6 +77,7 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
         self.projection_matrix = persp_mat.T.ravel()
 
     def update_matrices(self):
+        super(Camera, self).update_matrices()
         """Convenience method. Calls all Camera.update_x() methods."""
         self.update_shift_matrix()
         self.update_projection_matrix()
