@@ -58,8 +58,6 @@ class Physical(object):
 
         self.update_matrices()
 
-
-
     @property
     def position(self):
         """xyz position"""
