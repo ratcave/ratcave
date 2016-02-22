@@ -10,7 +10,6 @@ from __future__ import absolute_import
 import numpy as np
 from pyglet import gl
 from .utils import gl as ugl
-from .texture import MockTexture
 from . import mixins
 from . import shader
 
@@ -127,7 +126,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.uniforms = uniforms
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
-        self.texture = MockTexture()
+        self.texture = None
         self.drawstyle = drawstyle
         self.point_size = point_size
 
@@ -158,6 +157,10 @@ class Mesh(EmptyMesh, mixins.Picklable):
                 gl.glPointSize(int(self.point_size))
 
             # Bind the VAO and Texture, and draw.
-            with self.vao, self.texture as texture:
-                texture.send_to(shader)
-                gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
+            with self.vao:
+                if self.texture:
+                    with self.texture as texture:
+                        texture.uniform.send_to(shader)
+                        gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
+                else:
+                    gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)

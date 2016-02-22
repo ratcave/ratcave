@@ -4,20 +4,6 @@ import pyglet
 import pyglet.gl as gl
 from . import shader
 
-class MockTexture(object):
-
-    def __init__(self):
-        pass
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    def send_to(self, *args, **kwargs):
-        pass
-
 class Texture(object):
 
     target = gl.GL_TEXTURE_2D
@@ -78,9 +64,6 @@ class Texture(object):
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
-
-    def send_to(self, *args, **kwargs):
-        self.uniform.send_to(*args, **kwargs)
 
     def attach_to_fbo(self):
         gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, self.attachment_point, self.target0, self.id, 0)
