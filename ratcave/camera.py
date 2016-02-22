@@ -83,8 +83,8 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
         self._update_shift_matrix()
         self._update_projection_matrix()
 
-    def resize_aspect_to_viewport(self):
-        """Changes the camera aspect ratio to match the viewport's."""
+    def reset_aspect(self):
+        """Gets the viewport size, and matches the camera aspect ratio to it."""
         viewport_size = (gl.GLint * 4)()
         gl.glGetIntegerv(gl.GL_VIEWPORT, viewport_size)
         self.aspect = float(viewport_size[2]) / viewport_size[3]

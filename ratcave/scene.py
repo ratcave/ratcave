@@ -39,7 +39,6 @@ class Scene(object):
 
         # Enable 3D OpenGL states (glEnable, then later glDisable)
         with glutils.enable_states(gl_states):
-
             # Bind Shader
             with shader:
 
