@@ -139,8 +139,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         if not self.vao:
             self.vao = ugl.VAO(self.vertices, self.normals, self.texcoords)
 
-        self.update_matrices()
-        self.update_matrices_global()
+        self.update()
 
         if self.visible:
 

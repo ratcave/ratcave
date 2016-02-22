@@ -46,14 +46,14 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
 
         super(Camera, self).__init__(**kwargs)
 
-    def update_shift_matrix(self):
+    def _update_shift_matrix(self):
         """np.array: The Camera's lens-shift matrix."""
         self.shift_matrix =  np.array([[1.,           0.,           self.x_shift, 0.],
                          [0.,           1.,           self.y_shift, 0.],
                          [0.,           0.,                     1., 0.],
                          [0.,           0.,                     0., 1.]])
 
-    def update_projection_matrix(self):
+    def _update_projection_matrix(self):
         """np.array: The Camera's Projection Matrix.  Will be an Orthographic matrix if ortho_mode is set to True."""
 
         zn, zf = self.zNear, self.zFar
@@ -78,11 +78,10 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
 
         self.projection_matrix = persp_mat
 
-    def update_matrices(self):
-        super(Camera, self).update_matrices()
-        """Convenience method. Calls all Camera.update_x() methods."""
-        self.update_shift_matrix()
-        self.update_projection_matrix()
+    def update(self):
+        super(Camera, self).update()
+        self._update_shift_matrix()
+        self._update_projection_matrix()
 
     def resize_aspect_to_viewport(self):
         """Changes the camera aspect ratio to match the viewport's."""

@@ -75,7 +75,7 @@ class Physical(object):
         self.normal_matrix = np.zeros((4,4))
         self.view_matrix = np.zeros((4,4))
 
-        self.update_matrices()
+        self.update()
 
     @property
     def position(self):
@@ -95,32 +95,25 @@ class Physical(object):
     def rotation(self, value):
         self.rot_x, self.rot_y, self.rot_z = value
 
-    def update_matrices(self):
+    def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
         self.model_matrix = utils.orienting.calculate_model_matrix(self.position, self.rotation, self.scale)
         self.normal_matrix = np.linalg.inv(self.model_matrix.T)
         self.view_matrix = utils.orienting.calculate_view_matrix(self.position, self.rotation)
 
-    def start(self, *args, **kwargs):
-        """Interface for implementing physics. Subclassed Physical objects can take advantage of this."""
-        raise NotImplementedError()
-
-    def update(self, dt):
-        """Interface for implementing physics. Subclassed Physical objects can take advantage of this."""
-        raise NotImplementedError()
-
 
 class PhysicalNode(Physical, SceneNode):
 
     def __init__(self, *args, **kwargs):
-        super(PhysicalNode, self).__init__(*args, **kwargs)
         self.model_matrix_global = np.zeros((4,4))
         self.normal_matrix_global = np.zeros((4,4))
         self.view_matrix_global = np.zeros((4,4))
+        super(PhysicalNode, self).__init__(*args, **kwargs)
 
-        self.update_matrices_global()
 
-    def update_matrices_global(self):
+    def update(self):
+        super(PhysicalNode, self).update()
+
         """Calculate world matrix values from the dot product of the parent."""
         if self.parent:
             self.model_matrix_global = np.dot(self.parent.model_matrix_global, self.model_matrix)
@@ -133,8 +126,7 @@ class PhysicalNode(Physical, SceneNode):
 
     @property
     def position_global(self):
-        self.update_matrices()
-        self.update_matrices_global()
+        self.update()
         return tuple(self.model_matrix_global[:3, -1].tolist())
 
 
