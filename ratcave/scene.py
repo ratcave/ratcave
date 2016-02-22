@@ -30,7 +30,7 @@ class Scene(object):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self, shader=resources.genShader, userdata={},
+    def draw(self, shader=resources.genShader, autoclear=True, userdata={},
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):
         """Draw each visible mesh in the scene."""
 
@@ -39,6 +39,9 @@ class Scene(object):
 
             # Bind Shader
             with shader:
+
+                if autoclear:
+                    self.clear()
 
                 # Send Uniforms that are constant across meshes.
                 shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
