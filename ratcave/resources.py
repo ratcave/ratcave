@@ -46,6 +46,5 @@ def gen_fullscreen_quad():
                                          face_indices=[0, 1, 2, 0, 2, 3],
                                          normals=[0, 0, -1] * 6,
                                          texcoords=[0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0])
-    fullscreen_quad = mesh.MeshLoader(fullscreen_quad_data).load_mesh()
-    fullscreen_quad.update_matrices()
+    fullscreen_quad = mesh.MeshLoader('Quad', fullscreen_quad_data).load_mesh()
     return fullscreen_quad
