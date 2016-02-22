@@ -25,7 +25,7 @@ class Scene(object):
             obj.update_matrices()
 
     def draw(self, shader=resources.genShader, userdata={},
-             gl_states=[gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D]):
+             gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):
         """Draw each visible mesh in the scene."""
 
         # Enable 3D OpenGL states (glEnable, then later glDisable)
