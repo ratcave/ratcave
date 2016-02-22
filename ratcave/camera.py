@@ -76,7 +76,7 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
                                   [             0.,    0.,             -1.,                 0.]])
             persp_mat = np.dot(persp_mat, self.shift_matrix)  # Apply lens shift
 
-        self.projection_matrix = persp_mat.T.ravel()
+        self.projection_matrix = persp_mat
 
     def update_matrices(self):
         super(Camera, self).update_matrices()

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import warnings
 import pyglet.gl as gl
 
-from . import mixins, Camera, Light, resources
+from . import mixins, Camera, Light, resources, mesh
 from .utils import gl as glutils
 
 
@@ -14,7 +14,8 @@ class Scene(object):
         # TODO: provide help to make camera aspect and fov_y for cubemapped scenes!
         # Initialize List of all Meshes to draw
 
-        self.meshes = list(meshes)
+        self.root = mesh.EmptyMesh()
+        self.root.add_children(meshes)
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
         self.bgColor = bgColor
@@ -24,6 +25,11 @@ class Scene(object):
         for obj in self.meshes + [self.camera]:
             obj.update_matrices()
 
+    def clear(self):
+        """Clear Screen and Apply Background Color"""
+        gl.glClearColor(*(self.bgColor + (1.,)))
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+
     def draw(self, shader=resources.genShader, userdata={},
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):
         """Draw each visible mesh in the scene."""
@@ -31,30 +37,27 @@ class Scene(object):
         # Enable 3D OpenGL states (glEnable, then later glDisable)
         with glutils.enable_states(gl_states):
 
-            # Clear and Refresh Screen
-            gl.glClearColor(*(self.bgColor + (1.,)))
-            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-
             # Bind Shader
             with shader:
 
                 # Send Uniforms that are constant across meshes.
-                # shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
-                # shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix)
+                shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
+                shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
                 #
                 # # if self.shadow_rendering:
                 # #     shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
                 # #     shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
                 #
-                # shader.uniformf('light_position', *self.light.position)
-                # shader.uniformf('camera_position', *self.camera.position)
+
+                shader.uniformf('light_position', *self.light.position)
+                shader.uniformf('camera_position', *self.camera.position)
 
                 # shader.uniformi('hasShadow', int(self.shadow_rendering))
                 # shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
                 # shader.uniformi('ShadowMap', shadow_slot)
                 # shader.uniformi('grayscale', int(self.grayscale))
 
-                for mesh in self.meshes:
+                for mesh in self.root:
                     mesh._draw(shader=shader)
 
 
