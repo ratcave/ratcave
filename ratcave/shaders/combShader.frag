@@ -5,7 +5,7 @@ uniform int hasTexture, hasShadow, hasCubeMap, flat_shading;
 uniform float spec_weight, opacity;
 uniform vec3 camera_position, light_position;
 uniform vec3 diffuse, specular, ambient;
-uniform sampler2D ShadowMap, ImageTextureMap;
+uniform sampler2D ShadowMap, TextureMap;
 uniform samplerCube my_cube_texture;
 
 in float lightAmount;
@@ -37,7 +37,7 @@ void main()
     // UV Texture
     vec3 texture_coeff = vec3(1.0);
     if (hasTexture > 0){
-        texture_coeff = texture2D(ImageTextureMap, texCoord).rgb;
+        texture_coeff = texture2D(TextureMap, texCoord).rgb;
     }
 
     //// Phong Model
