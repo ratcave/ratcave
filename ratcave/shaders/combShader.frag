@@ -1,10 +1,10 @@
 #version 330
 #extension GL_NV_shadow_samplers_cube : enable
 
-uniform int hasTexture, hasShadow, hasCubeMap, hasLighting;
+uniform int hasTexture, hasShadow, hasCubeMap, flat_shading;
 uniform float spec_weight, opacity;
 uniform vec3 camera_position, light_position;
-uniform vec3 diffuse, spec_color, ambient;
+uniform vec3 diffuse, specular, ambient;
 uniform sampler2D ShadowMap, ImageTextureMap;
 uniform samplerCube my_cube_texture;
 
@@ -19,7 +19,7 @@ void main()
 {
 
     //If lighting is turned off, just use the diffuse color and return. (Flat lighting)
-    if (hasLighting < 1) {
+    if (flat_shading > 0) {
         final_color = vec4(diffuse, 1.0);
         return;
     }
@@ -70,7 +70,7 @@ void main()
 
     // Calculate Final Color and Opacity
     vec3 color = shadow_coeff * texture_coeff *
-                 (1.5 * (specular_coeff * spec_color) +
+                 (1.5 * (specular_coeff * specular) +
                  (diffuse_coeff * diffuse) +
                  (ambient_coeff * ambient));
     final_color = vec4(clamp(color, 0, 1), opacity);
