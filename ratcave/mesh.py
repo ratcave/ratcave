@@ -41,7 +41,7 @@ class Material(object):
 
     def __init__(self, diffuse=[.8, .8, .8], spec_weight=0., specular=[0., 0., 0.],
                  ambient=[0., 0., 0.], opacity=1., flat_shading=False):
-        self.diffuse = diffuse,
+        self.diffuse = diffuse
         self.spec_weight = spec_weight
         self.specular = specular
         self.ambient = ambient
@@ -51,19 +51,26 @@ class Material(object):
 
 class MeshLoader(object):
 
-    def __init__(self, meshdata, material=None):
+    def __init__(self, name, meshdata, material=None):
         """Creates various types of Meshes from MeshData and Material objects."""
 
+        self.name = name
         self.meshdata = meshdata
         self.material = material
 
     def load_mesh(self, **kwargs):
+        from collections import Iterable
+
         """Construct a Mesh object"""
+        uniforms = []
         if self.material:
-            uniforms = [shader.Uniform(key, *val) for key, val in self.material.__dict__.items()]
-        else:
-            uniforms = []
-        return Mesh(self.meshdata.vertices, self.meshdata.normals, self.meshdata.texcoords, uniforms=uniforms, **kwargs)
+            for key, val in self.material.__dict__.items():
+                if not isinstance(val, Iterable):
+                    val = int(val) if isinstance(val, bool) else val
+                    val = [val]
+                uniforms.append(shader.Uniform(key, *val))
+
+        return Mesh(self.name, self.meshdata.vertices, self.meshdata.normals, self.meshdata.texcoords, uniforms=uniforms, **kwargs)
 
 
 class EmptyMesh(mixins.PhysicalNode):
@@ -79,7 +86,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, vertices, normals, texcoords, uniforms=list(), drawstyle='fill', visible=True, point_size=4,
+    def __init__(self, name, vertices, normals, texcoords, uniforms=list(), drawstyle='fill', visible=True, point_size=4,
                  **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -102,6 +109,8 @@ class Mesh(EmptyMesh, mixins.Picklable):
             Mesh instance
         """
         super(Mesh, self).__init__(**kwargs)
+
+        self.name = name
 
         # Mesh Data
         self.vertices = np.array(vertices, dtype=float)

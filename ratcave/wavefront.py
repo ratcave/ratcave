@@ -4,7 +4,7 @@ from os import path
 import copy
 
 import numpy as np
-from .mesh import Mesh, MeshData #, Material
+from .mesh import Mesh, MeshData, MeshLoader, Material
 from .scene import Scene
 
 
@@ -57,7 +57,7 @@ class WavefrontReader(object):
                 if (prefix == 'o' and props['f']) or line_num == total_lines - 1:
                     self.mesh_material_names[name] = props['usemtl']  #
                     # Build mesh from props dictionary
-                    meshdata = self._build_mesh(props, name)
+                    meshdata = self._build_mesh(props)
                     self.meshdata[name] = meshdata
                     self.mesh_names.append(name)
 
@@ -72,10 +72,11 @@ class WavefrontReader(object):
         :return: Mesh
         :rtype: Mesh
         """
-        meshdata = self.meshdata[mesh_name]
+        meshdata = copy.deepcopy(self.meshdata[mesh_name])
+
         material_name = self.mesh_material_names[mesh_name] if 'material_name' not in kwargs else kwargs['material_name']
-        material = self.materials[material_name]
-        return copy.deepcopy(Mesh(meshdata, material, **kwargs))  # TODO: Make Wavefront.get_mesh() automatically make new version of object.
+        material = copy.deepcopy(self.materials[material_name])
+        return MeshLoader(mesh_name, meshdata, material).load_mesh(**kwargs)
 
     def get_meshes(self, mesh_names, **kwargs):
         """Returns a dictionary of meshes, with kwargs applied to all meshes identically, as in get_mesh()"""
@@ -96,7 +97,7 @@ class WavefrontReader(object):
         meshes = [self.get_mesh(name) for name in names if name not in exclude]
         return Scene(meshes)
 
-    def _build_mesh(self, props, name):
+    def _build_mesh(self, props):
 
         # Handle the face indices.  Need separate arrays for each mesh object.
         tmp = [line.split(' ') for line in props['f']]
@@ -116,9 +117,8 @@ class WavefrontReader(object):
         norms = normals[face_indices[:, 2]] if np.any(normals) else None
 
         # Build MeshData object
-        mesh = MeshData(verts, inds, norms, textUVs)
-        mesh.name = name
-        return mesh
+        meshdata = MeshData(verts, inds, norms, textUVs)
+        return meshdata
 
 
     def _parse_mtl(self, filename):
@@ -151,13 +151,14 @@ class WavefrontReader(object):
 
             if prefix == 'illum':  # Last property listed in .mtl material
                 # Make Material object and add to list of materials
-                name = props['newmtl']
-                material = Material(name=name,
-                                    diffuse=props['Kd'] + [1.,],
-                                    spec_weight=props['Ns'],
-                                    spec_color=props['Ks'] + [1.,],
-                                    ambient=props['Ka'] + [1.,])
-                                    #dissolve=props['d'])
 
+                material = Material(diffuse=props['Kd'],
+                                    spec_weight=props['Ns'],
+                                    specular=props['Ks'],
+                                    ambient=props['Ka'],
+                                    opacity=props['d'],
+                                    )
+
+                name = props['newmtl']
                 self.materials[name] = material
                 props = dict.fromkeys(prefixes, None)
