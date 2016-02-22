@@ -87,7 +87,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
     def __init__(self, name, vertices, normals, texcoords, uniforms=list(), drawstyle='fill', visible=True, point_size=4,
-                 **kwargs):
+                 centered=False, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -120,6 +120,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.vertices, axis=0)
         self.vertices -= vertex_mean
+        self.position = (0., 0., 0.) if centered else vertex_mean
         #: :py:class:`.Physical`, World Mesh coordinates
         #: Local Mesh coordinates (Physical type)
         self.uniforms = uniforms
