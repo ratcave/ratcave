@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import numpy as np
 import pickle
 from . import utils
+from collections import deque
 
 # TODO: Check for loops and duplicate nodes in the Scene graph
 class SceneNode(object):
@@ -14,6 +15,19 @@ class SceneNode(object):
             self.parent = parent
         if children:
             self.add_children(children)
+
+    def __iter__(self):
+        """Returns an iterator that walks through the scene graph,
+         starting with the current object."""
+        def walk_tree_breadthfirst():
+            """tree walking algorithm, using algorithm from
+            http://kmkeen.com/python-trees/"""
+            order = deque([self])
+            while len(order) > 0:
+                order.extend(order[0]._children)
+                yield order.popleft()
+
+        return walk_tree_breadthfirst()
 
     @property
     def parent(self):
