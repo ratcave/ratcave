@@ -19,15 +19,15 @@ class SceneNode(object):
     def __iter__(self):
         """Returns an iterator that walks through the scene graph,
          starting with the current object."""
-        def walk_tree_breadthfirst():
+        def walk_tree_breadthfirst(obj):
             """tree walking algorithm, using algorithm from
             http://kmkeen.com/python-trees/"""
-            order = deque([self])
+            order = deque([obj])
             while len(order) > 0:
                 order.extend(order[0]._children)
                 yield order.popleft()
 
-        return walk_tree_breadthfirst()
+        return walk_tree_breadthfirst(self)
 
     @property
     def parent(self):
