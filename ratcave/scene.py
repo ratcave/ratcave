@@ -34,6 +34,9 @@ class Scene(object):
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):
         """Draw each visible mesh in the scene."""
 
+        self.camera.update()
+        self.light.update()
+
         # Enable 3D OpenGL states (glEnable, then later glDisable)
         with glutils.enable_states(gl_states):
 
