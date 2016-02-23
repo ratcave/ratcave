@@ -38,9 +38,9 @@ class Texture(BaseTexture):
     def __init__(self, id=None, width=1024, height=1024, data=None):
         """Does nothing but solve missing conditional context manager feature in Python 2.7"""
 
-        self.__slot = self._all_slots.pop()
+        self._slot = self._all_slots.pop()
         self.uniforms = [
-            shader.Uniform(self.tex_name, self.__slot),
+            shader.Uniform(self.tex_name, self._slot),
             shader.Uniform(self.cube_name, 0),
             shader.Uniform('textype', self.int_flag)
             ]
@@ -59,7 +59,7 @@ class Texture(BaseTexture):
 
     @property
     def slot(self):
-        return self.__slot
+        return self._slot
 
     def __enter__(self):
         gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
@@ -115,7 +115,7 @@ class TextureCube(Texture):
         assert self.width == self.height, "Cubes must have square faces."
         self.uniforms = [
             shader.Uniform(self.tex_name, 0),
-            shader.Uniform(self.cube_name, self.__slot),
+            shader.Uniform(self.cube_name, self._slot),
             shader.Uniform('textype', self.int_flag)
             ]
 
