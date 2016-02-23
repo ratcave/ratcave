@@ -20,11 +20,6 @@ class Scene(object):
         self.light = Light() if not light else light
         self.bgColor = bgColor
 
-    def update_matrices(self):
-        """calls the "update_matrices" method on all meshes and camera, so that all data is current."""
-        for obj in self.meshes + [self.camera]:
-            obj.update_matrices()
-
     def clear(self):
         """Clear Screen and Apply Background Color"""
         gl.glClearColor(*(self.bgColor + (1.,)))
