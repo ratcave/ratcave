@@ -4,7 +4,28 @@ import pyglet
 import pyglet.gl as gl
 from . import shader
 
-class Texture(object):
+
+class BaseTexture(object):
+
+    int_flag = 0
+    tex_name = 'TextureMap'
+    cube_name = 'CubeMap'
+
+    def __init__(self):
+        self.uniforms = [
+            shader.Uniform(self.tex_name, 0),
+            shader.Uniform(self.cube_name, 0),
+            shader.Uniform('textype', self.int_flag)
+        ]
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+
+class Texture(BaseTexture):
 
     target = gl.GL_TEXTURE_2D
     target0 = gl.GL_TEXTURE_2D
@@ -12,12 +33,17 @@ class Texture(object):
     internal_fmt = gl.GL_RGBA
     pixel_fmt=gl.GL_RGBA
     _all_slots = range(1, 25)[::-1]
+    int_flag = 1
 
-    def __init__(self, id=None, uniform_name='TextureMap', width=1024, height=1024, data=None):
+    def __init__(self, id=None, width=1024, height=1024, data=None):
         """Does nothing but solve missing conditional context manager feature in Python 2.7"""
 
         self.__slot = self._all_slots.pop()
-        self.uniform = shader.Uniform(uniform_name, self.__slot)
+        self.uniforms = [
+            shader.Uniform(self.tex_name, self.__slot),
+            shader.Uniform(self.cube_name, 0),
+            shader.Uniform('textype', self.int_flag)
+            ]
 
         if id != None:
             self.id = id
@@ -82,10 +108,16 @@ class TextureCube(Texture):
 
     target = gl.GL_TEXTURE_CUBE_MAP
     target0 = gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X
+    int_flag = 2
 
     def __init__(self, *args, **kwargs):
         super(TextureCube, self).__init__(*args, **kwargs)
         assert self.width == self.height, "Cubes must have square faces."
+        self.uniforms = [
+            shader.Uniform(self.tex_name, 0),
+            shader.Uniform(self.cube_name, self.__slot),
+            shader.Uniform('textype', self.int_flag)
+            ]
 
     def _apply_filter_settings(self, *args, **kwargs):
         super(TextureCube, self)._apply_filter_settings()

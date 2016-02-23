@@ -11,7 +11,6 @@ import numpy as np
 from pyglet import gl
 from .utils import gl as ugl
 from . import mixins, shader, texture
-from os import path
 
 class MeshData(object):
 
@@ -80,8 +79,6 @@ class EmptyMesh(mixins.PhysicalNode):
         self.update()
 
 
-img_filename = path.join(path.split(__file__)[0], 'assets', 'white.png')
-
 class Mesh(EmptyMesh, mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
@@ -127,7 +124,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.uniforms = uniforms
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
-        self.texture = texture.Texture.from_image(img_filename)
+        self.texture = texture.BaseTexture()#.from_image(img_filename)
         self.drawstyle = drawstyle
         self.point_size = point_size
 
@@ -159,6 +156,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
             # Bind the VAO and Texture, and draw.
             with self.vao, self.texture as texture:
-                texture.uniform.send_to(shader)
+                for uniform in self.texture.uniforms:
+                    uniform.send_to(shader)
                 gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
 

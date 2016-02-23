@@ -1,12 +1,12 @@
 #version 330
 #extension GL_NV_shadow_samplers_cube : enable
 
-uniform int hasShadow, hasCubeMap, flat_shading;
+uniform int hasShadow, hasCubeMap, flat_shading, textype;
 uniform float spec_weight, opacity;
 uniform vec3 camera_position, light_position;
 uniform vec3 diffuse, specular, ambient;
 uniform sampler2D ShadowMap, TextureMap;
-uniform samplerCube my_cube_texture;
+uniform samplerCube CubeMap;
 
 in float lightAmount;
 in vec2 texCoord;
@@ -25,8 +25,8 @@ void main()
     }
 
     //Shade Cube Map and return, if needed
-    if (hasCubeMap > 0) {
-        final_color = textureCube(my_cube_texture, eyeVec) * lightAmount;
+    if (textype == 2) {
+        final_color = textureCube(CubeMap, eyeVec) * lightAmount;
         final_color[3] = 1.0;
         return;
     }
@@ -36,7 +36,9 @@ void main()
 
     // UV Texture
     vec3 texture_coeff = vec3(1.0);
-    texture_coeff = texture2D(TextureMap, texCoord).rgb;
+    if (textype == 1) {
+        texture_coeff = texture2D(TextureMap, texCoord).rgb;
+    }
 
     //// Phong Model
     vec3 normal = normalize(normal);
