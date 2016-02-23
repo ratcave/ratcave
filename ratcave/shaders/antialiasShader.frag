@@ -1,8 +1,8 @@
 #version 330
 
-uniform sampler2D image_texture;
+uniform sampler2D TextureMap;
 uniform vec2 frameBufSize;
-uniform int grayscale;
+//uniform int grayscale;
 
 in vec2 texCoord;
 
@@ -10,18 +10,18 @@ out vec4 color;
 
 void main( void ) {
     color = vec4(1.);
-    //color.xyz = vec3(.4, 0, 0);// + texture2D(image_texture,texCoord).xyz;
-    //return;
+//    color.xyz = vec3(1., 0, 0) + texture2D(TextureMap,texCoord).xyz;
+//    return;
 
     float FXAA_SPAN_MAX = 64.0;
     float FXAA_REDUCE_MUL = 1.0/8.0; // Originally 1.0/8.0
     float FXAA_REDUCE_MIN = 1.0/128.0;
 
-    vec3 rgbNW=texture2D(image_texture,texCoord+(vec2(-1.0,-1.0)/frameBufSize)).xyz;
-    vec3 rgbNE=texture2D(image_texture,texCoord+(vec2(1.0,-1.0)/frameBufSize)).xyz;
-    vec3 rgbSW=texture2D(image_texture,texCoord+(vec2(-1.0,1.0)/frameBufSize)).xyz;
-    vec3 rgbSE=texture2D(image_texture,texCoord+(vec2(1.0,1.0)/frameBufSize)).xyz;
-    vec3 rgbM=texture2D(image_texture,texCoord).xyz;
+    vec3 rgbNW=texture2D(TextureMap,texCoord+(vec2(-1.0,-1.0)/frameBufSize)).xyz;
+    vec3 rgbNE=texture2D(TextureMap,texCoord+(vec2(1.0,-1.0)/frameBufSize)).xyz;
+    vec3 rgbSW=texture2D(TextureMap,texCoord+(vec2(-1.0,1.0)/frameBufSize)).xyz;
+    vec3 rgbSE=texture2D(TextureMap,texCoord+(vec2(1.0,1.0)/frameBufSize)).xyz;
+    vec3 rgbM=texture2D(TextureMap,texCoord).xyz;
 
     vec3 luma=vec3(0.299, 0.587, 0.114);
     float lumaNW = dot(rgbNW, luma);
@@ -48,11 +48,11 @@ void main( void ) {
           dir * rcpDirMin)) / frameBufSize;
 
     vec3 rgbA = (1.0/2.0) * (
-        texture2D(image_texture, texCoord + dir * (1.0/3.0 - 0.5)).xyz +
-        texture2D(image_texture, texCoord + dir * (2.0/3.0 - 0.5)).xyz);
+        texture2D(TextureMap, texCoord + dir * (1.0/3.0 - 0.5)).xyz +
+        texture2D(TextureMap, texCoord + dir * (2.0/3.0 - 0.5)).xyz);
     vec3 rgbB = rgbA * (1.0/2.0) + (1.0/4.0) * (
-        texture2D(image_texture, texCoord + dir * (0.0/3.0 - 0.5)).xyz +
-        texture2D(image_texture, texCoord + dir * (3.0/3.0 - 0.5)).xyz);
+        texture2D(TextureMap, texCoord + dir * (0.0/3.0 - 0.5)).xyz +
+        texture2D(TextureMap, texCoord + dir * (3.0/3.0 - 0.5)).xyz);
     float lumaB = dot(rgbB, luma);
 
     if((lumaB < lumaMin) || (lumaB > lumaMax)){
@@ -60,9 +60,9 @@ void main( void ) {
     }else{
         color.xyz=rgbB;
     }
-
-    if (grayscale > 0) {
-        color.xyz = vec3(color.x);
-    }
+//
+//    if (grayscale > 0) {
+//        color.xyz = vec3(color.x);
+//    }
 
 }
