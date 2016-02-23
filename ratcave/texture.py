@@ -133,6 +133,11 @@ class TextureCube(Texture):
     def from_image(cls, img_filename):
         raise NotImplementedError()
 
+    def attach_to_fbo(self, face=0):
+        gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, self.attachment_point,
+                                     self.target0 + face,
+                                     self.id,  0)  # Select face of cube texture to render to.
+
 class DepthTexture(Texture):
     internal_fmt = gl.GL_DEPTH_COMPONENT
     pixel_fmt = gl.GL_DEPTH_COMPONENT
