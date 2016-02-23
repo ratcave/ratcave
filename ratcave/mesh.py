@@ -158,9 +158,11 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
             # Bind the VAO and Texture, and draw.
             with self.vao:
+                shader.uniformi('hasTexture', bool(self.texture))  # TODO: Replace hardcoded uniform with more elegant solution!
                 if self.texture:
                     with self.texture as texture:
                         texture.uniform.send_to(shader)
                         gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
                 else:
+
                     gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
