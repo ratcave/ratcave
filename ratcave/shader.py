@@ -57,6 +57,34 @@ class Uniform(object):
         return [cls(key, *val) for key, val in data_dict.items()]
 
 
+# class UniformCollection(object):
+#
+#     def __init__(self, **kwargs):
+#         for key, value in kwargs.items():
+#             setattr(self, key, Uniform(key, *value))
+#
+#     def __setattr__(self, name, value):
+#         if name not in self.__dict__:
+#             self.setclassattr(name, value)  # Create a class attribute
+#         else:
+#             self.__dict__[name].value[:] = value  # Insert new value into Uniform.value
+#
+#         self.__dict__[name] = value
+#
+#     @classmethod
+#     def setclassattr(cls, name, value):
+#         setattr(cls, name, value)  # Create a class attribute
+#
+#     def __getattr__(self, name):
+#         if name in self.__dict__:
+#             return self.__dict__[name].value
+
+
+
+
+
+
+
 class Shader:
     # vert, frag and geom take arrays of source strings
     # the arrays will be concattenated into one string by OpenGL

@@ -10,9 +10,8 @@ from __future__ import absolute_import
 import numpy as np
 from pyglet import gl
 from .utils import gl as ugl
-from . import mixins
-from . import shader
-
+from . import mixins, shader, texture
+from os import path
 
 class MeshData(object):
 
@@ -81,6 +80,8 @@ class EmptyMesh(mixins.PhysicalNode):
         self.update()
 
 
+img_filename = path.join(path.split(__file__)[0], 'assets', 'white.png')
+
 class Mesh(EmptyMesh, mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
@@ -126,7 +127,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.uniforms = uniforms
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
-        self.texture = None
+        self.texture = texture.Texture.from_image(img_filename)
         self.drawstyle = drawstyle
         self.point_size = point_size
 
@@ -157,12 +158,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
                 gl.glPointSize(int(self.point_size))
 
             # Bind the VAO and Texture, and draw.
-            with self.vao:
-                shader.uniformi('hasTexture', bool(self.texture))  # TODO: Replace hardcoded uniform with more elegant solution!
-                if self.texture:
-                    with self.texture as texture:
-                        texture.uniform.send_to(shader)
-                        gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
-                else:
+            with self.vao, self.texture as texture:
+                texture.uniform.send_to(shader)
+                gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
 
-                    gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
