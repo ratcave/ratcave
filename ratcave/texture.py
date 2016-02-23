@@ -111,8 +111,9 @@ class TextureCube(Texture):
     int_flag = 2
 
     def __init__(self, *args, **kwargs):
+        # TODO: check that width == height!
         super(TextureCube, self).__init__(*args, **kwargs)
-        assert self.width == self.height, "Cubes must have square faces."
+
         self.uniforms = [
             shader.Uniform(self.tex_name, 0),
             shader.Uniform(self.cube_name, self._slot),
