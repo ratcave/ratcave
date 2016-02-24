@@ -124,7 +124,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.uniforms = uniforms
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
-        self.texture = texture.BaseTexture()#.from_image(img_filename)
+        self.texture = texture.BaseTexture()
         self.drawstyle = drawstyle
         self.point_size = point_size
 

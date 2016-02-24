@@ -8,7 +8,7 @@ from collections import deque
 class SceneNode(object):
 
     def __init__(self, parent=None, children=None):
-        """The Root Node of the Scenegraph.  Has children, but no parent."""
+        """A Node of the Scenegraph.  Has children, but no parent."""
         self._children = []
         self._parent = None
         if parent:
