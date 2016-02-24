@@ -39,6 +39,9 @@ class FBO(object):
         self.unbind()
 
     def bind(self):
+        # This is called simply to deal with anything that might be currently bound, and helps with a Pyglet bug I found.
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
         # Store current viewport size
         gl.glGetIntegerv(gl.GL_VIEWPORT, self._old_viewport_size)
 
