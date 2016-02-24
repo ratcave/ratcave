@@ -63,7 +63,10 @@ class Scene(object):
 
     def draw360_to_texture(self, cubetexture, **kwargs):
         # TODO: Solve provlem: FBO should be bound before glFramebufferTexture2DEXT is called.  How to solve?
+        assert self.camera.aspect == 1., "Camera aspect must be 1, to avoid gaps in cube texture edges."
+
         for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
             self.camera.rotation = rotation
             cubetexture.attach_to_fbo(face)
             self.draw(**kwargs)
+
