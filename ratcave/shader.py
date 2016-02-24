@@ -42,6 +42,7 @@ class Uniform(object):
 
     def send_to(self, shader):
         """Sends uniform to a currently-bound shader, returning its location (-1 means not sent)"""
+        # TODO glGetUniformLocation actually only needs to be called once, when the shader is linked.
         uniform_loc = glGetUniformLocation(shader.handle, self.name)
         self.sendfun(uniform_loc, *self.value)
         return uniform_loc
