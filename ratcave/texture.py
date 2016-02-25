@@ -159,7 +159,7 @@ class GrayscaleTextureCube(TextureCube):
     pixel_fmt = gl.GL_RED
 
 
-class RenderBuffer(object):
+class RenderBuffer(ugl.BindingContextMixin):
 
     target = gl.GL_RENDERBUFFER_EXT
     attachment_point = gl.GL_DEPTH_ATTACHMENT
@@ -178,14 +178,6 @@ class RenderBuffer(object):
 
     def unbind(self):
         gl.glBindRenderbufferEXT(self.target, 0)
-
-    def __enter__(self):
-        self.bind()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.unbind()
-        return self
 
     def _gen(self):
         gl.glRenderbufferStorageEXT(self.target, self.internal_fmt, self.width, self.height)
