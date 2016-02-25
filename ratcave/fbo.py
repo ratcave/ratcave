@@ -1,15 +1,16 @@
 
-
 from .utils import gl as ugl
 from . import texture as tex
 
 import pyglet.gl as gl
+
 
 class FBO(object):
 
     target = gl.GL_FRAMEBUFFER_EXT
 
     def __init__(self, texture):
+        """A Framebuffer object, which when bound redirects draws to its texture.  This is useful for deferred rendering."""
 
         self.id = ugl.create_opengl_object(gl.glGenFramebuffersEXT)
         self._old_viewport_size = (gl.GLint * 4)()
@@ -39,6 +40,7 @@ class FBO(object):
         self.unbind()
 
     def bind(self):
+        """Bind the FBO.  Anything drawn afterward will be stored in the FBO's texture."""
         # This is called simply to deal with anything that might be currently bound (for example, Pyglet objects),
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
@@ -50,6 +52,7 @@ class FBO(object):
         gl.glViewport(0, 0, self.texture.width, self.texture.height)
 
     def unbind(self):
+        """Unbind the FBO."""
         # Unbind the FBO
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
 
