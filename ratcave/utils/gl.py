@@ -66,6 +66,17 @@ class BindTargetMixin(object):
 class VAO(BindingContextMixin):
 
     def __init__(self, *ndarrays):
+        """
+        OpenGL Vertex Array Object.  Sends array data in a Vertex Buffer to the GPU.  This data can be accessed in
+        the vertex shader using the 'layout(location = N)' header line, where N = the index of the array given the VAO.
+
+        Example:  VAO(vertices, normals, texcoords):
+
+        Fragshader:
+        layout(location = 0) in vec3 vertexCoord;
+        layout(location = 1) in vec2 texCoord;
+        layout(location = 2) in vec3 normalCoord;
+        """
 
         # Create Vertex Array Object and Bind it
         self.id = create_opengl_object(gl.glGenVertexArrays)
@@ -76,6 +87,7 @@ class VAO(BindingContextMixin):
                 self._buffer_data(idx, ndarray)
 
     def bind(self):
+        """Bind the VAO (necessary before calling glDrawArrays)."""
         gl.glBindVertexArray(self.id)
 
     def unbind(self):
