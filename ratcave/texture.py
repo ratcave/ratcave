@@ -1,4 +1,3 @@
-
 from.utils import gl as ugl
 import pyglet
 import pyglet.gl as gl
@@ -36,7 +35,7 @@ class Texture(BaseTexture):
     int_flag = 1
 
     def __init__(self, id=None, width=1024, height=1024, data=None):
-        """Does nothing but solve missing conditional context manager feature in Python 2.7"""
+        """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
 
         self._slot = self._all_slots.pop()
         self.uniforms = [
@@ -59,12 +58,12 @@ class Texture(BaseTexture):
 
     @property
     def slot(self):
+        """The texture's ActiveTexture slot."""
         return self._slot
 
     def __enter__(self):
         gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
         self.bind()
-
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -83,21 +82,24 @@ class Texture(BaseTexture):
         return ugl.create_opengl_object(gl.glGenTextures)
 
     def _genTex2D(self):
+        """Creates an empty texture in OpenGL."""
         gl.glTexImage2D(self.target0, 0, self.internal_fmt, self.width, self.height, 0, self.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
 
     def _apply_filter_settings(self):
+        """Applies some hard-coded texture filtering settings."""
+        # TODO: Allow easy customization of filters
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
     def attach_to_fbo(self):
+        """Attach the texture to a bound FBO object, for rendering to texture."""
         gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, self.attachment_point, self.target0, self.id, 0)
 
     @classmethod
     def from_image(cls, img_filename, **kwargs):
-
-        """Uses Pyglet's image.load function to generate a Texture"""
+        """Uses Pyglet's image.load function to generate a Texture from an image file."""
         img = pyglet.image.load(img_filename)
         tex = img.get_texture()
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
@@ -111,6 +113,7 @@ class TextureCube(Texture):
     int_flag = 2
 
     def __init__(self, *args, **kwargs):
+        """the Color Cube Texture class."""
         # TODO: check that width == height!
         super(TextureCube, self).__init__(*args, **kwargs)
 
@@ -126,6 +129,7 @@ class TextureCube(Texture):
             gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE)
 
     def _genTex2D(self):
+        """Generate an empty texture in OpenGL"""
         for face in range(6):
             gl.glTexImage2D(self.target0 + face, 0, self.internal_fmt, self.width, self.height, 0,
                             self.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
