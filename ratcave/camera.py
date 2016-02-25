@@ -10,11 +10,9 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
     def __init__(self, fov_y=60., aspect=1.778, z_near=.01, z_far=4.5, x_shift=0., y_shift=0.,
                  ortho_mode=False, **kwargs):
         """
-        My camera class.
+        Returns a Camera instance, which determines the world-to-screen perspective transformation.
 
         Args:
-            position (tuple): (x,y,z)
-            rotation (tuple): (x,y,z)
             fov_y (float): vertical field of view (degrees)
             aspect (float): screen width/height
             z_near (float): near clipping distance
@@ -27,9 +25,6 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
             Camera instance
         """
 
-        # mixins.Physical.__init__(self, position=position, rotation=rotation)
-
-
         # Set intrinsic Camera attributes (must be manually applied using update() method during Scene.draw())
         self.fov_y = fov_y
         self.aspect = aspect
@@ -38,7 +33,6 @@ class Camera(mixins.PhysicalNode, mixins.Picklable):
         self.x_shift = x_shift
         self.y_shift = y_shift
         self.ortho_mode = ortho_mode
-
 
         # Assign matrix attributes, then set them with the update_matrices() method.
         self.projection_matrix = None
