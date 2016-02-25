@@ -94,14 +94,15 @@ class Mesh(EmptyMesh, mixins.Picklable):
         .. note:: Meshes are not usually instantiated directly, but from a 3D file, like the WavefrontReader .obj and .mtl files.
 
         Args:
-            mesh_data (MeshData): MeshData object containing the vertex data to be displayed.
-            uniforms (list): List of Uniform or UniformGroup instances, containing data to send to shader when drawing the Mesh.
+            name (str): the mesh's name.
+            vertices: the Nx3 vertex coordinate data
+            normals: the Nx3 normal coordinate data
+            texcoords: the Nx2 texture coordinate data
+            uniforms (list): a list of all Uniform objects
             drawstyle (str): 'point': only vertices, 'line': points and edges, 'fill': points, edges, and faces (full)
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
+            point_size (int): How big to draw the points, when drawstyle is 'point'
 
-        Attributes:
-            local (:py:class:`.Physical`): The local position and rotation of the Mesh.  This shift is done first, so should be used for general positioning.  If *centered* is set to False, the local position will be set as the mean vertex coordinates from :py:class:`.MeshData`, so Mesh will appear in the same location as the Mesh's original position in its file.
-            world (:py:class:`.Physical`): The world position and rotation of the Mesh.  World position is used for moving an object about another point, so that multiple objects can be moved at once and retain their inter-object distances and orientations.  By default, set to the origin.
         Returns:
             Mesh instance
         """
