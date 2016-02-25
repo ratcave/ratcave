@@ -1,5 +1,5 @@
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 
 #
 # Copyright Tristam Macdonald 2008
@@ -10,7 +10,6 @@ from __future__ import print_function
 
 from pyglet.gl import *
 from ctypes import *
-# from six.moves import range
 import numpy as np
 
 
@@ -22,7 +21,7 @@ class Uniform(object):
 
     def __init__(self, name, *vals):
         """An array with a paired glUniform function, for quick shader data sending."""
-        self.name = name
+        self.name = name.encode('ascii')
         assert len(vals) > 0 and len(vals) <= 4
         self._value = np.array(vals)  # A semi-mutable array, in that its length can't be modified.
         self.sendfun = Uniform._sendfuns[self._value.dtype.kind][len(self._value) - 1]
@@ -51,11 +50,11 @@ class Uniform(object):
     def from_dict(cls, data_dict):
         """A factory function that can build multiple uniforms from a name: val dictionary"""
         # Change all kwarg values to a sequence, to be put into Uniform
-        for key, val in data_dict.items():
+        for key, val in list(data_dict.items()):
             if not isinstance(val, (list, tuple)):
                 data_dict[key] = [val]
 
-        return [cls(key, *val) for key, val in data_dict.items()]
+        return [cls(key, *val) for key, val in list(data_dict.items())]
 
 
 # class UniformCollection(object):
@@ -190,7 +189,7 @@ class Shader:
                 3 : glUniform3f,
                 4 : glUniform4f
                 # retrieve the uniform location, and set
-            }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
+            }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
             # }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
 
     # upload an integer uniform
@@ -204,7 +203,7 @@ class Shader:
                 3 : glUniform3i,
                 4 : glUniform4i
                 # retrieve the uniform location, and set
-            }[len(vals)](glGetUniformLocation(self.handle, name), *vals)
+            }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
             # }[len(vals)](glGetUniformLocation(self.handle, name.encode('ascii')), *vals)
 
     # upload a uniform matrix
@@ -212,7 +211,7 @@ class Shader:
     # as well as euclid matrices
     def uniform_matrixf(self, name, mat):
         # obtian the uniform location
-        loc = glGetUniformLocation(self.handle, name)
+        loc = glGetUniformLocation(self.handle, name.encode('ascii'))
         # uplaod the 4x4 floating point matrix
         glUniformMatrix4fv(loc, 1, False, (c_float * 16)(*mat))
 

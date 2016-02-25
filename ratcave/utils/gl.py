@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 import pyglet.gl as gl
 from ctypes import byref

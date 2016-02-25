@@ -29,7 +29,7 @@ def correct_orientation_motivepy(rb, n_attempts=3):
 
 def correct_orientation_natnet(rb, n_attempts=3):
     """Assumes the orientation is reset already (need MotivePy to do it automatically) to account for between-session arena shifts"""
-    print("Warning: Assuming that the orientation has been reset to 0,0,0 for the {} rigid body".format(rb.name))
+    print(("Warning: Assuming that the orientation has been reset to 0,0,0 for the {} rigid body".format(rb.name)))
     additional_rotation = orienting.rotate_to_var(np.array([m.position for m in rb.markers]))
     return additional_rotation
 

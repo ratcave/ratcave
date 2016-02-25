@@ -32,7 +32,7 @@ class Texture(BaseTexture):
     attachment_point = gl.GL_COLOR_ATTACHMENT0_EXT
     internal_fmt = gl.GL_RGBA
     pixel_fmt=gl.GL_RGBA
-    _all_slots = range(1, 25)[::-1]
+    _all_slots = list(range(1, 25))[::-1]
     int_flag = 1
 
     def __init__(self, id=None, width=1024, height=1024, data=None):

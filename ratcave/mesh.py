@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 """
     mesh
@@ -61,7 +61,7 @@ class MeshLoader(object):
         """Construct a Mesh object"""
         uniforms = []
         if self.material:
-            for key, val in self.material.__dict__.items():
+            for key, val in list(self.material.__dict__.items()):
                 if not isinstance(val, Iterable):
                     val = int(val) if isinstance(val, bool) else val
                     val = [val]

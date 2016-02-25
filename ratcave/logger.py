@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 import datetime
 import json
@@ -9,7 +9,7 @@ encoder.FLOAT_REPR = lambda x: "{0:.4f}".format(x).rstrip('0').rstrip('.')
 from .import mixins
 from pyglet import image
 
-physical_keys = sorted(key for key in mixins.Physical().__dict__.keys() if '_' not in key[0])
+physical_keys = sorted(key for key in list(mixins.Physical().__dict__.keys()) if '_' not in key[0])
 def encode_phys(obj):
     """Only grabs the data that is expected to change frame to frame"""
     try:
