@@ -63,7 +63,7 @@ class BindTargetMixin(object):
         cls.bindfun(cls.target, 0)
 
 
-class VAO(object):
+class VAO(BindingContextMixin):
 
     def __init__(self, *ndarrays):
 
@@ -74,13 +74,6 @@ class VAO(object):
         with self:
             for idx, ndarray in enumerate(ndarrays):
                 self._buffer_data(idx, ndarray)
-
-    def __enter__(self):
-        self.bind()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.unbind()
 
     def bind(self):
         gl.glBindVertexArray(self.id)
