@@ -31,6 +31,7 @@ class SceneNode(object):
 
     @property
     def parent(self):
+        """A SceneNode object that is this object's parent in the scene graph."""
         return self._parent
 
     @parent.setter
@@ -41,8 +42,11 @@ class SceneNode(object):
         self._parent = value
         self._parent._children.append(self)
 
-    def add_children(self, children):
+    def add_children(self, children=list()):
+        """Adds a list of objects as children in the scene graph."""
+
         for child in children:
+            assert isinstance(child, SceneNode)
             child._parent = self
             self._children.append(child)
 
@@ -79,7 +83,7 @@ class Physical(object):
 
     @property
     def position(self):
-        """xyz position"""
+        """xyz local position"""
         return self.x, self.y, self.z
 
     @position.setter
@@ -105,6 +109,7 @@ class Physical(object):
 class PhysicalNode(Physical, SceneNode):
 
     def __init__(self, *args, **kwargs):
+        """Object with xyz position and rotation properties that are relative to its parent."""
         self.model_matrix_global = np.zeros((4,4))
         self.normal_matrix_global = np.zeros((4,4))
         self.view_matrix_global = np.zeros((4,4))
@@ -139,6 +144,8 @@ class Picklable(object):
 
     @classmethod
     def load(cls, filename):
+        """Load the object from a pickle file."""
         with open(filename) as f:
             obj = pickle.load(f)
+            assert isinstance(obj, cls), "File's object is {}, but should be {}".format(type(obj), cls)
         return obj
