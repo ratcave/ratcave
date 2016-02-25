@@ -24,7 +24,7 @@ class BaseTexture(object):
         pass
 
 
-class Texture(BaseTexture):
+class Texture(BaseTexture, ugl.BindTargetMixin):
 
     target = gl.GL_TEXTURE_2D
     target0 = gl.GL_TEXTURE_2D
@@ -33,6 +33,7 @@ class Texture(BaseTexture):
     pixel_fmt=gl.GL_RGBA
     _all_slots = list(range(1, 25))[::-1]
     int_flag = 1
+    bindfun = gl.glBindTexture
 
     def __init__(self, id=None, width=1024, height=1024, data=None):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
@@ -69,13 +70,6 @@ class Texture(BaseTexture):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.unbind()
         gl.glActiveTexture(gl.GL_TEXTURE0)
-
-    def bind(self):
-        gl.glBindTexture(self.target, self.id)
-
-    @classmethod
-    def unbind(cls):
-        gl.glBindTexture(cls.target, 0)
 
     @staticmethod
     def _generate_id():
@@ -159,11 +153,12 @@ class GrayscaleTextureCube(TextureCube):
     pixel_fmt = gl.GL_RED
 
 
-class RenderBuffer(ugl.BindingContextMixin):
+class RenderBuffer(ugl.BindingContextMixin, ugl.BindTargetMixin):
 
     target = gl.GL_RENDERBUFFER_EXT
     attachment_point = gl.GL_DEPTH_ATTACHMENT
     internal_fmt = gl.GL_DEPTH_COMPONENT24
+    bindfun = gl.glBindRenderbufferEXT
 
     def __init__(self, width, height):
 
@@ -172,12 +167,6 @@ class RenderBuffer(ugl.BindingContextMixin):
         self.height = height
         self.bind()
         self._gen()
-
-    def bind(self):
-        gl.glBindRenderbufferEXT(self.target, self.id)
-
-    def unbind(self):
-        gl.glBindRenderbufferEXT(self.target, 0)
 
     def _gen(self):
         gl.glRenderbufferStorageEXT(self.target, self.internal_fmt, self.width, self.height)

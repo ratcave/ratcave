@@ -47,6 +47,22 @@ class BindingContextMixin(object):
         self.unbind()
 
 
+class BindTargetMixin(object):
+    """Mixin that speifices a bind() and unbind() interface by taking advantage of the OpenGL bind format:
+    bind: bindfun(target, id)
+    unbind: bindfun(target, 0)
+    """
+
+    bindfun = None
+
+    def bind(self):
+        self.bindfun(self.target, self.id)
+
+    @classmethod
+    def unbind(cls):
+        cls.bindfun(cls.target, 0)
+
+
 class VAO(object):
 
     def __init__(self, *ndarrays):
