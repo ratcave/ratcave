@@ -16,7 +16,5 @@ from .light import Light
 from .scene import Scene
 from .wavefront import WavefrontReader
 
-from .logger import Logger
 
-
-__all__ = ['Camera', 'Logger', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'WavefrontReader', 'resources']
+__all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'WavefrontReader', 'resources']
