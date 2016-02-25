@@ -1,7 +1,7 @@
 from pyglet.gl import *
 from ctypes import *
 import numpy as np
-
+from .utils import gl as ugl
 
 class Uniform(object):
 
@@ -78,7 +78,7 @@ class Uniform(object):
 #
 
 
-class Shader:
+class Shader(ugl.BindingContextMixin):
 
     uniformf_funs = (glUniform1f, glUniform2f, glUniform3f, glUniform4f)
     uniformi_funs = (glUniform1i, glUniform2i, glUniform3i, glUniform4i)
@@ -102,13 +102,6 @@ class Shader:
  
         # attempt to link the program
         self.link()
-
-    def __enter__(self):
-        self.bind()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.unbind()
  
     def createShader(self, strings, shadertype):
  

@@ -5,7 +5,7 @@ from . import texture as tex
 import pyglet.gl as gl
 
 
-class FBO(object):
+class FBO(ugl.BindingContextMixin):
 
     target = gl.GL_FRAMEBUFFER_EXT
 
@@ -32,12 +32,6 @@ class FBO(object):
         FBOstatus = gl.glCheckFramebufferStatusEXT(gl.GL_FRAMEBUFFER_EXT)
         if FBOstatus != gl.GL_FRAMEBUFFER_COMPLETE_EXT:
             raise BufferError("GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO.\n{0}\n".format(FBOstatus))
-
-    def __enter__(self):
-        self.bind()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.unbind()
 
     def bind(self):
         """Bind the FBO.  Anything drawn afterward will be stored in the FBO's texture."""

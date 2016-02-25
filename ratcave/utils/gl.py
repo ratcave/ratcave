@@ -35,6 +35,16 @@ def vec(floatlist, newtype='float'):
         elif 'int' in newtype:
             return (gl.GLuint * len(floatlist))(*list(floatlist))
 
+class BindingContextMixin(object):
+    """Mixin that calls self.bind() and self.unbind() when used in a context manager."""
+
+    def __enter__(self):
+
+        self.bind()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.unbind()
 
 
 class VAO(object):
