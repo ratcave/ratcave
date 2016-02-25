@@ -39,16 +39,14 @@ class FBO(object):
         self.unbind()
 
     def bind(self):
-        # This is called simply to deal with anything that might be currently bound, and helps with a Pyglet bug I found.
+        # This is called simply to deal with anything that might be currently bound (for example, Pyglet objects),
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
-        # Store current viewport size
+        # Store current viewport size for later
         gl.glGetIntegerv(gl.GL_VIEWPORT, self._old_viewport_size)
 
-        # Bind the FBO
+        # Bind the FBO, and change the viewport to fit its texture.
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.id)  # Rendering off-screen
-
-        # Change the Viewport to the texture's viewport size, to make it full-screen.
         gl.glViewport(0, 0, self.texture.width, self.texture.height)
 
     def unbind(self):
@@ -57,18 +55,3 @@ class FBO(object):
 
         # Restore the old viewport size
         gl.glViewport(*self._old_viewport_size)
-
-    @classmethod
-    def create_color_fbo(cls, **kwargs):
-        color_tex = tex.Texture(**kwargs)
-        return cls(color_tex)
-
-    @classmethod
-    def create_shadow_fbo(cls, **kwargs):
-        depth_tex = tex.DepthTexture(**kwargs)
-        return cls(depth_tex)
-
-    @classmethod
-    def create_cube_fbo(cls, **kwargs):
-        cube_tex = tex.TextureCube(**kwargs)
-        return cls(cube_tex)
