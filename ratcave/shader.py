@@ -78,8 +78,9 @@ class Uniform(object):
 #
 
 
-class Shader(ugl.BindingContextMixin):
+class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
 
+    bindfun = glUseProgram
     uniformf_funs = (glUniform1f, glUniform2f, glUniform3f, glUniform4f)
     uniformi_funs = (glUniform1i, glUniform2i, glUniform3i, glUniform4i)
 
@@ -142,15 +143,6 @@ class Shader(ugl.BindingContextMixin):
             buffer = create_string_buffer(link_status.value)  # create a buffer for the log
             glGetProgramInfoLog(self.id, link_status, None, buffer)  # retrieve the log text
             print(buffer.value)  # print the log to the console
- 
-    def bind(self):
-        """Bind the program."""
-        glUseProgram(self.id)
-
-    @staticmethod
-    def unbind():
-        """Unbind any currently-bound program."""
-        glUseProgram(0)
 
     def uniformf(self, name, *vals):
         """Send data as a float uniform, named 'name'.  Shader must be already bound."""

@@ -63,7 +63,20 @@ class BindTargetMixin(object):
         cls.bindfun(cls.target, 0)
 
 
-class VAO(BindingContextMixin):
+class BindNoTargetMixin(BindTargetMixin):
+    """Same as BindTargetMixin, but for bind functions that don't have a specified target."""
+
+    def bind(self):
+        self.bindfun(self.id)
+
+    @classmethod
+    def unbind(cls):
+        cls.bindfun(0)
+
+
+class VAO(BindingContextMixin, BindNoTargetMixin):
+
+    bindfun = gl.glBindVertexArray
 
     def __init__(self, *ndarrays):
         """
@@ -86,13 +99,6 @@ class VAO(BindingContextMixin):
             for idx, ndarray in enumerate(ndarrays):
                 self._buffer_data(idx, ndarray)
 
-    def bind(self):
-        """Bind the VAO (necessary before calling glDrawArrays)."""
-        gl.glBindVertexArray(self.id)
-
-    def unbind(self):
-        gl.glBindVertexArray(0)
-
     def _buffer_data(self, el, ndarray):
         """Load data into a vbo"""
         with VBO() as vbo:
@@ -101,26 +107,14 @@ class VAO(BindingContextMixin):
             gl.glEnableVertexAttribArray(el)
 
 
-class VBO(object):
+class VBO(BindingContextMixin, BindTargetMixin):
 
     target = gl.GL_ARRAY_BUFFER
+    bindfun = gl.glBindBuffer
 
     def __init__(self):
 
         self.id = create_opengl_object(gl.glGenBuffers, 1)
-
-    def __enter__(self):
-        self.bind()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.unbind()
-
-    def bind(self):
-        gl.glBindBuffer(self.target, self.id)
-
-    def unbind(self):
-        gl.glBindBuffer(self.target, 0)
 
     def buffer_data(self, ndarray):
         """Sends 2D array (rows for each vertex, column for each coordinate) to the currently-bound VBO"""
