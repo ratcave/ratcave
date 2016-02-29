@@ -35,6 +35,16 @@ def vec(floatlist, newtype='float'):
         elif 'int' in newtype:
             return (gl.GLuint * len(floatlist))(*list(floatlist))
 
+class GlGenMixin(object):
+
+    genfun = None
+
+    def __init__(self, *args, **kwargs):
+        super(GlGenMixin, self).__init__(*args, **kwargs)
+        self.id = create_opengl_object(self.genfun)
+
+
+
 class BindingContextMixin(object):
     """Mixin that calls self.bind() and self.unbind() when used in a context manager."""
 
@@ -74,11 +84,12 @@ class BindNoTargetMixin(BindTargetMixin):
         cls.bindfun(0)
 
 
-class VAO(BindingContextMixin, BindNoTargetMixin):
+class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
 
+    genfun = gl.glGenVertexArrays
     bindfun = gl.glBindVertexArray
 
-    def __init__(self, *ndarrays):
+    def __init__(self, *ndarrays, **kwargs):
         """
         OpenGL Vertex Array Object.  Sends array data in a Vertex Buffer to the GPU.  This data can be accessed in
         the vertex shader using the 'layout(location = N)' header line, where N = the index of the array given the VAO.
@@ -92,7 +103,8 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
         """
 
         # Create Vertex Array Object and Bind it
-        self.id = create_opengl_object(gl.glGenVertexArrays)
+        super(VAO, self).__init__(**kwargs)
+        # self.id = create_opengl_object(gl.glGenVertexArrays)
 
         # Create Vertex Buffer Objects and Upload data to them (Vertices)
         with self:
@@ -107,14 +119,14 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
             gl.glEnableVertexAttribArray(el)
 
 
-class VBO(BindingContextMixin, BindTargetMixin):
+class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
 
+    genfun = gl.glGenBuffers
     target = gl.GL_ARRAY_BUFFER
     bindfun = gl.glBindBuffer
 
-    def __init__(self):
-
-        self.id = create_opengl_object(gl.glGenBuffers, 1)
+    def __init__(self, *args, **kwargs):
+        super(VBO, self).__init__(*args, **kwargs)
 
     def buffer_data(self, ndarray):
         """Sends 2D array (rows for each vertex, column for each coordinate) to the currently-bound VBO"""

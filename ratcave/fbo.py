@@ -5,14 +5,15 @@ from . import texture as tex
 import pyglet.gl as gl
 
 
-class FBO(ugl.BindingContextMixin):
+class FBO(ugl.GlGenMixin, ugl.BindingContextMixin):
 
+    genfun = gl.glGenFramebuffersEXT
     target = gl.GL_FRAMEBUFFER_EXT
 
-    def __init__(self, texture):
+    def __init__(self, texture, *args, **kwargs):
         """A Framebuffer object, which when bound redirects draws to its texture.  This is useful for deferred rendering."""
 
-        self.id = ugl.create_opengl_object(gl.glGenFramebuffersEXT)
+        super(FBO, self).__init__(*args, **kwargs)
         self._old_viewport_size = (gl.GLint * 4)()
         self.texture = texture
         self.renderbuffer = tex.RenderBuffer(texture.width, texture.height) if not isinstance(texture, tex.DepthTexture) else None
