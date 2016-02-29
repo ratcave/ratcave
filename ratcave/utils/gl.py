@@ -105,6 +105,7 @@ class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
         # Create Vertex Array Object and Bind it
         super(VAO, self).__init__(**kwargs)
         self.n_verts = None
+        self.element_array_buffer = None
 
     def assign_vertex_attrib_location(self, vbo, location):
         """Load data into a vbo"""
@@ -119,7 +120,12 @@ class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
             gl.glEnableVertexAttribArray(location)
 
     def draw(self, mode=gl.GL_TRIANGLES):
-        gl.glDrawArrays(mode, 0, self.n_verts)
+        if self.element_array_buffer:
+            with self.element_array_buffer as el_array:
+                gl.glDrawElements(mode, el_array.ndarray.shape[0],
+                                  gl.GL_UNSIGNED_INT, 0)
+        else:
+            gl.glDrawArrays(mode, 0, self.n_verts)
 
 
 class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
@@ -136,6 +142,9 @@ class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
                         vec(self.ndarray.ravel()), gl.GL_STATIC_DRAW)
 
 
+class ElementArrayBuffer(VBO):
+
+    target = gl.GL_ELEMENT_ARRAY_BUFFER
 
 def setpriority(pid=None,priority=1):
     

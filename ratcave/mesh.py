@@ -29,7 +29,7 @@ class MeshData(object):
         """
         # CPU Data
         self.vertices = np.array(vertices, dtype=float).reshape((-1, 3))
-        self.face_indices = np.array(face_indices, dtype=int)
+        self.face_indices = np.array(face_indices, dtype=np.uint32)
         self.normals = np.array(normals, dtype=float).reshape((-1, 3))
         self.texcoords = np.array(texcoords, dtype=float).reshape((-1, 2))
 
