@@ -138,8 +138,7 @@ class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
         super(VBO, self).__init__(*args, **kwargs)
         self.ndarray = ndarray
         with self:
-            gl.glBufferData(self.target, 4 * self.ndarray.size,
-                        vec(self.ndarray.ravel()), gl.GL_STATIC_DRAW)
+            gl.glBufferData(self.target, 4 * self.ndarray.size, vec(self.ndarray.ravel()), gl.GL_STATIC_DRAW)
 
 
 class ElementArrayBuffer(VBO):

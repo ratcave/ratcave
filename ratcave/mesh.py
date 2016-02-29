@@ -34,6 +34,26 @@ class MeshData(object):
         self.texcoords = np.array(texcoords, dtype=float).reshape((-1, 2))
 
 
+        self.is_loaded = False
+        self.vao = None
+
+    def load(self):
+        self.vao = ugl.VAO()
+        with self.vao:
+            self.vao.assign_vertex_attrib_location(ugl.VBO(self.vertices), 0)
+            self.vao.assign_vertex_attrib_location(ugl.VBO(self.normals), 1)
+            self.vao.assign_vertex_attrib_location(ugl.VBO(self.texcoords), 2)
+        self.is_loaded = True
+
+    def draw(self, mode):
+        if not self.is_loaded:
+            self.load()
+
+        with self.vao as vao:
+            vao.draw(mode)
+
+
+
 class Material(object):
 
     def __init__(self, diffuse=[.8, .8, .8], spec_weight=0., specular=[0., 0., 0.],
@@ -67,7 +87,7 @@ class MeshLoader(object):
                     val = [val]
                 uniforms.append(shader.Uniform(key, *val))
 
-        return Mesh(self.name, self.meshdata.vertices, self.meshdata.normals, self.meshdata.texcoords, uniforms=uniforms, **kwargs)
+        return Mesh(self.name, self.meshdata, uniforms=uniforms, **kwargs)
 
 
 class EmptyMesh(mixins.PhysicalNode):
@@ -83,7 +103,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, name, vertices, normals, texcoords, uniforms=list(), drawstyle='fill', visible=True, point_size=4,
+    def __init__(self, name, meshdata, uniforms=list(), drawstyle='fill', visible=True, point_size=4,
                  **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -110,14 +130,11 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
         self.name = name
 
-        # Mesh Data
-        self.vertices = np.array(vertices, dtype=float)
-        self.normals = np.array(normals, dtype=float)
-        self.texcoords = np.array(texcoords, dtype=float)
+        self.data = meshdata
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
-        vertex_mean = np.mean(self.vertices, axis=0)
-        self.vertices -= vertex_mean
+        vertex_mean = np.mean(self.data.vertices, axis=0)
+        self.data.vertices -= vertex_mean
         self.position = vertex_mean if 'position' not in kwargs else kwargs['position']
 
         #: :py:class:`.Physical`, World Mesh coordinates
@@ -136,13 +153,6 @@ class Mesh(EmptyMesh, mixins.Picklable):
     def _draw(self, shader=None, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
 
-        if not self.vao:
-            self.vao = ugl.VAO()
-            with self.vao:
-                self.vao.assign_vertex_attrib_location(ugl.VBO(self.vertices),0)
-                self.vao.assign_vertex_attrib_location(ugl.VBO(self.normals),1)
-                self.vao.assign_vertex_attrib_location(ugl.VBO(self.texcoords),2)
-
         self.update()
 
         if self.visible:
@@ -160,8 +170,10 @@ class Mesh(EmptyMesh, mixins.Picklable):
                 gl.glPointSize(int(self.point_size))
 
             # Bind the VAO and Texture, and draw.
-            with self.vao as vao, self.texture as texture:
+            with self.texture as texture:
                 for uniform in self.texture.uniforms:
                     uniform.send_to(shader)
-                vao.draw(Mesh.drawstyle[self.drawstyle])
+                self.data.draw(Mesh.drawstyle[self.drawstyle])
+
+
 
