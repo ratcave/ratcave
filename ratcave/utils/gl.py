@@ -113,9 +113,9 @@ class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
 
     def _buffer_data(self, el, ndarray):
         """Load data into a vbo"""
-        with VBO() as vbo:
-            vbo.buffer_data(ndarray)
-            gl.glVertexAttribPointer(el, ndarray.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+        with VBO(ndarray) as vbo:
+            vbo.buffer_data()
+            gl.glVertexAttribPointer(el, vbo.ndarray.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
             gl.glEnableVertexAttribArray(el)
 
 
@@ -125,13 +125,15 @@ class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
     target = gl.GL_ARRAY_BUFFER
     bindfun = gl.glBindBuffer
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, ndarray, *args, **kwargs):
         super(VBO, self).__init__(*args, **kwargs)
+        self.ndarray = ndarray
 
-    def buffer_data(self, ndarray):
+
+    def buffer_data(self):
         """Sends 2D array (rows for each vertex, column for each coordinate) to the currently-bound VBO"""
-        gl.glBufferData(self.target, 4 * ndarray.size,
-                        vec(ndarray.ravel()), gl.GL_STATIC_DRAW)
+        gl.glBufferData(self.target, 4 * self. ndarray.size,
+                        vec(self.ndarray.ravel()), gl.GL_STATIC_DRAW)
 
 
 
