@@ -89,7 +89,7 @@ class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
     genfun = gl.glGenVertexArrays
     bindfun = gl.glBindVertexArray
 
-    def __init__(self, *ndarrays, **kwargs):
+    def __init__(self, **kwargs):
         """
         OpenGL Vertex Array Object.  Sends array data in a Vertex Buffer to the GPU.  This data can be accessed in
         the vertex shader using the 'layout(location = N)' header line, where N = the index of the array given the VAO.
@@ -104,19 +104,22 @@ class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
 
         # Create Vertex Array Object and Bind it
         super(VAO, self).__init__(**kwargs)
-        # self.id = create_opengl_object(gl.glGenVertexArrays)
+        self.n_verts = None
 
-        # Create Vertex Buffer Objects and Upload data to them (Vertices)
-        with self:
-            for idx, ndarray in enumerate(ndarrays):
-                self._buffer_data(ndarray, idx)
-
-    def _buffer_data(self, ndarray, location):
+    def assign_vertex_attrib_location(self, vbo, location):
         """Load data into a vbo"""
-        with VBO(ndarray) as vbo:
+        with vbo:
+            if self.n_verts:
+                assert vbo.ndarray.shape[0] == self.n_verts
+            else:
+                self.n_verts = vbo.ndarray.shape[0]
+
             # vbo.buffer_data()
             gl.glVertexAttribPointer(location, vbo.ndarray.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
             gl.glEnableVertexAttribArray(location)
+
+    def draw(self, mode=gl.GL_TRIANGLES):
+        gl.glDrawArrays(mode, 0, self.n_verts)
 
 
 class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):

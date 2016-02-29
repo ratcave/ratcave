@@ -137,7 +137,11 @@ class Mesh(EmptyMesh, mixins.Picklable):
         super(Mesh, self)._draw(*args, **kwargs)
 
         if not self.vao:
-            self.vao = ugl.VAO(self.vertices, self.normals, self.texcoords)
+            self.vao = ugl.VAO()
+            with self.vao:
+                self.vao.assign_vertex_attrib_location(ugl.VBO(self.vertices),0)
+                self.vao.assign_vertex_attrib_location(ugl.VBO(self.normals),1)
+                self.vao.assign_vertex_attrib_location(ugl.VBO(self.texcoords),2)
 
         self.update()
 
@@ -156,8 +160,8 @@ class Mesh(EmptyMesh, mixins.Picklable):
                 gl.glPointSize(int(self.point_size))
 
             # Bind the VAO and Texture, and draw.
-            with self.vao, self.texture as texture:
+            with self.vao as vao, self.texture as texture:
                 for uniform in self.texture.uniforms:
                     uniform.send_to(shader)
-                gl.glDrawArrays(Mesh.drawstyle[self.drawstyle], 0, self.vertices.size)
+                vao.draw(Mesh.drawstyle[self.drawstyle])
 
