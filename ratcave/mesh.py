@@ -43,9 +43,8 @@ class MeshData(object):
         else:
             self.glbuffer = ugl.VAO()
         with self.glbuffer:
-            self.glbuffer.assign_vertex_attrib_location(ugl.VBO(self.vertices), 0)
-            self.glbuffer.assign_vertex_attrib_location(ugl.VBO(self.normals), 1)
-            self.glbuffer.assign_vertex_attrib_location(ugl.VBO(self.texcoords), 2)
+            for loc, verts in enumerate([self.vertices, self.normals, self.texcoords]):
+                self.glbuffer.assign_vertex_attrib_location(ugl.VBO(verts), loc)
         self.is_loaded = True
 
     def draw(self, mode):
