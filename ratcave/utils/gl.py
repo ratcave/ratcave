@@ -105,7 +105,7 @@ class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
         # Create Vertex Array Object and Bind it
         super(VAO, self).__init__(**kwargs)
         self.n_verts = None
-        self.element_array_buffer = None
+
 
     def assign_vertex_attrib_location(self, vbo, location):
         """Load data into a vbo"""
@@ -120,13 +120,20 @@ class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
             gl.glEnableVertexAttribArray(location)
 
     def draw(self, mode=gl.GL_TRIANGLES):
-        if self.element_array_buffer:
-            with self.element_array_buffer as el_array:
-                gl.glDrawElements(mode, el_array.ndarray.shape[0],
-                                  gl.GL_UNSIGNED_INT, 0)
-        else:
-            gl.glDrawArrays(mode, 0, self.n_verts)
+        gl.glDrawArrays(mode, 0, self.n_verts)
 
+
+class VAOIndexed(VAO):
+
+    def __init__(self, *args, **kwargs):
+        super(VAOIndexed, self).__init__(*args, **kwargs)
+        self.element_array_buffer = None
+
+    def draw(self, mode=gl.GL_TRIANGLES):
+        # gl.glDrawArrays(mode, 0, 360) #self.n_verts)
+        with self.element_array_buffer as el_array:
+            gl.glDrawElements(mode, el_array.ndarray.shape[0],
+                              gl.GL_UNSIGNED_INT, 0)
 
 class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
 
@@ -137,6 +144,9 @@ class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
     def __init__(self, ndarray, *args, **kwargs):
         super(VBO, self).__init__(*args, **kwargs)
         self.ndarray = ndarray
+        self._buffer_data()
+
+    def _buffer_data(self):
         with self:
             gl.glBufferData(self.target, 4 * self.ndarray.size, vec(self.ndarray.ravel()), gl.GL_STATIC_DRAW)
 
@@ -144,6 +154,14 @@ class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
 class ElementArrayBuffer(VBO):
 
     target = gl.GL_ELEMENT_ARRAY_BUFFER
+
+    def __init__(self, *args, **kwargs):
+        super(ElementArrayBuffer, self).__init__(*args, **kwargs)
+
+    def _buffer_data(self):
+        with self:
+            gl.glBufferData(self.target, 4 * self.ndarray.size, vec(self.ndarray.ravel(), 'int'), gl.GL_STATIC_DRAW)
+
 
 def setpriority(pid=None,priority=1):
     

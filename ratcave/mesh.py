@@ -14,7 +14,7 @@ from . import mixins, shader, texture
 
 class MeshData(object):
 
-    def __init__(self, vertices, face_indices, normals, texcoords):
+    def __init__(self, vertices, face_indices, normals, texcoords=None):
         """
         Collects all vertex data for rendering in 3D graphics packages.
 
@@ -29,27 +29,30 @@ class MeshData(object):
         """
         # CPU Data
         self.vertices = np.array(vertices, dtype=float).reshape((-1, 3))
-        self.face_indices = np.array(face_indices, dtype=np.uint32)
+        self.face_indices = np.array(face_indices, dtype=np.uint16).reshape((-1, 1))
         self.normals = np.array(normals, dtype=float).reshape((-1, 3))
         self.texcoords = np.array(texcoords, dtype=float).reshape((-1, 2))
 
-
         self.is_loaded = False
-        self.vao = None
+        self.glbuffer = False
 
     def load(self):
-        self.vao = ugl.VAO()
-        with self.vao:
-            self.vao.assign_vertex_attrib_location(ugl.VBO(self.vertices), 0)
-            self.vao.assign_vertex_attrib_location(ugl.VBO(self.normals), 1)
-            self.vao.assign_vertex_attrib_location(ugl.VBO(self.texcoords), 2)
+        if isinstance(self.face_indices, np.ndarray):
+            self.glbuffer = ugl.VAOIndexed()
+            self.glbuffer.element_array_buffer = ugl.ElementArrayBuffer(self.face_indices)
+        else:
+            self.glbuffer = ugl.VAO()
+        with self.glbuffer:
+            self.glbuffer.assign_vertex_attrib_location(ugl.VBO(self.vertices), 0)
+            self.glbuffer.assign_vertex_attrib_location(ugl.VBO(self.normals), 1)
+            self.glbuffer.assign_vertex_attrib_location(ugl.VBO(self.texcoords), 2)
         self.is_loaded = True
 
     def draw(self, mode):
         if not self.is_loaded:
             self.load()
 
-        with self.vao as vao:
+        with self.glbuffer as vao:
             vao.draw(mode)
 
 
