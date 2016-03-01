@@ -37,11 +37,7 @@ class MeshData(object):
         self.glbuffer = False
 
     def load(self):
-        if isinstance(self.face_indices, np.ndarray):
-            self.glbuffer = ugl.VAOIndexed()
-            self.glbuffer.element_array_buffer = ugl.ElementArrayBuffer(self.face_indices)
-        else:
-            self.glbuffer = ugl.VAO()
+        self.glbuffer = ugl.VAO(indices=self.face_indices)
         with self.glbuffer:
             for loc, verts in enumerate([self.vertices, self.normals, self.texcoords]):
                 self.glbuffer.assign_vertex_attrib_location(ugl.VBO(verts), loc)
