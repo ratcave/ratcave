@@ -32,11 +32,14 @@ class MeshData(object):
         self.face_indices = np.array(face_indices, dtype=np.uint16).reshape((-1, 1))
         self.normals = np.array(normals, dtype=float).reshape((-1, 3))
         self.texcoords = np.array(texcoords, dtype=float).reshape((-1, 2))
+        assert self.vertices.shape[0] == self.normals.shape[0]
+        assert self.vertices.shape[0] == self.texcoords.shape[0]
 
         self.is_loaded = False
         self.glbuffer = False
 
     def load(self):
+        self.reindex()
         self.glbuffer = ugl.VAO(indices=self.face_indices)
         with self.glbuffer:
             for loc, verts in enumerate([self.vertices, self.normals, self.texcoords]):
@@ -50,6 +53,24 @@ class MeshData(object):
         with self.glbuffer as vao:
             vao.draw(mode)
 
+    def reindex(self):
+
+        def to_joined_struct_array_view(*arrays):
+            """Concatenates (columnwise) each array given as input, then returns it as a structured array."""
+            array = np.hstack(arrays)
+            dtype = array.dtype.descr * array.shape[1]
+            return array.view(dtype)
+
+        all_vert_combs = to_joined_struct_array_view(self.vertices, self.normals, self.texcoords)
+        unique_combs = np.unique(all_vert_combs)
+        print('Reindexing from {} vertices down to {} vertices...'.format(all_vert_combs.shape[0], unique_combs.shape[0]))
+        self.face_indices = np.array([np.where(vert == unique_combs)[0][0] for vert in all_vert_combs],
+                                     dtype=np.uint32).reshape((-1, 1))
+
+        unique_combs_array = unique_combs.view(float).reshape((unique_combs.shape[0], -1))
+        self.vertices = unique_combs_array[:, :3]
+        self.normals = unique_combs_array[:, 3:6]
+        self.texcoords = unique_combs_array[:, 6:]
 
 
 class Material(object):
