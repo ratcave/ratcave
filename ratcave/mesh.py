@@ -63,15 +63,14 @@ class MeshData(object):
 
         all_vert_combs = to_joined_struct_array_view(self.vertices, self.normals, self.texcoords)
         unique_combs = np.unique(all_vert_combs)
-        print('Reindexing from {} vertices down to {} vertices...'.format(all_vert_combs.shape[0], unique_combs.shape[0]))
-        self.face_indices = np.array([np.where(vert == unique_combs)[0][0] for vert in all_vert_combs],
-                                     dtype=np.uint32).reshape((-1, 1))
+        unique_vert_combs_sorted = np.sort(unique_combs)
 
+        self.face_indices = np.array([np.searchsorted(unique_vert_combs_sorted, vert) for vert in all_vert_combs],
+                                     dtype=np.uint32).reshape((-1, 1))
         unique_combs_array = unique_combs.view(float).reshape((unique_combs.shape[0], -1))
         self.vertices = unique_combs_array[:, :3]
         self.normals = unique_combs_array[:, 3:6]
         self.texcoords = unique_combs_array[:, 6:]
-
 
 class Material(object):
 
