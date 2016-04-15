@@ -113,8 +113,13 @@ class EmptyMesh(mixins.PhysicalNode):
     def __init__(self, *args, **kwargs):
         super(EmptyMesh, self).__init__(*args, **kwargs)
 
+        self.is_updated = False
+
     def _draw(self, shader=None):
-        self.update()
+        # TODO not clear why an update is needed here
+        if not self.is_updated:
+            self.update()
+            self.is_updated = True
 
 
 class Mesh(EmptyMesh, mixins.Picklable):
@@ -171,8 +176,6 @@ class Mesh(EmptyMesh, mixins.Picklable):
     def _draw(self, shader=None, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
 
-        self.update()
-
         if self.visible:
 
             # Change Material to Mesh's
@@ -192,6 +195,3 @@ class Mesh(EmptyMesh, mixins.Picklable):
                 for uniform in self.texture.uniforms:
                     uniform.send_to(shader)
                 self.data.draw(Mesh.drawstyle[self.drawstyle])
-
-
-
