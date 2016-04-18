@@ -113,13 +113,8 @@ class EmptyMesh(mixins.PhysicalNode):
     def __init__(self, *args, **kwargs):
         super(EmptyMesh, self).__init__(*args, **kwargs)
 
-        self.is_updated = False
-
     def _draw(self, shader=None):
-        # TODO not clear why an update is needed here
-        if not self.is_updated:
-            self.update()
-            self.is_updated = True
+        pass
 
 
 class Mesh(EmptyMesh, mixins.Picklable):
@@ -149,11 +144,11 @@ class Mesh(EmptyMesh, mixins.Picklable):
         Returns:
             Mesh instance
         """
+        self.data = meshdata
+
         super(Mesh, self).__init__(**kwargs)
 
         self.name = name
-
-        self.data = meshdata
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.data.vertices, axis=0)
@@ -173,8 +168,31 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.visible = visible
         self.vao = None
 
+        self.is_updated = False
+
+        # rectangular boundaries
+        self.min_xyz = (0, 0, 0)
+        self.max_xyz = (0, 0, 0)
+
+    def update(self):
+        super(Mesh, self).update()
+
+        vertices_local = np.vstack([self.data.vertices.T, np.ones(len(self.data.vertices))])
+        vertices_global = np.dot(self.model_matrix_global, vertices_local).T
+
+        # if needed, one can store global vertex coordinates
+        vg = vertices_global
+
+        self.min_xyz = (vg[:, 0].min(), vg[:, 1].min(), vg[:, 2].min())
+        self.max_xyz = (vg[:, 0].max(), vg[:, 1].max(), vg[:, 2].max())
+
     def _draw(self, shader=None, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
+
+        # TODO not clear why an update is needed here
+        if not self.is_updated:
+            self.update()
+            self.is_updated = True
 
         if self.visible:
 
