@@ -145,7 +145,6 @@ class PhysicalNode(Physical, SceneNode):
 
     @property
     def position_global(self):
-        self.update()
         return tuple(self.model_matrix_global[:3, -1].tolist())
 
 

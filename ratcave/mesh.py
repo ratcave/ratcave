@@ -113,6 +113,10 @@ class EmptyMesh(mixins.PhysicalNode):
     def __init__(self, *args, **kwargs):
         super(EmptyMesh, self).__init__(*args, **kwargs)
 
+        # rectangular boundaries
+        self.min_xyz = (0, 0, 0)
+        self.max_xyz = (0, 0, 0)
+
     def _draw(self, shader=None):
         pass
 
@@ -170,9 +174,11 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
         self.is_updated = False
 
-        # rectangular boundaries
-        self.min_xyz = (0, 0, 0)
-        self.max_xyz = (0, 0, 0)
+    def __str__(self):
+        return "%s(%d) at %s" % (self.name, len(self.children), self.position_global)
+
+    def __repr__(self):
+        return str(self)
 
     def update(self):
         super(Mesh, self).update()
