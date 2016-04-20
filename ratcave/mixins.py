@@ -81,6 +81,10 @@ class Physical(object):
         self.normal_matrix = np.zeros((4,4))
         self.view_matrix = np.zeros((4,4))
 
+        # rectangular boundaries
+        self.min_xyz = (0, 0, 0)
+        self.max_xyz = (0, 0, 0)
+
         self.update()
 
     def __setattr__(self, key, value):

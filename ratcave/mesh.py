@@ -113,10 +113,6 @@ class EmptyMesh(mixins.PhysicalNode):
     def __init__(self, *args, **kwargs):
         super(EmptyMesh, self).__init__(*args, **kwargs)
 
-        # rectangular boundaries
-        self.min_xyz = (0, 0, 0)
-        self.max_xyz = (0, 0, 0)
-
     def _draw(self, shader=None):
         pass
 
