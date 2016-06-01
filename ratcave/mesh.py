@@ -185,8 +185,8 @@ class Mesh(EmptyMesh, mixins.Picklable):
         # if needed, one can store global vertex coordinates
         vg = vertices_global
 
-        self.min_xyz = (vg[:, 0].min(), vg[:, 1].min(), vg[:, 2].min())
-        self.max_xyz = (vg[:, 0].max(), vg[:, 1].max(), vg[:, 2].max())
+        self.min_xyz = np.array((vg[:, 0].min(), vg[:, 1].min(), vg[:, 2].min()))
+        self.max_xyz = np.array((vg[:, 0].max(), vg[:, 1].max(), vg[:, 2].max()))
 
     def _draw(self, shader=None, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)

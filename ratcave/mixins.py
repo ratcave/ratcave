@@ -82,8 +82,8 @@ class Physical(object):
         self.view_matrix = np.zeros((4,4))
 
         # rectangular boundaries
-        self.min_xyz = (0, 0, 0)
-        self.max_xyz = (0, 0, 0)
+        self.min_xyz = np.array((0, 0, 0))
+        self.max_xyz = np.array((0, 0, 0))
 
         self.update()
 
