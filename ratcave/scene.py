@@ -5,6 +5,7 @@ import pyglet.gl as gl
 
 from . import mixins, Camera, Light, resources, mesh
 from .utils import gl as glutils
+from .texture import TextureCube
 
 
 class Scene(object):
@@ -67,6 +68,7 @@ class Scene(object):
         """For dynamic environment mapping.  Draws the scene 6 times, once to each face of a cube texture."""
         # TODO: Solve provlem: FBO should be bound before glFramebufferTexture2DEXT is called.  How to solve?
         assert self.camera.aspect == 1. and self.camera.fov_y == 90
+        assert type(cubetexture) == TextureCube, "Must render to TextureCube"
 
         for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
             self.camera.rotation = rotation
