@@ -66,14 +66,13 @@ class UniformCollection(object):
         elif type(value) != Uniform:
             # try:
             # if key in self._uniforms:
-            self._uniforms[key].value[:] = value
-
-            else:
-                try:
-                    value = Uniform(key, *value)
-                    self._uniforms[key] = value
-                except:
-                    raise TypeError("Attempt to add uniform {} to UniformCollection failed.".format(key))
+            try:
+                self._uniforms[key].value[:] = value
+            except KeyError:
+                value = Uniform(key, *value)
+                self._uniforms[key] = value
+            except:
+                raise TypeError("Attempt to add uniform {} to UniformCollection failed.".format(key))
 
 
 
