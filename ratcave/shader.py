@@ -58,8 +58,6 @@ class UniformCollection(object):
 
     def __setitem__(self, key, value):
 
-
-
         if type(value) == Uniform:
             self._uniforms[key] = value
 
@@ -73,8 +71,6 @@ class UniformCollection(object):
                 self._uniforms[key] = value
             except:
                 raise TypeError("Attempt to add uniform {} to UniformCollection failed.".format(key))
-
-
 
     def __getitem__(self, key):
         return self._uniforms[key]
