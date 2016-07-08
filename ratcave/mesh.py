@@ -97,13 +97,13 @@ class MeshLoader(object):
         from collections import Iterable
 
         """Construct a Mesh object"""
-        uniforms = []
+        uniforms = shader.UniformCollection()
         if self.material:
             for key, val in list(self.material.__dict__.items()):
                 if not isinstance(val, Iterable):
                     val = int(val) if isinstance(val, bool) else val
                     val = [val]
-                uniforms.append(shader.Uniform(key, *val))
+                uniforms[key] = shader.Uniform(key, *val)
 
         return Mesh(self.name, self.meshdata, uniforms=uniforms, **kwargs)
 
@@ -121,7 +121,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, name, meshdata, uniforms=list(), drawstyle='fill', visible=True, point_size=4,
+    def __init__(self, name, meshdata, uniforms=shader.UniformCollection(), drawstyle='fill', visible=True, point_size=4,
                  **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -157,7 +157,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
         #: :py:class:`.Physical`, World Mesh coordinates
         #: Local Mesh coordinates (Physical type)
-        self.uniforms = uniforms
+        self.uniforms = uniforms if type(uniforms) == shader.UniformCollection else shader.UniformCollection(uniforms)
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         self.texture = texture.BaseTexture()
@@ -176,8 +176,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         if self.visible:
 
             # Change Material to Mesh's
-            for uniform in self.uniforms:
-                uniform.send_to(shader)
+            self.uniforms.send_to(shader)
 
             # Send Model and Normal Matrix to shader.
             shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel())
@@ -189,8 +188,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
             # Bind the VAO and Texture, and draw.
             with self.texture as texture:
-                for uniform in self.texture.uniforms:
-                    uniform.send_to(shader)
+                self.texture.uniforms.send_to(shader)
                 self.data.draw(Mesh.drawstyle[self.drawstyle])
 
 

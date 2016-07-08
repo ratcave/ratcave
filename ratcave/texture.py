@@ -11,11 +11,11 @@ class BaseTexture(object):
     cube_name = 'CubeMap'
 
     def __init__(self):
-        self.uniforms = [
-            shader.Uniform(self.tex_name, 0),
-            shader.Uniform(self.cube_name, 0),
-            shader.Uniform('textype', self.int_flag)
-        ]
+        self.uniforms = shader.UniformCollection({
+            self.tex_name: shader.Uniform(self.tex_name, 0),
+            self.cube_name: shader.Uniform(self.cube_name, 0),
+            'textype': shader.Uniform('textype', self.int_flag),
+        })
 
     def __enter__(self):
         pass
@@ -39,11 +39,11 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
 
         self._slot = self._all_slots.pop()
-        self.uniforms = [
-            shader.Uniform(self.tex_name, self._slot),
-            shader.Uniform(self.cube_name, 0),
-            shader.Uniform('textype', self.int_flag)
-            ]
+        self.uniforms = shader.UniformCollection({
+            self.tex_name: shader.Uniform(self.tex_name, self._slot),
+            self.cube_name: shader.Uniform(self.cube_name, 0),
+            'textype': shader.Uniform('textype', self.int_flag),
+        })
 
         if id != None:
             self.id = id
@@ -111,11 +111,11 @@ class TextureCube(Texture):
         # TODO: check that width == height!
         super(TextureCube, self).__init__(*args, **kwargs)
 
-        self.uniforms = [
-            shader.Uniform(self.tex_name, 0),
-            shader.Uniform(self.cube_name, self._slot),
-            shader.Uniform('textype', self.int_flag)
-            ]
+        self.uniforms = shader.UniformCollection({
+            self.tex_name: shader.Uniform(self.tex_name, 0),
+            self.cube_name: shader.Uniform(self.cube_name, self._slot),
+            'textype': shader.Uniform('textype', self.int_flag),
+        })
 
     def _apply_filter_settings(self, *args, **kwargs):
         super(TextureCube, self)._apply_filter_settings()
