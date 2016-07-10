@@ -102,7 +102,7 @@ class Physical(object):
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
         self.model_matrix = utils.orienting.calculate_model_matrix(self.position, self.rotation, self.scale)
-        self.normal_matrix = np.linalg.inv(self.model_matrix.T)
+        self.normal_matrix = np.linalg.inv(self.model_matrix.T)  # which order is correct: t then i, or the reverse?
         self.view_matrix = utils.orienting.calculate_view_matrix(self.position, self.rotation)
 
 
