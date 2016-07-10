@@ -113,7 +113,7 @@ class EmptyMesh(mixins.PhysicalNode):
     def __init__(self, *args, **kwargs):
         super(EmptyMesh, self).__init__(*args, **kwargs)
 
-    def _draw(self, shader=None):
+    def _draw(self, shader=None, **kwargs):
         self.update()
 
 
@@ -168,7 +168,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.visible = visible
         self.vao = None
 
-    def _draw(self, shader=None, *args, **kwargs):
+    def _draw(self, shader=None, send_uniforms=True, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
 
         self.update()
@@ -176,11 +176,12 @@ class Mesh(EmptyMesh, mixins.Picklable):
         if self.visible:
 
             # Change Material to Mesh's
-            self.uniforms.send_to(shader)
+            if send_uniforms:
+                self.uniforms.send_to(shader)
 
-            # Send Model and Normal Matrix to shader.
-            shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel())
-            shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel())
+                # Send Model and Normal Matrix to shader.
+                shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel())
+                shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel())
 
             # Set Point Size, if drawing a point cloud
             if self.drawstyle == 'point':
@@ -188,7 +189,8 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
             # Bind the VAO and Texture, and draw.
             with self.texture as texture:
-                self.texture.uniforms.send_to(shader)
+                if send_uniforms:
+                    self.texture.uniforms.send_to(shader)
                 self.data.draw(Mesh.drawstyle[self.drawstyle])
 
 
