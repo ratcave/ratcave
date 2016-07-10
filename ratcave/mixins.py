@@ -75,10 +75,12 @@ class Physical(object):
         self.rot_x, self.rot_y, self.rot_z = rotation
         self._rot_matrix = None
         self.scale = scale
+
         self.model_matrix = np.zeros((4,4))
         self.normal_matrix = np.zeros((4,4))
         self.view_matrix = np.zeros((4,4))
 
+        self.__oldinfo = tuple()  # begin with empty tuple, so first draw is "changed"
         self.update()
 
     @property
@@ -99,11 +101,19 @@ class Physical(object):
     def rotation(self, value):
         self.rot_x, self.rot_y, self.rot_z = value
 
+    def __gen_info_summary(self):
+        return  self.position + self.rotation + (self.scale,)
+
+    def has_changed(self):
+        return self.__oldinfo != self.__gen_info_summary()
+
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
-        self.model_matrix = utils.orienting.calculate_model_matrix(self.position, self.rotation, self.scale)
-        self.normal_matrix = np.linalg.inv(self.model_matrix.T)  # which order is correct: t then i, or the reverse?
-        self.view_matrix = utils.orienting.calculate_view_matrix(self.position, self.rotation)
+        if self.has_changed():
+            self.model_matrix = utils.orienting.calculate_model_matrix(self.position, self.rotation, self.scale)
+            self.normal_matrix = np.linalg.inv(self.model_matrix.T)  # which order is correct: t then i, or the reverse?
+            self.view_matrix = utils.orienting.calculate_view_matrix(self.position, self.rotation)
+            self.__oldinfo = self.__gen_info_summary()
 
 
 class PhysicalNode(Physical, SceneNode):
