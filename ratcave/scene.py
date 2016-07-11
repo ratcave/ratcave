@@ -112,4 +112,4 @@ class Scene(object):
                     # shader.uniformi('grayscale', int(self.grayscale))
 
                     for mesh in self.root:
-                        mesh._draw(shader=shader, send_uniforms=not face)
+                        mesh._draw(shader=shader, send_uniforms=True)#not face)
