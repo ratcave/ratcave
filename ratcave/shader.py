@@ -69,8 +69,11 @@ class UniformCollection(object):
             try:
                 self._uniforms[key].value[:] = value
             except KeyError:
-                value = Uniform(key, *value)
-                self._uniforms[key] = value
+                try:
+                    iter(value)
+                    self._uniforms[key] = Uniform(key, *value)
+                except TypeError:
+                    self._uniforms[key] = Uniform(key, value)
             except:
                 raise TypeError("Attempt to add uniform {} to UniformCollection failed.".format(key))
 
