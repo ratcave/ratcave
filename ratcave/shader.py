@@ -15,6 +15,7 @@ class Uniform(object):
         assert len(vals) > 0 and len(vals) <= 4
         self._value = np.array(vals)  # A semi-mutable array, in that its length can't be modified.
         self.sendfun = Uniform._sendfuns[self._value.dtype.kind][len(self._value) - 1]
+        self._uniform_loc = None
 
     def __repr__(self):
         return '{}{}'.format(self.name, tuple(self.value.tolist()))
@@ -31,10 +32,13 @@ class Uniform(object):
 
     def send_to(self, shader):
         """Sends uniform to a currently-bound shader, returning its location (-1 means not sent)"""
-        # TODO glGetUniformLocation actually only needs to be called once, when the shader is linked.
-        uniform_loc = glGetUniformLocation(shader.id, self.name)
-        self.sendfun(uniform_loc, *self.value)
-        return uniform_loc
+        # glGetUniformLocation only needs to be called once, when the shader is linked.  Not a big performance boost, though.
+        if type(self._uniform_loc) == type(None):
+            self._uniform_loc = glGetUniformLocation(shader.id, self.name)
+
+        self.sendfun(self._uniform_loc, *self.value)
+        return self._uniform_loc
+
 
     @classmethod
     def from_dict(cls, data_dict):
@@ -47,27 +51,41 @@ class Uniform(object):
         return [cls(key, *val) for key, val in list(data_dict.items())]
 
 
-# class UniformCollection(object):
-#
-#     def __init__(self, **kwargs):
-#         for key, value in kwargs.items():
-#             setattr(self, key, Uniform(key, *value))
-#
-#     def __setattr__(self, name, value):
-#         if name not in self.__dict__:
-#             self.setclassattr(name, value)  # Create a class attribute
-#         else:
-#             self.__dict__[name].value[:] = value  # Insert new value into Uniform.value
-#
-#         self.__dict__[name] = value
-#
-#     @classmethod
-#     def setclassattr(cls, name, value):
-#         setattr(cls, name, value)  # Create a class attribute
-#
-#     def __getattr__(self, name):
-#         if name in self.__dict__:
-#             return self.__dict__[name].value
+class UniformCollection(object):
+
+    def __init__(self, uniform_dict={}):
+        self._uniforms = {}
+        for key, value in uniform_dict.items():
+            self[key] = value
+
+    def __setitem__(self, key, value):
+
+        if type(value) == Uniform:
+            self._uniforms[key] = value
+
+        elif type(value) != Uniform:
+            # try:
+            # if key in self._uniforms:
+            try:
+                self._uniforms[key].value[:] = value
+            except KeyError:
+                value = Uniform(key, *value)
+                self._uniforms[key] = value
+            except:
+                raise TypeError("Attempt to add uniform {} to UniformCollection failed.".format(key))
+
+    def __getitem__(self, key):
+        return self._uniforms[key]
+
+    def __str__(self):
+        return "UniformCollection: {}".format(self._uniforms)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def send_to(self, shader):
+        for uniform in self._uniforms.values():
+            uniform.send_to(shader)
 
 
 #

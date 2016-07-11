@@ -10,11 +10,8 @@ def calculate_model_matrix(position, rotation, scale):
     # Set Model and Normal Matrices
     trans_mat = transformations.translation_matrix(position)
 
-    rot_x_mat = transformations.rotation_matrix(np.radians(rotation[0]), [1, 0, 0])
-    rot_y_mat = transformations.rotation_matrix(np.radians(rotation[1]), [0, 1, 0])
-    rot_z_mat = transformations.rotation_matrix(np.radians(rotation[2]), [0, 0, 1])
-    rot_mat = np.dot(np.dot(rot_z_mat,rot_y_mat), rot_x_mat)
-
+    rotation = tuple(np.radians(coord) for coord in rotation)
+    rot_mat = transformations.euler_matrix(rotation[0], rotation[1], rotation[2])
     scale_mat = transformations.scale_matrix(scale)
 
     return np.dot(np.dot(trans_mat, rot_mat), scale_mat)
@@ -26,9 +23,7 @@ def calculate_view_matrix(position, rotation):
 
     trans_mat = transformations.translation_matrix((-position[0], -position[1], -position[2]))
 
-    rot_x_mat = transformations.rotation_matrix(np.radians(-rotation[0]), [1, 0, 0])
-    rot_y_mat = transformations.rotation_matrix(np.radians(-rotation[1]), [0, 1, 0])
-    rot_z_mat = transformations.rotation_matrix(np.radians(-rotation[2]), [0, 0, 1])
-    rot_mat = np.dot(np.dot(rot_x_mat, rot_y_mat), rot_z_mat)
+    rotation = tuple(-np.radians(coord) for coord in rotation)
+    rot_mat = transformations.euler_matrix(rotation[0], rotation[1], rotation[2], 'rxyz')
 
     return np.dot(rot_mat, trans_mat)

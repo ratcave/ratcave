@@ -97,13 +97,13 @@ class MeshLoader(object):
         from collections import Iterable
 
         """Construct a Mesh object"""
-        uniforms = []
+        uniforms = shader.UniformCollection()
         if self.material:
             for key, val in list(self.material.__dict__.items()):
                 if not isinstance(val, Iterable):
                     val = int(val) if isinstance(val, bool) else val
                     val = [val]
-                uniforms.append(shader.Uniform(key, *val))
+                uniforms[key] = shader.Uniform(key, *val)
 
         return Mesh(self.name, self.meshdata, uniforms=uniforms, **kwargs)
 
@@ -113,7 +113,7 @@ class EmptyMesh(mixins.PhysicalNode):
     def __init__(self, *args, **kwargs):
         super(EmptyMesh, self).__init__(*args, **kwargs)
 
-    def _draw(self, shader=None):
+    def _draw(self, shader=None, **kwargs):
         pass
 
 
@@ -121,7 +121,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, name, meshdata, uniforms=list(), drawstyle='fill', visible=True, point_size=4,
+    def __init__(self, name, meshdata, uniforms=shader.UniformCollection(), drawstyle='fill', visible=True, point_size=4,
                  **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -157,7 +157,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
         #: :py:class:`.Physical`, World Mesh coordinates
         #: Local Mesh coordinates (Physical type)
-        self.uniforms = uniforms
+        self.uniforms = uniforms if type(uniforms) == shader.UniformCollection else shader.UniformCollection(uniforms)
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         self.texture = texture.BaseTexture()
@@ -188,7 +188,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.min_xyz = np.array((vg[:, 0].min(), vg[:, 1].min(), vg[:, 2].min()))
         self.max_xyz = np.array((vg[:, 0].max(), vg[:, 1].max(), vg[:, 2].max()))
 
-    def _draw(self, shader=None, *args, **kwargs):
+    def _draw(self, shader=None, send_uniforms=True, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
 
         # TODO not clear why an update is needed here
@@ -199,12 +199,12 @@ class Mesh(EmptyMesh, mixins.Picklable):
         if self.visible:
 
             # Change Material to Mesh's
-            for uniform in self.uniforms:
-                uniform.send_to(shader)
+            if send_uniforms:
+                self.uniforms.send_to(shader)
 
-            # Send Model and Normal Matrix to shader.
-            shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel())
-            shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel())
+                # Send Model and Normal Matrix to shader.
+                shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel())
+                shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel())
 
             # Set Point Size, if drawing a point cloud
             if self.drawstyle == 'point':
@@ -212,6 +212,6 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
             # Bind the VAO and Texture, and draw.
             with self.texture as texture:
-                for uniform in self.texture.uniforms:
-                    uniform.send_to(shader)
+                if send_uniforms:
+                    self.texture.uniforms.send_to(shader)
                 self.data.draw(Mesh.drawstyle[self.drawstyle])

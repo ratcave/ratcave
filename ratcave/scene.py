@@ -5,6 +5,8 @@ import pyglet.gl as gl
 
 from . import mixins, Camera, Light, resources, mesh
 from .utils import gl as glutils
+from .utils import orienting
+from .texture import TextureCube
 
 
 class Scene(object):
@@ -26,7 +28,7 @@ class Scene(object):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
     def draw(self, shader=resources.genShader, autoclear=True, userdata={},
-             gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):
+             gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
 
         self.camera.update()
@@ -34,6 +36,8 @@ class Scene(object):
 
         # Enable 3D OpenGL states (glEnable, then later glDisable)
         with glutils.enable_states(gl_states):
+            # gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
             # Bind Shader
             with shader:
 
@@ -61,13 +65,51 @@ class Scene(object):
                     mesh._draw(shader=shader)
 
 
-    def draw360_to_texture(self, cubetexture, **kwargs):
-        """For dynamic environment mapping.  Draws the scene 6 times, once to each face of a cube texture."""
-        # TODO: Solve provlem: FBO should be bound before glFramebufferTexture2DEXT is called.  How to solve?
+    def draw360_to_texture(self, cubetexture, shader=resources.genShader, autoclear=True, userdata={},
+             gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
+        """
+        Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light, and
+        applies it to each face of cubetexture, which should be currently bound to an FBO.
+        """
+
         assert self.camera.aspect == 1. and self.camera.fov_y == 90
+        assert type(cubetexture) == TextureCube, "Must render to TextureCube"
 
-        for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
-            self.camera.rotation = rotation
-            cubetexture.attach_to_fbo(face)
-            self.draw(**kwargs)
+        # Enable 3D OpenGL states (glEnable, then later glDisable)
+        with glutils.enable_states(gl_states):
+            # gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
+            # Bind Shader
+            with shader:
+
+                self.light.update()
+                self.camera.update()
+
+                shader.uniformf('light_position', *self.light.position)
+                shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
+                shader.uniformf('camera_position', *self.camera.position)
+
+                for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
+
+                    cubetexture.attach_to_fbo(face)
+                    if autoclear:
+                        self.clear()
+
+                    # Update camera and send new rotation data as a view matrix
+                    self.camera.rotation = rotation
+                    self.camera.update()
+                    shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
+
+                    #
+                    # # if self.shadow_rendering:
+                    # #     shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
+                    # #     shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
+                    #
+
+                    # shader.uniformi('hasShadow', int(self.shadow_rendering))
+                    # shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
+                    # shader.uniformi('ShadowMap', shadow_slot)
+                    # shader.uniformi('grayscale', int(self.grayscale))
+
+                    for mesh in self.root:
+                        mesh._draw(shader=shader, send_uniforms=not face)

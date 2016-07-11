@@ -2,7 +2,7 @@
 
 from . import utils
 from . import resources
-from .shader import Shader, Uniform
+from .shader import Shader, Uniform, UniformCollection
 from .fbo import FBO
 from .texture import Texture
 from .mixins import Physical
