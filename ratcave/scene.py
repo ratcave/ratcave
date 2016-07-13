@@ -27,7 +27,7 @@ class Scene(object):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self, shader=resources.genShader, autoclear=True, userdata={},
+    def draw(self, shader=resources.genShader, autoclear=True, send_mesh_uniforms=True, userdata={},
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
 
@@ -62,7 +62,7 @@ class Scene(object):
                 # shader.uniformi('grayscale', int(self.grayscale))
 
                 for mesh in self.root:
-                    mesh._draw(shader=shader)
+                    mesh._draw(shader=shader, send_uniforms=send_mesh_uniforms)
 
 
     def draw360_to_texture(self, cubetexture, shader=resources.genShader, autoclear=True, userdata={},
