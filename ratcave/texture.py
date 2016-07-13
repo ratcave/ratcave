@@ -56,6 +56,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
             self._apply_filter_settings()
             self._genTex2D()
 
+        self.unbind()
 
     @property
     def slot(self):
