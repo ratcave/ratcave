@@ -107,12 +107,23 @@ class Physical(object):
     def has_changed(self):
         return self.__oldinfo != self.__gen_info_summary()
 
+    def update_model_matrix(self):
+        self.model_matrix = utils.orienting.calculate_model_matrix(self.position, self.rotation, self.scale)
+
+    def update_model_and_normal_matrix(self):
+        if self.has_changed():
+            self.update_model_matrix()
+            self.normal_matrix = np.linalg.inv(self.model_matrix.T)  # which order is correct: t then i, or the reverse?
+
+    def update_view_matrix(self):
+        # if self.has_changed():  # TODO: Getting some bugs with this line, not sure why
+        self.view_matrix = utils.orienting.calculate_view_matrix(self.position, self.rotation)
+
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
         if self.has_changed():
-            self.model_matrix = utils.orienting.calculate_model_matrix(self.position, self.rotation, self.scale)
-            self.normal_matrix = np.linalg.inv(self.model_matrix.T)  # which order is correct: t then i, or the reverse?
-            self.view_matrix = utils.orienting.calculate_view_matrix(self.position, self.rotation)
+            self.update_model_and_normal_matrix()
+            self.update_view_matrix()
             self.__oldinfo = self.__gen_info_summary()
 
 

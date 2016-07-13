@@ -32,7 +32,7 @@ class Scene(object):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
 
         self.camera.update()
-        self.light.update()
+        self.light.update_model_matrix()
 
         # Enable 3D OpenGL states (glEnable, then later glDisable)
         with glutils.enable_states(gl_states):
@@ -82,7 +82,7 @@ class Scene(object):
             # Bind Shader
             with shader:
 
-                self.light.update()
+                self.light.update_model_matrix()
                 self.camera.update()
 
                 shader.uniformf('light_position', *self.light.position)
@@ -99,7 +99,7 @@ class Scene(object):
 
                         # Update camera and send new rotation data as a view matrix
                         self.camera.rotation = rotation
-                        self.camera.update()
+                        self.camera.update_view_matrix()
                         shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
 
                         mesh._draw(shader=shader, send_uniforms=not face)
