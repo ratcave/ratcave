@@ -50,7 +50,6 @@ class Scene(object):
                     shader.uniformf('camera_position', *self.camera.position)
 
                 if send_light_uniforms:
-                    self.light.update_model_matrix()
                     shader.uniformf('light_position', *self.light.position)
 
                 for mesh in self.root:
@@ -74,7 +73,6 @@ class Scene(object):
             # Bind Shader
             with shader:
 
-                self.light.update_model_matrix()
                 self.camera.update()
 
                 shader.uniformf('light_position', *self.light.position)
