@@ -184,8 +184,13 @@ class Mesh(EmptyMesh, mixins.Picklable):
                     texture.uniforms.send_to(shader)
 
                     # Send Model and Normal Matrix to shader.
-                    shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel())
-                    shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel())
+                    try:
+                        shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel(), loc=self.modelmat_loc)
+                        shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel(), loc=self.normalmat_loc)
+                    except AttributeError:
+                        self.modelmat_loc = shader.get_uniform_location('model_matrix')
+                        self.normalmat_loc = shader.get_uniform_location('normal_matrix')
+                        pass
 
                 # Set Point Size, if drawing a point cloud
                 if self.drawstyle == 'point':
