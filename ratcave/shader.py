@@ -15,7 +15,7 @@ class Uniform(object):
         assert len(vals) > 0 and len(vals) <= 4
         self._value = np.array(vals)  # A semi-mutable array, in that its length can't be modified.
         self.sendfun = Uniform._sendfuns[self._value.dtype.kind][len(self._value) - 1]
-        self._uniform_loc = None
+        self.loc = None
 
     def __repr__(self):
         return '{}{}'.format(self.name, tuple(self.value.tolist()))
@@ -33,11 +33,11 @@ class Uniform(object):
     def send_to(self, shader):
         """Sends uniform to a currently-bound shader, returning its location (-1 means not sent)"""
         # glGetUniformLocation only needs to be called once, when the shader is linked.  Not a big performance boost, though.
-        if type(self._uniform_loc) == type(None):
-            self._uniform_loc = gl.glGetUniformLocation(shader.id, self.name)
+        if type(self.loc) == type(None):
+            self.loc = gl.glGetUniformLocation(shader.id, self.name)
 
-        self.sendfun(self._uniform_loc, *self.value)
-        return self._uniform_loc
+        self.sendfun(self.loc, *self.value)
+        return self.loc
 
 
     @classmethod
@@ -164,16 +164,20 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
             gl.glGetProgramInfoLog(self.id, link_status, None, buffer)  # retrieve the log text
             print(buffer.value)  # print the log to the console
 
+    def get_uniform_location(self, name):
+        return gl.glGetUniformLocation(self.id, name.encode('ascii'))
+
     def uniformf(self, name, *vals):
         """Send data as a float uniform, named 'name'.  Shader must be already bound."""
-        self.uniformf_funs[len(vals)-1](gl.glGetUniformLocation(self.id, name.encode('ascii')), *vals)
+        self.uniformf_funs[len(vals)-1](self.get_uniform_location(name), *vals)
 
     def uniformi(self, name, *vals):
         """Send data as an integer uniform, named 'name'.  Shader must be already bound."""
-        self.uniformi_funs[len(vals)-1](gl.glGetUniformLocation(self.id, name.encode('ascii')), *vals)
+        self.uniformi_funs[len(vals)-1](self.get_uniform_location(name), *vals)
 
-    def uniform_matrixf(self, name, mat):
+    def uniform_matrixf(self, name, mat, loc=None):
         """Send 4x4 NumPy matrix data as a uniform to the shader, named 'name'. Shader must be already bound."""
         # obtain the uniform location
-        loc = gl.glGetUniformLocation(self.id, name.encode('ascii'))
+        if not loc:
+            loc = self.get_uniform_location(name)
         gl.glUniformMatrix4fv(loc, 1, False, (c_float * 16)(*mat))  # uplaod the 4x4 floating point matrix

@@ -81,6 +81,7 @@ class Scene(object):
 
                 # Pre-Calculate all 6 view matrices
                 view_matrices = []
+                view_matrix_loc = shader.get_uniform_location('view_matrix')
                 for rotation in [[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]:
                     self.camera.rotation = rotation
                     self.camera.update_view_matrix()
@@ -91,7 +92,7 @@ class Scene(object):
                         cubetexture.attach_to_fbo(face)
                         if autoclear and not mesh_idx:
                             self.clear()
-                        shader.uniform_matrixf('view_matrix', view_matrix)
+                        shader.uniform_matrixf('view_matrix', view_matrix, loc=view_matrix_loc)
                         mesh._draw(shader=shader, send_uniforms=not face)
 
 
