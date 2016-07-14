@@ -89,19 +89,19 @@ class Scene(object):
                 shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
                 shader.uniformf('camera_position', *self.camera.position)
 
+                # Pre-Calculate all 6 view matrices
+                view_matrices = []
+                for rotation in [[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]:
+                    self.camera.rotation = rotation
+                    self.camera.update_view_matrix()
+                    view_matrices.append(self.camera.view_matrix.T.ravel())
+
                 for mesh_idx, mesh in enumerate(self.root):
-
-                    for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
-
+                    for face, view_matrix in enumerate(view_matrices):
                         cubetexture.attach_to_fbo(face)
                         if autoclear and not mesh_idx:
                             self.clear()
-
-                        # Update camera and send new rotation data as a view matrix
-                        self.camera.rotation = rotation
-                        self.camera.update_view_matrix()
-                        shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
-
+                        shader.uniform_matrixf('view_matrix', view_matrix)
                         mesh._draw(shader=shader, send_uniforms=not face)
 
 
