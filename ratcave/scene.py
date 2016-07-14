@@ -27,7 +27,7 @@ class Scene(object):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self, shader=resources.genShader, autoclear=True,
+    def draw(self, shader=resources.genShader, clear=True,
              send_mesh_uniforms=True, send_camera_uniforms=True, send_light_uniforms=True, userdata={},
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
@@ -39,7 +39,7 @@ class Scene(object):
             # Bind Shader
             with shader:
 
-                if autoclear:
+                if clear:
                     self.clear()
 
                 # Send Uniforms that are constant across meshes.
