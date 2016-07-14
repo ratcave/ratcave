@@ -27,12 +27,10 @@ class Scene(object):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self, shader=resources.genShader, autoclear=True, send_mesh_uniforms=True, userdata={},
+    def draw(self, shader=resources.genShader, autoclear=True,
+             send_mesh_uniforms=True, send_camera_uniforms=True, send_light_uniforms=True, userdata={},
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
-
-        self.camera.update()
-        self.light.update_model_matrix()
 
         # Enable 3D OpenGL states (glEnable, then later glDisable)
         with glutils.enable_states(gl_states):
@@ -45,21 +43,15 @@ class Scene(object):
                     self.clear()
 
                 # Send Uniforms that are constant across meshes.
-                shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
-                shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
-                #
-                # # if self.shadow_rendering:
-                # #     shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
-                # #     shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
-                #
+                if send_camera_uniforms:
+                    self.camera.update()
+                    shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
+                    shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
+                    shader.uniformf('camera_position', *self.camera.position)
 
-                shader.uniformf('light_position', *self.light.position)
-                shader.uniformf('camera_position', *self.camera.position)
-
-                # shader.uniformi('hasShadow', int(self.shadow_rendering))
-                # shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
-                # shader.uniformi('ShadowMap', shadow_slot)
-                # shader.uniformi('grayscale', int(self.grayscale))
+                if send_light_uniforms:
+                    self.light.update_model_matrix()
+                    shader.uniformf('light_position', *self.light.position)
 
                 for mesh in self.root:
                     mesh._draw(shader=shader, send_uniforms=send_mesh_uniforms)
