@@ -27,12 +27,10 @@ class Scene(object):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self, shader=resources.genShader, autoclear=True, userdata={},
+    def draw(self, shader=resources.genShader, clear=True,
+             send_mesh_uniforms=True, send_camera_uniforms=True, send_light_uniforms=True, userdata={},
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
-
-        self.camera.update()
-        self.light.update()
 
         # Enable 3D OpenGL states (glEnable, then later glDisable)
         with glutils.enable_states(gl_states):
@@ -41,28 +39,21 @@ class Scene(object):
             # Bind Shader
             with shader:
 
-                if autoclear:
+                if clear:
                     self.clear()
 
                 # Send Uniforms that are constant across meshes.
-                shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
-                shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
-                #
-                # # if self.shadow_rendering:
-                # #     shader.uniform_matrixf('shadow_projection_matrix', self.shadow_cam.projection_matrix.T.ravel())
-                # #     shader.uniform_matrixf('shadow_view_matrix', scene.light.view_matrix.T.ravel())
-                #
+                if send_camera_uniforms:
+                    self.camera.update()
+                    shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
+                    shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
+                    shader.uniformf('camera_position', *self.camera.position)
 
-                shader.uniformf('light_position', *self.light.position)
-                shader.uniformf('camera_position', *self.camera.position)
-
-                # shader.uniformi('hasShadow', int(self.shadow_rendering))
-                # shadow_slot = self.fbos['shadow'].texture_slot if scene == self.active_scene else self.fbos['vrshadow'].texture_slot
-                # shader.uniformi('ShadowMap', shadow_slot)
-                # shader.uniformi('grayscale', int(self.grayscale))
+                if send_light_uniforms:
+                    shader.uniformf('light_position', *self.light.position)
 
                 for mesh in self.root:
-                    mesh._draw(shader=shader)
+                    mesh._draw(shader=shader, send_uniforms=send_mesh_uniforms)
 
 
     def draw360_to_texture(self, cubetexture, shader=resources.genShader, autoclear=True, userdata={},
@@ -82,26 +73,26 @@ class Scene(object):
             # Bind Shader
             with shader:
 
-                self.light.update()
                 self.camera.update()
 
                 shader.uniformf('light_position', *self.light.position)
                 shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
                 shader.uniformf('camera_position', *self.camera.position)
 
+                # Pre-Calculate all 6 view matrices
+                view_matrices = []
+                view_matrix_loc = shader.get_uniform_location('view_matrix')
+                for rotation in [[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]:
+                    self.camera.rotation = rotation
+                    self.camera.update_view_matrix()
+                    view_matrices.append(self.camera.view_matrix.T.ravel())
+
                 for mesh_idx, mesh in enumerate(self.root):
-
-                    for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  # Created as class variable for performance reasons.
-
+                    for face, view_matrix in enumerate(view_matrices):
                         cubetexture.attach_to_fbo(face)
                         if autoclear and not mesh_idx:
                             self.clear()
-
-                        # Update camera and send new rotation data as a view matrix
-                        self.camera.rotation = rotation
-                        self.camera.update()
-                        shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
-
+                        shader.uniform_matrixf('view_matrix', view_matrix, loc=view_matrix_loc)
                         mesh._draw(shader=shader, send_uniforms=not face)
 
 

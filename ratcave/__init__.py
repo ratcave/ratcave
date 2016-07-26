@@ -4,7 +4,7 @@ from . import utils
 from . import resources
 from .shader import Shader, Uniform, UniformCollection
 from .fbo import FBO
-from .texture import Texture
+from .texture import Texture, TextureCube
 from .mixins import Physical
 from .camera import Camera
 from .light import Light

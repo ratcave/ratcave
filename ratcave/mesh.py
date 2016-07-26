@@ -204,27 +204,34 @@ class Mesh(EmptyMesh, mixins.Picklable):
     def _draw(self, shader=None, send_uniforms=True, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
 
-        # TODO not clear why an update is needed here
         if not self.is_updated:
             self.update()
             self.is_updated = True
 
         if self.visible:
 
-            # Change Material to Mesh's
-            if send_uniforms:
-                self.uniforms.send_to(shader)
-
-                # Send Model and Normal Matrix to shader.
-                shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel())
-                shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel())
-
-            # Set Point Size, if drawing a point cloud
-            if self.drawstyle == 'point':
-                gl.glPointSize(int(self.point_size))
-
             # Bind the VAO and Texture, and draw.
             with self.texture as texture:
+
+                # Change Material to Mesh's
                 if send_uniforms:
-                    self.texture.uniforms.send_to(shader)
+
+                    self.update_model_and_normal_matrix()
+                    self.uniforms.send_to(shader)
+                    texture.uniforms.send_to(shader)
+
+                    # Send Model and Normal Matrix to shader.
+                    try:
+                        shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel(), loc=self.modelmat_loc)
+                        shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel(), loc=self.normalmat_loc)
+                    except AttributeError:
+                        self.modelmat_loc = shader.get_uniform_location('model_matrix')
+                        self.normalmat_loc = shader.get_uniform_location('normal_matrix')
+                        pass
+
+                # Set Point Size, if drawing a point cloud
+                if self.drawstyle == 'point':
+                    gl.glPointSize(int(self.point_size))
+
+                # Send in the vertex and normal data
                 self.data.draw(Mesh.drawstyle[self.drawstyle])

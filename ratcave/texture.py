@@ -18,7 +18,7 @@ class BaseTexture(object):
         })
 
     def __enter__(self):
-        pass
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
@@ -56,6 +56,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
             self._apply_filter_settings()
             self._genTex2D()
 
+        self.unbind()
 
     @property
     def slot(self):

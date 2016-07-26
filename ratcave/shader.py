@@ -1,12 +1,12 @@
-from pyglet.gl import *
-from ctypes import *
+from pyglet import gl
+from ctypes import byref, create_string_buffer, c_char, c_char_p, c_int, c_float, cast, pointer, POINTER
 import numpy as np
 from .utils import gl as ugl
 
 class Uniform(object):
 
-    _sendfuns = {'f': [glUniform1f, glUniform2f, glUniform3f, glUniform4f],
-                'i':   [glUniform1i, glUniform2i, glUniform3i, glUniform4i]
+    _sendfuns = {'f': [gl.glUniform1f, gl.glUniform2f, gl.glUniform3f, gl.glUniform4f],
+                'i':   [gl.glUniform1i, gl.glUniform2i, gl.glUniform3i, gl.glUniform4i]
                 }
 
     def __init__(self, name, *vals):
@@ -15,7 +15,7 @@ class Uniform(object):
         assert len(vals) > 0 and len(vals) <= 4
         self._value = np.array(vals)  # A semi-mutable array, in that its length can't be modified.
         self.sendfun = Uniform._sendfuns[self._value.dtype.kind][len(self._value) - 1]
-        self._uniform_loc = None
+        self.loc = None
 
     def __repr__(self):
         return '{}{}'.format(self.name, tuple(self.value.tolist()))
@@ -33,11 +33,11 @@ class Uniform(object):
     def send_to(self, shader):
         """Sends uniform to a currently-bound shader, returning its location (-1 means not sent)"""
         # glGetUniformLocation only needs to be called once, when the shader is linked.  Not a big performance boost, though.
-        if type(self._uniform_loc) == type(None):
-            self._uniform_loc = glGetUniformLocation(shader.id, self.name)
+        if type(self.loc) == type(None):
+            self.loc = gl.glGetUniformLocation(shader.id, self.name)
 
-        self.sendfun(self._uniform_loc, *self.value)
-        return self._uniform_loc
+        self.sendfun(self.loc, *self.value)
+        return self.loc
 
 
     @classmethod
@@ -101,9 +101,9 @@ class UniformCollection(object):
 
 class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
 
-    bindfun = glUseProgram
-    uniformf_funs = (glUniform1f, glUniform2f, glUniform3f, glUniform4f)
-    uniformi_funs = (glUniform1i, glUniform2i, glUniform3i, glUniform4i)
+    bindfun = gl.glUseProgram
+    uniformf_funs = (gl.glUniform1f, gl.glUniform2f, gl.glUniform3f, gl.glUniform4f)
+    uniformi_funs = (gl.glUniform1i, gl.glUniform2i, gl.glUniform3i, gl.glUniform4i)
 
     def __init__(self, vert='', frag='', geom=''):
         """
@@ -114,13 +114,13 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
           - frag (str): The fragment shader program string
           - geom (str): The geometry shader program
         """
-        self.id = glCreateProgram()  # create the program handle
+        self.id = gl.glCreateProgram()  # create the program handle
  
         # create the vertex, fragment, and geometry shaders
-        self.createShader(vert, GL_VERTEX_SHADER)
-        self.createShader(frag, GL_FRAGMENT_SHADER)
+        self.createShader(vert, gl.GL_VERTEX_SHADER)
+        self.createShader(frag, gl.GL_FRAGMENT_SHADER)
         if geom:
-            self.createShader(geom, GL_GEOMETRY_SHADER_EXT)
+            self.createShader(geom, gl.GL_GEOMETRY_SHADER_EXT)
  
         # attempt to link the program
         self.link()
@@ -128,53 +128,56 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
     def createShader(self, strings, shadertype):
  
         # create the shader handle
-        shader = glCreateShader(shadertype)
+        shader = gl.glCreateShader(shadertype)
  
         # convert the source strings into a ctypes pointer-to-char array, and upload them
         # this is deep, dark, dangerous black magick - don't try stuff like this at home!
         strings = tuple(s.encode('ascii') for s in strings)  # Nick added, for python3
         src = (c_char_p * len(strings))(*strings)
-        glShaderSource(shader, len(strings), cast(pointer(src), POINTER(POINTER(c_char))), None)
- 
+        gl.glShaderSource(shader, len(strings), cast(pointer(src), POINTER(POINTER(c_char))), None)
         # compile the shader
-        glCompileShader(shader)
+        gl.glCompileShader(shader)
 
         # retrieve the compile status
         compile_success = c_int(0)
-        glGetShaderiv(shader, GL_COMPILE_STATUS, byref(compile_success))
+        gl.glGetShaderiv(shader, gl.GL_COMPILE_STATUS, byref(compile_success))
  
         # if compilation failed, print the log
         if compile_success:
-            glAttachShader(self.id, shader)
+            gl.glAttachShader(self.id, shader)
         else:
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, byref(compile_success))  # retrieve the log length
+            gl.glGetShaderiv(shader, gl.GL_INFO_LOG_LENGTH, byref(compile_success))  # retrieve the log length
             buffer = create_string_buffer(compile_success.value)  # create a buffer for the log
-            glGetShaderInfoLog(shader, compile_success, None, buffer)  # retrieve the log text
+            gl.glGetShaderInfoLog(shader, compile_success, None, buffer)  # retrieve the log text
             print(buffer.value)  # print the log to the console
  
     def link(self):
         """link the program"""
-        glLinkProgram(self.id)
+        gl.glLinkProgram(self.id)
 
         # Check if linking was successful.  If not, print the log.
         link_status = c_int(0)
-        glGetProgramiv(self.id, GL_LINK_STATUS, byref(link_status))
+        gl.glGetProgramiv(self.id, gl.GL_LINK_STATUS, byref(link_status))
         if not link_status:
-            glGetProgramiv(self.id, GL_INFO_LOG_LENGTH, byref(link_status))  # retrieve the log length
+            gl.glGetProgramiv(self.id, gl.GL_INFO_LOG_LENGTH, byref(link_status))  # retrieve the log length
             buffer = create_string_buffer(link_status.value)  # create a buffer for the log
-            glGetProgramInfoLog(self.id, link_status, None, buffer)  # retrieve the log text
+            gl.glGetProgramInfoLog(self.id, link_status, None, buffer)  # retrieve the log text
             print(buffer.value)  # print the log to the console
+
+    def get_uniform_location(self, name):
+        return gl.glGetUniformLocation(self.id, name.encode('ascii'))
 
     def uniformf(self, name, *vals):
         """Send data as a float uniform, named 'name'.  Shader must be already bound."""
-        self.uniformf_funs[len(vals)-1](glGetUniformLocation(self.id, name.encode('ascii')), *vals)
+        self.uniformf_funs[len(vals)-1](self.get_uniform_location(name), *vals)
 
     def uniformi(self, name, *vals):
         """Send data as an integer uniform, named 'name'.  Shader must be already bound."""
-        self.uniformi_funs[len(vals)-1](glGetUniformLocation(self.id, name.encode('ascii')), *vals)
+        self.uniformi_funs[len(vals)-1](self.get_uniform_location(name), *vals)
 
-    def uniform_matrixf(self, name, mat):
+    def uniform_matrixf(self, name, mat, loc=None):
         """Send 4x4 NumPy matrix data as a uniform to the shader, named 'name'. Shader must be already bound."""
         # obtain the uniform location
-        loc = glGetUniformLocation(self.id, name.encode('ascii'))
-        glUniformMatrix4fv(loc, 1, False, (c_float * 16)(*mat))  # uplaod the 4x4 floating point matrix
+        if not loc:
+            loc = self.get_uniform_location(name)
+        gl.glUniformMatrix4fv(loc, 1, False, (c_float * 16)(*mat))  # uplaod the 4x4 floating point matrix
