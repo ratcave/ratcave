@@ -62,6 +62,8 @@ class SceneNode(object):
 
 class Physical(object):
 
+    __observables = ('x', 'y', 'z', 'rot_x', 'rot_y', 'rot_z', 'scale')
+
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1., *args, **kwargs):
         """XYZ Position, Scale and XYZEuler Rotation Class.
 
@@ -71,16 +73,33 @@ class Physical(object):
             scale (float): uniform scale factor. 1 = no scaling.
         """
         super(Physical, self).__init__(*args, **kwargs)
-        self.x, self.y, self.z = position
-        self.rot_x, self.rot_y, self.rot_z = rotation
+        self.__dict__['x'], self.__dict__['y'], self.__dict__['z'] = position
+        self.__dict__['rot_x'], self.__dict__['rot_y'], self.__dict__['rot_z'] = rotation
+        self.__dict__['scale'] = scale
         self._rot_matrix = None
-        self.scale = scale
 
         self.model_matrix = np.zeros((4,4))
         self.normal_matrix = np.zeros((4,4))
         self.view_matrix = np.zeros((4,4))
 
-        self.__oldinfo = tuple()  # begin with empty tuple, so first draw is "changed"
+        # rectangular boundaries
+        self.min_xyz = np.array((0, 0, 0))
+        self.max_xyz = np.array((0, 0, 0))
+
+        self.__oldinfo = tuple()
+        self.update()
+
+    def __setattr__(self, key, value):
+        super(Physical, self).__setattr__(key, value)
+
+        if key in Physical.__observables:
+            self.on_change()
+
+    def on_change(self):
+        """
+        This method fires when object position or geometry changes.
+        Can be overwritten by parent classes to add more actions.
+        """
         self.update()
 
     @property
@@ -136,7 +155,6 @@ class PhysicalNode(Physical, SceneNode):
         self.view_matrix_global = np.zeros((4,4))
         super(PhysicalNode, self).__init__(*args, **kwargs)
 
-
     def update(self):
         super(PhysicalNode, self).update()
 
@@ -152,7 +170,6 @@ class PhysicalNode(Physical, SceneNode):
 
     @property
     def position_global(self):
-        self.update()
         return tuple(self.model_matrix_global[:3, -1].tolist())
 
 
