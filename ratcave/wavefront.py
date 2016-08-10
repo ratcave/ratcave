@@ -133,6 +133,12 @@ class WavefrontReader(object):
 
             return prefix, value
 
+        # parsing in 3 steps:
+        # - read all data in [lines] list
+        # - split each mesh section in {mtls} dict
+        # - parse each mesh section and create material from it
+
+        # STEP1: read all data in [lines] list
         try:
             with open(filename, 'r') as material_file:
                 lines = [line for line in material_file]
@@ -147,17 +153,25 @@ class WavefrontReader(object):
         mtl_name_buff = ''
         mtl_line_buff = []
 
-        for i, line in enumerate(lines):
-            if line.startswith('newmtl') or i == len(lines) - 1:
-                if mtl_name_buff:
-                    mtls[mtl_name_buff] = mtl_line_buff
+        # STEP 2: split each mesh section in {mtls} dict
+        # empty lines as newmtl section separators
+        separators = [0] + [i for i, x in enumerate(lines) if x == "\n"] + [len(lines)]
 
-                mtl_name_buff = line.strip('\n').split(' ')[1]
-                mtl_line_buff = []
+        for i in range(len(separators) - 1):
+            for line in lines[separators[i]:separators[i + 1]]:
+                if line.startswith('newmtl'):
+                    mtl_name_buff = line.strip('\n').split(' ')[1]
 
-            elif len(line.strip('\n')) > 0:
-                mtl_line_buff.append(line.strip('\n'))
+                elif len(line.strip('\n')) > 0:
+                    mtl_line_buff.append(line.strip('\n'))
 
+            if mtl_name_buff:
+                mtls[mtl_name_buff] = mtl_line_buff
+
+            mtl_name_buff = ''
+            mtl_line_buff = []
+
+        # STEP 3: parse each newmtl section into Material
         prefixes = ['#', 'newmtl', 'Ns', 'Ka', 'Kd', 'Ks', 'Ni', 'd', 'illum', 'map_Kd']
 
         for name, lines in mtls.items():
