@@ -120,45 +120,74 @@ class WavefrontReader(object):
         meshdata = MeshData(verts, inds, norms, textUVs)
         return meshdata
 
-
     def _parse_mtl(self, filename):
 
-        # Get filename (same as .obj filename, but different extension)
+        def parse_property_line(data_line):
+            prefix, value = data_line.lstrip().split(' ', 1)
+
+            try:
+                value = [float(num) for num in value.split(' ')]  # convert to list of floats
+                value = value[0] if len(value) == 1 else value
+            except ValueError:  # If not a sequence of numbers, but a string instead
+                pass
+
+            return prefix, value
+
+        # parsing in 3 steps:
+        # - read all data in [lines] list
+        # - split each mesh section in {mtls} dict
+        # - parse each mesh section and create material from it
+
+        # STEP1: read all data in [lines] list
         try:
             with open(filename, 'r') as material_file:
-                lines = [line for line in material_file]  # Loop through each line
+                lines = [line for line in material_file]
+
         except IOError:
-            print("Warning: No .mtl material file found for .obj file. Using default material instead...")
+            print("Warning: No .mtl material file found for "
+                  ".obj file. Using default material instead...")
             self.materials[None] = Material()
             return
 
-        prefixes = ['#', 'newmtl', 'Ns', 'Ka', 'Kd', 'Ks', 'Ni', 'd', 'illum']
-        props = dict.fromkeys(prefixes, None)
-        for line in lines:
-            if len(line) > 2:
-                prefix, rest = line.split(' ', 1)
-            else:
-                continue
+        mtls = {}  # like {'Shape.005': ['Ns 96.078431', 'Ka 0.166667 0.166667 0.166667', ...], ...}
+        mtl_name_buff = ''
+        mtl_line_buff = []
 
-            try:
-                rest = [float(num) for num in rest.split(' ')]  # convert to list of floats
-                rest = rest[0] if len(rest) == 1 else rest
-            except ValueError:  # If not a sequence of numbers, but a string instead
-                rest = rest[:-1]
-                print(rest)
+        # STEP 2: split each mesh section in {mtls} dict
+        # empty lines as newmtl section separators
+        separators = [0] + [i for i, x in enumerate(lines) if x == "\n"] + [len(lines)]
 
-            props[prefix] = rest
+        for i in range(len(separators) - 1):
+            for line in lines[separators[i]:separators[i + 1]]:
+                if line.startswith('newmtl'):
+                    mtl_name_buff = line.strip('\n').split(' ')[1]
 
-            if prefix == 'illum':  # Last property listed in .mtl material
-                # Make Material object and add to list of materials
+                elif len(line.strip('\n')) > 0:
+                    mtl_line_buff.append(line.strip('\n'))
 
-                material = Material(diffuse=props['Kd'],
-                                    spec_weight=props['Ns'],
-                                    specular=props['Ks'],
-                                    ambient=props['Ka'],
-                                    opacity=props['d'],
-                                    )
+            if mtl_name_buff:
+                mtls[mtl_name_buff] = mtl_line_buff
 
-                name = props['newmtl']
-                self.materials[name] = material
-                props = dict.fromkeys(prefixes, None)
+            mtl_name_buff = ''
+            mtl_line_buff = []
+
+        # STEP 3: parse each newmtl section into Material
+        prefixes = ['#', 'newmtl', 'Ns', 'Ka', 'Kd', 'Ks', 'Ni', 'd', 'illum', 'map_Kd']
+
+        for name, lines in mtls.items():
+            props = dict.fromkeys(prefixes, None)
+
+            for line in lines:
+                p, val = parse_property_line(line)
+                if p in prefixes:
+                    props[p] = val
+
+            kwargs = {
+                "diffuse": props['Kd'],
+                "spec_weight": props['Ns'],
+                "specular": props['Ks'],
+                "ambient": props['Ka'],
+                "opacity": props['d'],
+                "texture_file": props['map_Kd']
+            }
+            self.materials[name] = Material(**kwargs)
