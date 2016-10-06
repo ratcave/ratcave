@@ -4,14 +4,6 @@ ratcave.utils package
 Submodules
 ----------
 
-ratcave.utils.eulerangles module
---------------------------------
-
-.. automodule:: ratcave.utils.eulerangles
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 ratcave.utils.gl module
 -----------------------
 
