@@ -18,6 +18,6 @@ setup(name='ratcave',
       scripts=['console_scripts/newexp.py',
                'console_scripts/test_ratcave.py'
                 ],
-      # ext_modules=[Extension('ratcave._transformations', sources=['c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
+      ext_modules=[Extension('ratcave._transformations', sources=['c_sources/transformations.c'], include_dirs=[numpy.get_include()])]
       )
 

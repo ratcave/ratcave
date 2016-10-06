@@ -1,13 +1,11 @@
 __author__ = 'ratcave'
 
 import numpy as np
-
+from .. import _transformations as transformations
 
 
 def calculate_model_matrix(position, rotation, scale):
     """Returns 4x4 model matrix from the (x.y,z) position and XYZ Euler rotation, in degrees."""
-
-    from .. import _transformations as transformations
 
     # Set Model and Normal Matrices
     trans_mat = transformations.translation_matrix(position)
@@ -21,8 +19,7 @@ def calculate_model_matrix(position, rotation, scale):
 
 def calculate_view_matrix(position, rotation):
     """TReturns 4x4 view matrix from the (x.y,z) position and XYZ Euler rotation, in degrees."""
-
-    from .. import _transformations as transformations
+    # Set View Matrix
 
     trans_mat = transformations.translation_matrix((-position[0], -position[1], -position[2]))
 

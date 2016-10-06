@@ -1,6 +1,6 @@
 
 
-from . import utils
+# from . import utils
 from . import resources
 from . import tests
 from .shader import Shader, Uniform, UniformCollection
