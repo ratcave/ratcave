@@ -101,9 +101,7 @@ All that's left is to apply the texture the screen::
 
     screen.texture = cube_texture
 
-.. warning:: The built-in shader that comes with ratCAVE requires the subject's position to be sent to it throught the **playerPos** uniform.  This may be remedied in future releases, or can be changed in your own custom shaders::
-
-    screen.uniforms['playerPos'] = virtual_scene.camera.position
+.. warning:: The built-in shader that comes with ratCAVE requires the subject's position to be sent to it throught the **playerPos** uniform.  This may be remedied in future releases, or can be changed in your own custom shaders.  To do this, use: screen.uniforms['playerPos'] = virtual_scene.camera.position
 
 Move the Subject
 ----------------
