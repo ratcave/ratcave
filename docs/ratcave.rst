@@ -6,9 +6,6 @@ Subpackages
 
 .. toctree::
 
-    ratcave.tests
-    ratcave.utils
-
 Submodules
 ----------
 
