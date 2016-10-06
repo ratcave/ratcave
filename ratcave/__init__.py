@@ -1,6 +1,6 @@
 
 
-# from . import utils
+from . import utils
 from . import resources
 from .camera import Camera
 from .fbo import FBO
