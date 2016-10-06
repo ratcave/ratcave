@@ -53,7 +53,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'ratCAVE'
+project = 'ratcave'
 copyright = '2016, Nicholas A Del Grosso'
 author = 'Nicholas A Del Grosso'
 
@@ -208,7 +208,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ratCAVEdoc'
+htmlhelp_basename = 'ratcavedoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -230,7 +230,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ratCAVE.tex', 'ratCAVE Documentation',
+    (master_doc, 'ratcave.tex', 'ratcave Documentation',
      'Nicholas A Del Grosso', 'manual'),
 ]
 
@@ -274,8 +274,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'ratCAVE', 'ratCAVE Documentation',
-     author, 'ratCAVE', 'One line description of project.',
+    (master_doc, 'ratcave', 'ratcave Documentation',
+     author, 'ratcave', 'One line description of project.',
      'Miscellaneous'),
 ]
 
