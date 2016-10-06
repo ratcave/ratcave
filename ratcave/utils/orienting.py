@@ -1,9 +1,7 @@
 __author__ = 'ratcave'
 
 import numpy as np
-#from .. import _transformations as transformations
-
-transformations = 1
+from .. import _transformations as transformations
 
 
 def calculate_model_matrix(position, rotation, scale):
