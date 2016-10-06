@@ -4,7 +4,7 @@ Introduction
 
 ratCAVE was created to be an grapihcs package for doing behavioral experiments with animals in a freely-moving virtual reality environment.
 The goals of this project are:
-  - *Less Biolerplate, more Coding*: More code means more errors.  Many behavioral experiments tend to be complex sets of logic written in a single script, so I tried to make ratCAVE as low-profile as possible to keep the focus on the experiment, not on the graphics management.
+  - *Less Boilerplate, more Coding*: More code means more errors.  Many behavioral experiments tend to be complex sets of logic written in a single script, so I tried to make ratCAVE as low-profile as possible to keep the focus on the experiment, not on the graphics management.
   - *Ease of Use*: Moving objects in a scene, displaying a window, and changing objects' colors should be intuitive.
   - *high-temporal performance*: Lag is the enemy of immersive VR, and we wanted to take advantage of our 360 fps display for VR research.  Advanced hardware-accelerated algorithms and modern OpenGL constructs are an essential part of doing high-performance graphics in Python.
   - *Cubemapping Support* (the essential algorithmic approach for a single-projector CAVE VR system),

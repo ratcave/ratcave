@@ -7,9 +7,8 @@ This tutorial will show the process of displaying a 3D object onscreen. This wil
   - We'll put the Mesh inside a :py:class:`.Scene` object, which is a container class that holds :py:class:`.Mesh` objects, a :py:class:`.Camera` object, and a :py:class:`.Light` object, along with an RGB background color. Multiple Scenes can be created, even ones that contain the same Meshes, and rendering one vs another one is as simple as changing which Scene is the active one inside the :py:class:`.Window`.
   - Finally, we'll put the Scene inside a :py:class:`.Window` object, and render it by calling its :py:meth:`.Window.draw` and :py:meth:`.Window.flip`  methods.
 
-
-Starting an OpenGL Context
---------------------------
+Starting an OpenGL Context and a Window
+---------------------------------------
 
 ratCAVE depends on their already being an OpenGL context set up before loading objects.  This can be done by any OpenGL manager (Pyglet and PsychoPy are useful, but PyGame and Qt OpenGL windows should work fine as well).
 So, before doing anything in ratCAVE, a window must first be created.  In these tutorials, I'll show it with Pyglet::
@@ -19,11 +18,20 @@ So, before doing anything in ratCAVE, a window must first be created.  In these 
 
   window = pyglet.window.Window()
 
+Getting Pyglet Actively Drawing
+-------------------------------
+
+Pyglet's event loop won't automatically update the scene, so we'll stick in a function that does nothing, that gets called every frame, to guarantee that everything appears onscreen.  Anything you want done between frames (updating positions, logging events, etc) can go in this function.::
+
+  def update(dt):
+      pass
+  pyglet.clock.schedule(update)
+
 
 Reading a Wavefront .obj file
 -----------------------------
 
-Wavefront files can be exported from Blender, and they usually come in pairs-- a .obj file contianing the spatial vertex data for each mesh, and a .mtl file containing the coloring data for each mesh.  In ratCAVE, .obj files are summarized in the :py:class:`.MeshData` class and .mtl files are summarized in the :py:class:`.Material` class.  :py:class:`Mesh` classes wrap both of these, plus containing a bit of extra functionality for dealing with these meshes as a whole (like moving the whole thing around, rotating it, or giving it certain image textures, things like that.).  Custom :py:class:`.MeshData` and :py:class:`.Material` objects can be created, but often it is just easier to import them together in Wavefront files as :py:class:`.Mesh` objects.  This is the purpose of the :py:class:`.WavefrontReader` class.  We've included some files with primitive shapes with ratCAVE, whose paths you can find under :py:attr:`.graphics.resources`, to get you started::
+To load a 3D object, let's read in a .obj file! The built-in :py:class:`WavefrontReader` can read triangulated, uv-maped .obj files exported from Blender.  RatCAVE comes with some primitive 3D objects in its :py:class:`resources` module, so let's use one of those.::
 
   # Insert filename into WavefrontReader.
   obj_filename = rc.resources.obj_primitives
@@ -33,27 +41,25 @@ Wavefront files can be exported from Blender, and they usually come in pairs-- a
   print(obj_reader.mesh_names)
   >>> ['Torus', 'Sphere', 'Monkey', 'Cube']
 
+Loading a Mesh from the WavefrontReader and Positioning it
+----------------------------------------------------------
 
-Creating a Mesh from the WavefrontReader and Positioning it
------------------------------------------------------------
-
-The same keywords used for instantiating a Mesh can be used inside the :py:meth:`.WavefrontReader.get_mesh` method.  By default, the mesh will have its position in the same location as in its .obj file, but this can be easilty changed.  Because the camera is in the -z directoin by default, let's set it in front of the camera::
+Loading a mesh can be done through the :py:meth:`.WavefrontReader.get_mesh` method.  By default, the mesh will have its position in the same location as in its .obj file, but this can be easily changed.  Because the camera is in the -z direction by default per OpenGL convention, let's set it in front of the camera::
 
   monkey = obj_reader.get_mesh("Monkey")
-  monkey.position = 0, 0, -2
+  monkey.position = 0, 0, -2  # x, y, z
 
 Creating a Scene
 ----------------
 
-To be rendered onscreen, you must first put :py:class:`.Mesh` objects  can be put into a :py:class:`.Scene`.  This may seem a bit too much when you have only one Mesh, but it allows for many advanced features.  For this exmple, we have just one, but we still need to put it in as a list.::
+Scenes consist of meshes, lights, and a camera--everything we need to view and position and object in the real world! Let's put the monkey :py:class:`.Mesh` into a :py:class:`.Scene`::
 
   scene = rc.Scene(meshes=[monkey])
 
-
 Drawing the Scene
------------------------------------------
+-----------------
 
-To draw the scene, simply call the Scene.draw() method in the context manager's draw loop and start the loop::
+To draw the scene, simply call the Scene.draw() method in your draw loop! In Pyglet, this looks like this::
 
   @window.event
   def on_draw():
@@ -71,6 +77,10 @@ That's it!  Here's the final script, in one place.  This script wll be modified 
 
   # Create Window
   window = pyglet.window.Window()
+
+  def update(dt):
+      pass
+  pyglet.clock.schedule(update)
 
   # Insert filename into WavefrontReader.
   obj_filename = rc.resources.obj_primitives
@@ -95,8 +105,6 @@ Version using PsychoPy
 
 Alternatively, you can see the same example using a PsychoPy window::
 
-
-
   import ratcave as rc
   from psychopy import visual, events
 
@@ -112,7 +120,7 @@ Alternatively, you can see the same example using a PsychoPy window::
   monkey.position = 0, 0, -2
 
   # Create Scene
-  scene = rc.Scene([monkey])
+  scene = rc.Scene(meshes=[monkey])
 
   while 'escape' not in events.getKeys():
       scene.draw()

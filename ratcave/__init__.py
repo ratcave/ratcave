@@ -2,6 +2,7 @@
 
 from . import utils
 from . import resources
+from . import tests
 from .shader import Shader, Uniform, UniformCollection
 from .fbo import FBO
 from .texture import Texture, TextureCube
