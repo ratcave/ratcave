@@ -5,7 +5,6 @@ import pyglet.gl as gl
 
 from . import mixins, Camera, Light, resources, mesh
 from .utils import gl as glutils
-from .utils import orienting
 from .texture import TextureCube
 
 
