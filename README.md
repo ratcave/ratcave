@@ -9,9 +9,10 @@ Full Documentation can be found at http://ratcave.readthedocs.io/
 
 ## Features
 
-ratCAVE was created to be an grapics package for doing behavioral experiments with animals in a freely-moving virtual reality environment.
-The goals of this project are:
+ratCAVE was created to be an 3D graphics package for doing behavioral experiments with animals in a freely-moving virtual reality environment, and
+somewhere along the way became a pythonic wrapper for modern OpenGL workflows!
 
+The goals of this project are:
 
   - *Less Boilerplate, more Coding*: More code means more errors.  Many behavioral experiments tend to be complex sets of logic written in a single script, so I tried to make ratCAVE as low-profile as possible to keep the focus on the experiment, not on the graphics management.
   - *Ease of Use*: Moving objects in a scene, displaying a window, and changing objects' colors should be intuitive.
