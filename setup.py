@@ -5,7 +5,7 @@ import numpy
 
 
 setup(name='ratcave',
-      version='0.5',
+      version='0.5post1',
       url='https://www.github.com/neuroneuro15/ratcave',
       description='3D Graphics Engine for CAVE VR setups',
       author='Nicholas A. Del Grosso',
@@ -26,6 +26,7 @@ setup(name='ratcave',
           "License :: OSI Approved :: MIT License",
           "Intended Audience :: Science/Research",
           "Programming Language :: Python",
+          "Programming Language :: Python :: 2",
           "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3",
           "Programming Language :: Python :: 3.3",
