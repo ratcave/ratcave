@@ -18,6 +18,14 @@ So, before doing anything in ratCAVE, a window must first be created.  In these 
 
   window = pyglet.window.Window()
 
+
+If you want to verify that Pyglet is working and the window gets created, just start Pyglet's event loop at the end of your script. This script will create a Pyglet window that closes when you press
+the escape key::
+
+  pyglet.app.run()
+
+.. image:: _static/tut1_blank_window.png
+
 Getting Pyglet Actively Drawing
 -------------------------------
 
@@ -95,10 +103,9 @@ That's it!  Here's the final script, in one place.  This script wll be modified 
 
   @window.event
   def on_draw():
-    scene.draw()
+      scene.draw()
 
   pyglet.app.run()
-
 
 Version using PsychoPy
 ----------------------
@@ -128,3 +135,4 @@ Alternatively, you can see the same example using a PsychoPy window::
 
   window.close()
 
+.. image:: _static/tut1_gray_monkey.png

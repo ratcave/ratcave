@@ -47,6 +47,7 @@ Since the previous tutorials have already covered a lot of ratCAVE methods, let'
 
 This code should display a rotating torus on the window.
 
+.. image:: _static/tut3_gray_torus.png
 
 Creating a Custom GLSL Shader
 -----------------------------
@@ -149,6 +150,7 @@ Here is what the code should look like now::
 
 If you run it, you should see a flat red torus!
 
+.. image:: _static/tut3_red_torus.png
 
 Sending Data to the Shader using Uniforms
 -----------------------------------------
@@ -173,6 +175,10 @@ If you run the code now, you should now see a cyan rotating torus.  Let's make i
     def update_color(dt):
         torus.uniforms['diffuse'][0] = 0.5 * math.sin(time.clock()) + 1
     pyglet.clock.schedule(update_color)
+
+Now the torus will change color!
+
+.. image:: _static/tut3_blue_torus.png
 
 Summary
 -------
