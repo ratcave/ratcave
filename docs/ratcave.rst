@@ -1,44 +1,27 @@
-ratcave package
-===============
-
-Subpackages
------------
+API Documentation
+=================
 
 .. toctree::
+
+Module contents
+---------------
+
+.. automodule:: ratcave
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Submodules
 ----------
 
-ratcave.camera module
----------------------
 
-.. automodule:: ratcave.camera
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ratcave.fbo module
-------------------
-
-.. automodule:: ratcave.fbo
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ratcave.light module
---------------------
-
-.. automodule:: ratcave.light
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 ratcave.mesh module
 -------------------
 
 .. automodule:: ratcave.mesh
     :members:
-    :undoc-members:
+    :undoc-members: EmptyMesh
     :show-inheritance:
 
 ratcave.mixins module
@@ -90,10 +73,4 @@ ratcave.wavefront module
     :show-inheritance:
 
 
-Module contents
----------------
 
-.. automodule:: ratcave
-    :members:
-    :undoc-members:
-    :show-inheritance:

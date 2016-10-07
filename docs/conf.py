@@ -31,6 +31,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
 
+autoclass_content = 'both'  # Ensures the class.__init__() methods get documented.
 
 # -- General configuration ------------------------------------------------
 

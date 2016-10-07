@@ -76,7 +76,7 @@ OpenGL Shader Uniform creation and setting is also wrapped in a pythonic way::
 
 
 System Requirements
--------------------
+===================
 At the moment, ratCAVE's shaders require OpenGL 3.3, though this is planned to change in future releases.  If you'd like to use
 ratCAVE and don't have a graphics driver that supports OpenGL 3.3, however, you can already load your own shaders and it will
 work fine.
@@ -85,13 +85,16 @@ work fine.
 
 
 Table of Contents:
-++++++++++++++++++
+==================
 
 .. toctree::
    :maxdepth: 2
 
-   introduction
-   tutorials
+   virtual_reality
+   tutorial1
+   tutorial2
+   tutorial3
+   tutorial4
    ratcave
 
 * :ref:`genindex`

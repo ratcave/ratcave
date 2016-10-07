@@ -2,7 +2,7 @@
 Introduction
 ============
 
-ratCAVE was created to be an grapihcs package for doing behavioral experiments with animals in a freely-moving virtual reality environment.
+ratCAVE was created to be an grapicss package for doing behavioral experiments with animals in a freely-moving virtual reality environment.
 The goals of this project are:
 
   - *Less Boilerplate, more Coding*: More code means more errors.  Many behavioral experiments tend to be complex sets of logic written in a single script, so I tried to make ratCAVE as low-profile as possible to keep the focus on the experiment, not on the graphics management.
