@@ -3,6 +3,7 @@ API Documentation
 
 .. toctree::
 
+
 Module contents
 ---------------
 
@@ -71,6 +72,3 @@ ratcave.wavefront module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-

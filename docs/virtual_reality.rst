@@ -1,3 +1,3 @@
-CAVE Virtual Reality with ratCAVE
-+++++++++++++++++++++++++++++++++
+CAVE Virtual Reality
+++++++++++++++++++++
 
