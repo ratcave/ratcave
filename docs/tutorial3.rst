@@ -10,7 +10,7 @@ use a shader of your own.
 
 In this tutorial, you'll learn how to use ratCAVE to:
 
-  - Compile a :py:class:`.Shader` object and use it in the :py:function:`.Scene.draw()` function.
+  - Compile a :py:class:`.Shader` object and use it in the :py:func:`.Scene.draw()` function.
   - Send data to the shader from Python as a :py:class:`.Uniform` variable.
   - Render using an off-screen buffer :py:class:`.FBO` object to a texture in order to perform deferred rendering operations.
 
@@ -47,6 +47,10 @@ Since the previous tutorials have already covered a lot of ratCAVE methods, let'
     pyglet.app.run()
 
 This code should display a rotating torus on the window.
+
+
+Creating a Custom GLSL Shader
+-----------------------------
 
 Now, one thing ratCAVE does automatically is use it's built-in **genShader** :py:class:`.Shader`, if none is specified.  This is
 to make it easier to get started.  Let's replace it with our own custom shader program, which simply positions the mesh in 3D space.
@@ -88,7 +92,7 @@ Now, to make the :py:class:`.Shader` ::
 
     shader = rc.Shader(vert=vert_shader, frag=frag_shader)
 
-Using the shader during drawing is done in a shader keyword argument in :py:function:`.Scene.draw()`::
+Using the shader during drawing is done in a shader keyword argument in :py:func:`.Scene.draw()`::
 
     scene.draw(shader=shader)
 
@@ -145,4 +149,23 @@ Here is what the code should look like now::
     pyglet.app.run()
 
 If you run it, you should see a flat red torus!
+
+
+Sending Data to the Shader using Uniforms
+-----------------------------------------
+
+Data can be attached to each object and sent to the shaders, to customize their behavior.  Here, let's let the
+:py:func:`Mesh.uniforms['diffuse']` uniform control what color the torus takes.
+
+In the fragment shader, add this line to initialize the **diffuse** uniform variable before the main function::
+
+    uniform vec3 diffuse;
+
+In the python code, modify the diffuse key in the :py:func:`Mesh.uniforms` attribute::
+
+    torus.uniforms['diffuse'] = [.2, .8, .8]
+
+.. note:: All ratCAVE objects come with some default uniforms, to make setting up easier and to make naming schemas more consistent.  This shouldn't restrict you, though--new uniforms are automatically initialized when you add them dictionary-style, like **torus.uniforms['my_uniform'] = 3.0**!
+
+
 
