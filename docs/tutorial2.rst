@@ -54,6 +54,9 @@ While we could easily make a new :py:class:`.Camera` object from scratch, we'll 
         scene.camera.x += camera_speed * dt
   pyglet.clock.schedule(move_camera)
 
+Now you should have an interactive scene!  Don't forget to use the arrow keys to move around!
+
+.. image:: _static/tut2_final.png
 
 Summary
 -------

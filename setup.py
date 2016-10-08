@@ -5,7 +5,7 @@ import numpy
 
 
 setup(name='ratcave',
-      version='0.5',
+      version='0.5post2',
       url='https://www.github.com/neuroneuro15/ratcave',
       description='3D Graphics Engine for CAVE VR setups',
       author='Nicholas A. Del Grosso',
@@ -13,8 +13,8 @@ setup(name='ratcave',
       license='MIT',
       packages=find_packages(exclude=['docs']),
       include_package_data=True,
-      package_data={'': ['assets/*.'+el for el in ['png', 'obj', 'mtl']] +
-                        ['shaders/*'+el for el in ['vert', 'frag']]
+      package_data={'': ['../assets/*.'+el for el in ['png', 'obj', 'mtl']] +
+                        ['../shaders/*'+el for el in ['vert', 'frag']]
                     },
       install_requires=['pyglet', 'numpy'],
       ext_modules=[Extension('_transformations', sources=['third_party/transformations.c'], include_dirs=[numpy.get_include()])],
@@ -26,6 +26,7 @@ setup(name='ratcave',
           "License :: OSI Approved :: MIT License",
           "Intended Audience :: Science/Research",
           "Programming Language :: Python",
+          "Programming Language :: Python :: 2",
           "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3",
           "Programming Language :: Python :: 3.3",

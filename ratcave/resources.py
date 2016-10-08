@@ -10,7 +10,7 @@ Here are some sample obj files for prototyping your app!
 
 # This is an easy way to get the filepaths of some oft-used resources for displaying simple scenes.
 
-resource_path = path.join(path.split(__file__)[0],'assets')
+resource_path = path.join(path.split(__file__)[0], '..', 'assets')
 
 # Images
 img_uvgrid = path.join(resource_path,'uvgrid.png')
@@ -23,7 +23,7 @@ obj_grid3D = path.join(resource_path, 'grid3D.obj')
 
 
 # Shaders
-shader_path = path.join(path.split(__file__)[0], 'shaders')
+shader_path = path.join(path.split(__file__)[0], '..', 'shaders')
 
 # General, Normal Shader
 genShader = Shader(open(path.join(shader_path, 'combShader.vert')).read(),

@@ -31,6 +31,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
 
+autoclass_content = 'both'  # Ensures the class.__init__() methods get documented.
 
 # -- General configuration ------------------------------------------------
 
@@ -101,7 +102,7 @@ exclude_patterns = ['_build']
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-#add_module_names = True
+add_module_names = False
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
@@ -124,7 +125,7 @@ stodo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 # html_theme = 'alabaster'
-# html_theme =  'sphinx_rtd_theme'  # can also use 'alabaster'
+html_theme =  'sphinx_rtd_theme'  # can also use 'alabaster'
 # html_theme = 'pyramid'
 
 # Theme options are theme-specific and customize the look and feel of a theme

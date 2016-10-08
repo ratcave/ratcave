@@ -1,6 +1,7 @@
 import unittest
 from ratcave.wavefront import WavefrontReader
-
+from ratcave import resources
+from os import path
 
 class TestWavefrontReader(unittest.TestCase):
     """
@@ -14,6 +15,6 @@ class TestWavefrontReader(unittest.TestCase):
         pass
 
     def test_parse_mtl(self):
-        self.reader = WavefrontReader('ratcave/assets/primitives')
+        self.reader = WavefrontReader(path.join(resources.resource_path, 'primitives'))
 
         assert(len(self.reader.materials) == 1)
