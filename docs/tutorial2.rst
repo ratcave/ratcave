@@ -6,7 +6,7 @@ This tutorial will build on the previous one by adding some more interesting ele
 Scenes Hold Lists of Meshes
 ---------------------------
 
-Let's insert a couple Meshes from our obj_reader WavefrontReader object into a couple different scenes.  We'll even create a second Monkey object and display it as a wireframe.::
+Let's insert a couple Meshes from our obj_reader WavefrontReader object into the scene!::
 
   # Create Meshes from WavefrontReader
   monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1.5))
