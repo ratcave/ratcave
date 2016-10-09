@@ -1,7 +1,7 @@
-Tutorial 2: Animating a Scene with Multiple Meshes, and using Multiple Scenes
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Tutorial 2: Animating a Scene with Multiple Meshes and Moving the Camera with the  Keyboard
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This tutorial will build on the previous one by adding some more interesting elements.  We'll allow the user to switch between two different :py:class:`.Scene` objects by pressing a key, and have multiple meshes in each scene that move.
+This tutorial will build on the previous one by adding some more interesting elements.  We'll allow the user to move the scene's camera by pressing the left and right arrow keys, and have multiple meshes in the scene that move.
 
 Scenes Hold Lists of Meshes
 ---------------------------
