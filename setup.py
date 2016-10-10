@@ -18,7 +18,7 @@ setup(name='ratcave',
                     },
       install_requires=['pyglet', 'numpy'],
       ext_modules=[Extension('_transformations', sources=['third_party/transformations.c'], include_dirs=[numpy.get_include()])],
-      test_suite='tests',
+      test_suite='test',
       keywords='graphics 3D pyglet psychopy python virtual reality VR',
       classifiers=[
           "Topic :: Multimedia :: Graphics :: 3D Rendering",
