@@ -9,6 +9,8 @@ CAVE VR relies on position updates from head trackers to render a virtual scene 
 
 While this is difficult to show without having an actual tracking system, we'll illustrate this effect and the code needed to run it by making an animation:
 
+.. warning:: This tutorial assumes knowledge gained from the previous tutorials.  If you are just getting started, it's recommended to start from Tutorial 1!
+
 Import Pyglet and Ratcave, and Start the Window and OpenGL Context
 ------------------------------------------------------------------
 

@@ -14,6 +14,8 @@ In this tutorial, you'll learn how to use ratCAVE to:
   - Send data to the shader from Python as a :py:class:`.Uniform` variable.
 
 
+.. warning:: This tutorial builds on the previous tutorials.  If you're just getting started, it's recommended to go back and do those tutorials first!
+
 Initial Script
 --------------
 

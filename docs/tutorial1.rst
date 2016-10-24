@@ -4,8 +4,11 @@ Tutorial 1: Displaying a 3D Object
 This tutorial will show the process of displaying a 3D object onscreen. This will be done in four steps:
   - We'll open a file containing 3D objects--a Wavefront .obj file containing basic 3D primitives that comes with ratCAVE (although you can use any .obj file outputted by 3D modeling software), using the :py:class:`.WavefrontReader` class.
   - We then retrieve a :py:class:`.Mesh` object from the file. Mesh objects contain all information about the object, including its position (inside its Local and World attributes, which are :py:class:`.Physical` objects), color (inside its Material attribute, which are of the :py:class:`.Material` class), and even the vertex data itself (inside its Data attribute, which is a :py:class:`.MeshData` object).
-  - We'll put the Mesh inside a :py:class:`.Scene` object, which is a container class that holds :py:class:`.Mesh` objects, a :py:class:`.Camera` object, and a :py:class:`.Light` object, along with an RGB background color. Multiple Scenes can be created, even ones that contain the same Meshes, and rendering one vs another one is as simple as changing which Scene is the active one inside the :py:class:`.Window`.
-  - Finally, we'll put the Scene inside a :py:class:`.Window` object, and render it by calling its :py:meth:`.Window.draw` and :py:meth:`.Window.flip`  methods.
+  - We'll put the Mesh inside a :py:class:`.Scene` object, which is a container class that holds :py:class:`.Mesh` objects, a :py:class:`.Camera` object, and a :py:class:`.Light` object, along with an RGB background color. Multiple Scenes can be created, even ones that contain the same Meshes, and rendering one vs another one is as simple as calling the scene's :py:function:`Scene.draw()` method.
+
+.. note:: Each tutorial follows from each other, assuming knowledge of the previous.  To get the most out of ratCAVE, then, it is best to do them in order!
+
+.. note:: Some of the constructs in this tutorial, like decorators and event loops, come from Pyglet.  While completely understanding them isn't necessary, it'll probably best to start our with a Pyglet tutorial to get your feet wet.  This one is good: http://www.natan.termitnjak.net/tutorials/pyglet_basic.html
 
 Starting an OpenGL Context and a Window
 ---------------------------------------
@@ -25,6 +28,8 @@ the escape key::
   pyglet.app.run()
 
 .. image:: _static/tut1_blank_window.png
+
+.. warning:: Creating a Window automatically starts the OpenGL context, which is important for many aspects of ratCAVE.  As a general rule, it's good to make your window first, before doing anything else!
 
 Getting Pyglet Actively Drawing
 -------------------------------

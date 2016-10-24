@@ -3,14 +3,17 @@ Tutorial 2: Animating a Scene with Multiple Meshes and Moving the Camera with th
 
 This tutorial will build on the previous one by adding some more interesting elements.  We'll allow the user to move the scene's camera by pressing the left and right arrow keys, and have multiple meshes in the scene that move.
 
+.. warning:: This tutorial builds on code from Tutorial 1.  If you have not yet completed Tutorial 1, it's best to go and do that, first!
+
 Scenes Hold Lists of Meshes
 ---------------------------
 
 Let's insert a couple Meshes from our obj_reader WavefrontReader object into the scene!::
 
   # Create Meshes from WavefrontReader
-  monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1.5))
-  torus = obj_reader.get_mesh("Torus", position=(-1, 0, -1.5), scale=.2)
+  monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1.5), scale=.6)
+  torus = obj_reader.get_mesh("Torus", position=(-1, 0, -1.5), scale=.4)
+
 
   # Create Scenes with Meshes.
   scene = rc.Scene([monkey, torus])
@@ -21,8 +24,8 @@ Moving a Mesh
 Now, we'll animate the Meshes by changing their rotation attributes in the update function::
 
   def rotate_meshes(dt):
-      monkey.rot_y += 5 * dt  # dt is the time between frames
-      torus.rot_x += 10 * dt
+      monkey.rot_y += 15 * dt  # dt is the time between frames
+      torus.rot_x += 80 * dt
   pyglet.clock.schedule(rotate_meshes)
 
 
