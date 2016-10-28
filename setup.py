@@ -3,7 +3,7 @@ import numpy
 
 
 setup(name='fruitloop',
-      version='0.6b',
+      version='0.6b0',
       url='https://www.github.com/neuroneuro15/fruitloop',
       description='3D OpenGL Utilities for Easy 2D-to-3D Graphic Conversion.  Compatible with Pyglet, Pygame, and Psychopy.',
       author='Nicholas A. Del Grosso',
