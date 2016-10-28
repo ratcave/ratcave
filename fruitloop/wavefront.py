@@ -12,7 +12,7 @@ class WavefrontReader(object):
 
     def __init__(self, file_name):
         """
-        Reads Wavefront (.obj) files created in Blender to build ratCAVE.graphics Mesh objects.
+        Reads Wavefront (.obj) files created in Blender to build fruitloop.graphics Mesh objects.
 
         :param file_name: .obj file to read (assumes an accompanying .mtl file has the same base file name.)
         :type file_name: str

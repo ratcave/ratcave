@@ -16,7 +16,7 @@ Let's insert a couple Meshes from our obj_reader WavefrontReader object into the
 
 
   # Create Scenes with Meshes.
-  scene = rc.Scene([monkey, torus])
+  scene = fruit.Scene([monkey, torus])
 
 Moving a Mesh
 -------------
@@ -68,7 +68,7 @@ Here's the full code for Tutorial 2::
 
   import pyglet
   from pyglet.window import key
-  import ratcave as rc
+  import fruitloop as fruit
 
   # Create Window and Add Keyboard State Handler to it's Event Loop
   window = pyglet.window.Window()
@@ -76,15 +76,15 @@ Here's the full code for Tutorial 2::
   window.push_handlers(keys)
 
   # Insert filename into WavefrontReader.
-  obj_filename = rc.resources.obj_primitives
-  obj_reader = rc.WavefrontReader(obj_filename)
+  obj_filename = fruit.resources.obj_primitives
+  obj_reader = fruit.WavefrontReader(obj_filename)
 
   # Create Mesh
   monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1.5), scale=.6)
   torus = obj_reader.get_mesh("Torus", position=(-1, 0, -1.5), scale=.4)
 
   # Create Scene
-  scene = rc.Scene(meshes=[monkey, torus])
+  scene = fruit.Scene(meshes=[monkey, torus])
   scene.bgColor = 1, 0, 0
 
   # Functions to Run in Event Loop
@@ -114,7 +114,7 @@ PsychoPy Version
 Here's the same scenario, done in PsychoPy::
 
     from psychopy import visual, event
-    import ratcave as rc
+    import fruitloop as fruit
 
     camera_speed = 2
 
@@ -122,15 +122,15 @@ Here's the same scenario, done in PsychoPy::
     window = visual.Window()
 
     # Insert filename into WavefrontReader.
-    obj_filename = rc.resources.obj_primitives
-    obj_reader = rc.WavefrontReader(obj_filename)
+    obj_filename = fruit.resources.obj_primitives
+    obj_reader = fruit.WavefrontReader(obj_filename)
 
     # Create Mesh
     monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1.5), scale=.6)
     torus = obj_reader.get_mesh("Torus", position=(-1, 0, -1.5), scale=.4)
 
     # Create Scene
-    scene = rc.Scene(meshes=[monkey, torus])
+    scene = fruit.Scene(meshes=[monkey, torus])
     scene.bgColor = 1, 0, 0
 
     while True:

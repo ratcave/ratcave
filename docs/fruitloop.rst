@@ -7,7 +7,7 @@ API Documentation
 Module contents
 ---------------
 
-.. automodule:: ratcave
+.. automodule:: fruitloop
     :members:
     :undoc-members:
     :show-inheritance:
@@ -17,58 +17,58 @@ Submodules
 
 
 
-ratcave.mesh module
+fruitloop.mesh module
 -------------------
 
-.. automodule:: ratcave.mesh
+.. automodule:: fruitloop.mesh
     :members:
     :undoc-members: EmptyMesh
     :show-inheritance:
 
-ratcave.mixins module
+fruitloop.mixins module
 ---------------------
 
-.. automodule:: ratcave.mixins
+.. automodule:: fruitloop.mixins
     :members:
     :undoc-members:
     :show-inheritance:
 
-ratcave.resources module
+fruitloop.resources module
 ------------------------
 
-.. automodule:: ratcave.resources
+.. automodule:: fruitloop.resources
     :members:
     :undoc-members:
     :show-inheritance:
 
-ratcave.scene module
+fruitloop.scene module
 --------------------
 
-.. automodule:: ratcave.scene
+.. automodule:: fruitloop.scene
     :members:
     :undoc-members:
     :show-inheritance:
 
-ratcave.shader module
+fruitloop.shader module
 ---------------------
 
-.. automodule:: ratcave.shader
+.. automodule:: fruitloop.shader
     :members:
     :undoc-members:
     :show-inheritance:
 
-ratcave.texture module
+fruitloop.texture module
 ----------------------
 
-.. automodule:: ratcave.texture
+.. automodule:: fruitloop.texture
     :members:
     :undoc-members:
     :show-inheritance:
 
-ratcave.wavefront module
+fruitloop.wavefront module
 ------------------------
 
-.. automodule:: ratcave.wavefront
+.. automodule:: fruitloop.wavefront
     :members:
     :undoc-members:
     :show-inheritance:

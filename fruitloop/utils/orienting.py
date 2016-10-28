@@ -1,4 +1,4 @@
-__author__ = 'ratcave'
+__author__ = 'fruitloop'
 
 import numpy as np
 import _transformations as transformations

@@ -12,10 +12,10 @@ Building your own virtual reality setup requires several parts:
 Our Setup
 ---------
 
-The VR setup we made is intended for use by rats, mice, and gerbils for cognitive neuroscience experiments, which is why we call this python package ratCAVE!
+The VR setup we made is intended for use by rats, mice, and gerbils for cognitive neuroscience experiments, which is why we call this python package fruitloop!
 In selecting our components, we were both limited by and helped by the small sizes of our users:
 
-  - We use a simplified 3D graphics engine, to make our experiment scripts small and simple to deploy (python, with pyglet or psychopy + ratCAVE)
+  - We use a simplified 3D graphics engine, to make our experiment scripts small and simple to deploy (python, with pyglet or psychopy + fruitloop)
   - Head-mounting a display on mice wasn't an option because of their small size, so we use a single wide-lens video projector, which front-projects onto the walls and floor of the rodent's arena.  This gives them a 360-degree view of the virtual environment, while reducing the computational demands of our setup.
   - We use an optical tracking system for measuring the rodent's head space via data collected from camera arrays.  We use _NaturalPoint's Optitrack System: http://www.optitrack.com/
     - To control this tracking system from Python, we wrote a Python package called MotivePy, available here: https://github.com/neuroneuro15/motivepy
@@ -34,11 +34,11 @@ Writing a VR Script is relatively straightforward, and involves three main compo
   3) In a loop, re-render the 3D environment, setting the camera position at the new eye position of your user.
 
 
-In Pyglet, RatCAVE, and NatNetClient, this would something like this::
+In Pyglet, fruitloop, and NatNetClient, this would something like this::
 
 
     import pyglet
-    import ratcave as rc
+    import fruitloop as rc
     import natnetclient
 
     # Connect to Tracking System
@@ -67,7 +67,7 @@ In Pyglet, RatCAVE, and NatNetClient, this would something like this::
 In Psychopy, which is written in a more imperative format, it looks like this::
 
     from psychopy import visual, event
-    import ratcave as rc
+    import fruitloop as rc
     import natnetclient
 
     # Connect to Tracking System

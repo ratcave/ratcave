@@ -2,22 +2,22 @@ Tutorial 1: Displaying a 3D Object
 ++++++++++++++++++++++++++++++++++
 
 This tutorial will show the process of displaying a 3D object onscreen. This will be done in four steps:
-  - We'll open a file containing 3D objects--a Wavefront .obj file containing basic 3D primitives that comes with ratCAVE (although you can use any .obj file outputted by 3D modeling software), using the :py:class:`.WavefrontReader` class.
+  - We'll open a file containing 3D objects--a Wavefront .obj file containing basic 3D primitives that comes with fruitloop (although you can use any .obj file outputted by 3D modeling software), using the :py:class:`.WavefrontReader` class.
   - We then retrieve a :py:class:`.Mesh` object from the file. Mesh objects contain all information about the object, including its position (inside its Local and World attributes, which are :py:class:`.Physical` objects), color (inside its Material attribute, which are of the :py:class:`.Material` class), and even the vertex data itself (inside its Data attribute, which is a :py:class:`.MeshData` object).
   - We'll put the Mesh inside a :py:class:`.Scene` object, which is a container class that holds :py:class:`.Mesh` objects, a :py:class:`.Camera` object, and a :py:class:`.Light` object, along with an RGB background color. Multiple Scenes can be created, even ones that contain the same Meshes, and rendering one vs another one is as simple as calling the scene's :py:function:`Scene.draw()` method.
 
-.. note:: Each tutorial follows from each other, assuming knowledge of the previous.  To get the most out of ratCAVE, then, it is best to do them in order!
+.. note:: Each tutorial follows from each other, assuming knowledge of the previous.  To get the most out of fruitloop, then, it is best to do them in order!
 
 .. note:: Some of the constructs in this tutorial, like decorators and event loops, come from Pyglet.  While completely understanding them isn't necessary, it'll probably best to start our with a Pyglet tutorial to get your feet wet.  This one is good: http://www.natan.termitnjak.net/tutorials/pyglet_basic.html
 
 Starting an OpenGL Context and a Window
 ---------------------------------------
 
-ratCAVE depends on their already being an OpenGL context set up before loading objects.  This can be done by any OpenGL manager (Pyglet and PsychoPy are useful, but PyGame and Qt OpenGL windows should work fine as well).
-So, before doing anything in ratCAVE, a window must first be created.  In these tutorials, I'll show it with Pyglet::
+fruitloop depends on their already being an OpenGL context set up before loading objects.  This can be done by any OpenGL manager (Pyglet and PsychoPy are useful, but PyGame and Qt OpenGL windows should work fine as well).
+So, before doing anything in fruitloop, a window must first be created.  In these tutorials, I'll show it with Pyglet::
 
   import pyglet
-  import ratcave as rc
+  import fruitloop as rc
 
   window = pyglet.window.Window()
 
@@ -29,7 +29,7 @@ the escape key::
 
 .. image:: _static/tut1_blank_window.png
 
-.. warning:: Creating a Window automatically starts the OpenGL context, which is important for many aspects of ratCAVE.  As a general rule, it's good to make your window first, before doing anything else!
+.. warning:: Creating a Window automatically starts the OpenGL context, which is important for many aspects of fruitloop.  As a general rule, it's good to make your window first, before doing anything else!
 
 Getting Pyglet Actively Drawing
 -------------------------------
@@ -44,11 +44,11 @@ Pyglet's event loop won't automatically update the scene, so we'll stick in a fu
 Reading a Wavefront .obj file
 -----------------------------
 
-To load a 3D object, let's read in a .obj file! The built-in :py:class:`WavefrontReader` can read triangulated, uv-maped .obj files exported from Blender.  RatCAVE comes with some primitive 3D objects in its :py:class:`resources` module, so let's use one of those.::
+To load a 3D object, let's read in a .obj file! The built-in :py:class:`WavefrontReader` can read triangulated, uv-maped .obj files exported from Blender.  fruitloop comes with some primitive 3D objects in its :py:class:`resoufruites` module, so let's use one of those.::
 
   # Insert filename into WavefrontReader.
-  obj_filename = rc.resources.obj_primitives
-  obj_reader = rc.WavefrontReader(obj_filename)
+  obj_filename = fruit.resources.obj_primitives
+  obj_reader = fruit.WavefrontReader(obj_filename)
 
   # Check which meshes can be found inside the Wavefront file, and extract it into a Mesh object for rendering.
   print(obj_reader.mesh_names)
@@ -67,7 +67,7 @@ Creating a Scene
 
 Scenes consist of meshes, lights, and a camera--everything we need to view and position and object in the real world! Let's put the monkey :py:class:`.Mesh` into a :py:class:`.Scene`::
 
-  scene = rc.Scene(meshes=[monkey])
+  scene = fruit.Scene(meshes=[monkey])
 
 Drawing the Scene
 -----------------
@@ -86,7 +86,7 @@ Summary
 That's it!  Here's the final script, in one place.  This script wll be modified in the next tutorial to animate the scene.::
 
   import pyglet
-  import ratcave as rc
+  import fruitloop as fruit
 
   # Create Window
   window = pyglet.window.Window()
@@ -96,15 +96,15 @@ That's it!  Here's the final script, in one place.  This script wll be modified 
   pyglet.clock.schedule(update)
 
   # Insert filename into WavefrontReader.
-  obj_filename = rc.resources.obj_primitives
-  obj_reader = rc.WavefrontReader(obj_filename)
+  obj_filename = fruit.resources.obj_primitives
+  obj_reader = fruit.WavefrontReader(obj_filename)
 
   # Create Mesh
   monkey = obj_reader.get_mesh("Monkey")
   monkey.position = 0, 0, -2
 
   # Create Scene
-  scene = rc.Scene(meshes=[monkey])
+  scene = fruit.Scene(meshes=[monkey])
 
   @window.event
   def on_draw():
@@ -117,22 +117,22 @@ Version using PsychoPy
 
 Alternatively, you can see the same example using a PsychoPy window::
 
-  import ratcave as rc
+  import fruitloop as fruit
   from psychopy import visual, events
 
   # Create Window
   window = visual.Window()
 
   # Insert filename into WavefrontReader.
-  obj_filename = rc.resources.obj_primitives
-  obj_reader = rc.WavefrontReader(obj_filename)
+  obj_filename = fruit.resources.obj_primitives
+  obj_reader = fruit.WavefrontReader(obj_filename)
 
   # Create Mesh
   monkey = obj_reader.get_mesh("Monkey")
   monkey.position = 0, 0, -2
 
   # Create Scene
-  scene = rc.Scene(meshes=[monkey])
+  scene = fruit.Scene(meshes=[monkey])
 
   while 'escape' not in events.getKeys():
       scene.draw()

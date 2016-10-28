@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# ratCAVE documentation build configuration file, created by
+# fruitloop documentation build configuration file, created by
 # sphinx-quickstart on Wed Oct  5 16:47:55 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -63,7 +63,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'ratcave'
+project = 'fruitloop'
 copyright = '2016, Nicholas A Del Grosso'
 author = 'Nicholas A Del Grosso'
 
@@ -218,7 +218,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ratcavedoc'
+htmlhelp_basename = 'fruitloopdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -240,7 +240,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ratcave.tex', 'ratcave Documentation',
+    (master_doc, 'fruitloop.tex', 'fruitloop Documentation',
      'Nicholas A Del Grosso', 'manual'),
 ]
 
@@ -270,7 +270,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'ratcave', 'ratCAVE Documentation',
+    (master_doc, 'fruitloop', 'fruitloop Documentation',
      [author], 1)
 ]
 
@@ -284,8 +284,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'ratcave', 'ratcave Documentation',
-     author, 'ratcave', 'One line description of project.',
+    (master_doc, 'fruitloop', 'fruitloop Documentation',
+     author, 'fruitloop', 'One line description of project.',
      'Miscellaneous'),
 ]
 

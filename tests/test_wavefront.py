@@ -1,6 +1,6 @@
 import unittest
-from ratcave.wavefront import WavefrontReader
-from ratcave import resources
+from fruitloop.wavefront import WavefrontReader
+from fruitloop import resources
 from os import path
 
 class TestWavefrontReader(unittest.TestCase):
