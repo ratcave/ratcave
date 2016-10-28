@@ -17,7 +17,7 @@ fruitloop depends on their already being an OpenGL context set up before loading
 So, before doing anything in fruitloop, a window must first be created.  In these tutorials, I'll show it with Pyglet::
 
   import pyglet
-  import fruitloop as rc
+  import fruitloop as fruit
 
   window = pyglet.window.Window()
 
