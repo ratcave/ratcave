@@ -1,13 +1,11 @@
-__author__ = 'ratcave'
-
 from setuptools import setup, find_packages, Extension
 import numpy
 
 
-setup(name='ratcave',
-      version='0.5post2',
-      url='https://www.github.com/neuroneuro15/ratcave',
-      description='3D Graphics Engine for CAVE VR setups',
+setup(name='fruitloop',
+      version='0.6',
+      url='https://www.github.com/neuroneuro15/fruitloop',
+      description='3D OpenGL Utilities for Easy 2D-to-3D Graphic Conversion.  Compatible with Pyglet, Pygame, and Psychopy.',
       author='Nicholas A. Del Grosso',
       author_email='delgrosso.nick@gmail.com',
       license='MIT',
