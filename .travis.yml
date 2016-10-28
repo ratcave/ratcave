@@ -1,23 +1,30 @@
 language: python
 os:
-  - linux
+- linux
 python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
+- '2.7'
+- '3.3'
+- '3.4'
+- '3.5'
 branches:
   only:
-    - master
+  - master
 before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
+- sleep 3
 install:
-  - pip install .
-  - pip install -r requirements.txt
-  - pip install coveralls
-script:
-  coverage run --source=fruitloop setup.py test
-after_success:
-  coveralls
+- pip install .
+- pip install -r requirements.txt
+- pip install coveralls
+script: coverage run --source=fruitloop setup.py test
+after_success: coveralls
+deploy:
+  provider: pypi
+  user: neuroneuro15
+  password:
+    secure: hKgxNXchi29yqYsP7Pzl/ub37sQrcJSIhY0Ub0GKKVH1yE+WKXOZjP3H4KODXIlID5ncHZhl21vTOgCGeqIWq+hlSTrUR3Iq/Tn+oDQjMqQqjLbFOB32O6uuROCDk095lgyJFDSprBhx0fueolFCToo/t1NypybQLZA7NC6M79YgEMU/lvWCEAwUfGu2+8/VqmA5Zc8SGo83UQSYUOUTxU3U+EKrvre7Q1j3qKlgTGsySabYCv18I/CJDVWlrbI1ioWgvq6LTJomDWlilmInE/Dir+Zh3IcBhXCPy324zlj1TNQri9V26mZuiMGP2SK4RHfInCuXgqyZHbUDB6Ns9P3N1SVtGJnk3EgXOf8XHRu8i0aqZODPp6TjWzC6ZBDy4HSPywLdeDAXdVuF5zbx0RmxmlFRQ09ViUlH6JhXk6F9gAp7H947bIgxIDvdEM+CfxWyBTk+RZlXjsuBB15EeKlLZMe3l9KHsmY/a//E6qvxQdTpxjxxTvad8j49wHzuYMwdxaEHCW3DBzjBUzgLj59niLR5lRy94lmFNBRMqZIFz+bWUAtgMOeL7Su0k0syBOhjPwp8Gnn1Q12EfruiH/VYKyL1A1BSjH12uQb3/yc9c1YIE/F60D3+ifkLuwJgm0wUv/DpMTB2EMVTK9PBePFKDd0XZZt4k5tiSedNi58=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: neuroneuro15/fruitloop
