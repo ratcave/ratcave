@@ -118,7 +118,7 @@ Version using PsychoPy
 Alternatively, you can see the same example using a PsychoPy window::
 
   import ratcave as rc
-  from psychopy import visual, events
+  from psychopy import visual, event
 
   # Create Window
   window = visual.Window()
@@ -134,7 +134,7 @@ Alternatively, you can see the same example using a PsychoPy window::
   # Create Scene
   scene = rc.Scene(meshes=[monkey])
 
-  while 'escape' not in events.getKeys():
+  while 'escape' not in event.getKeys():
       scene.draw()
       window.flip()
 
