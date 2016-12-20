@@ -7,10 +7,13 @@
     This module contains the Mesh, MeshData, and Material classes.
     This documentation was auto-generated from the mesh.py file.
 """
+import copy
 import numpy as np
 from pyglet import gl
 from .utils import gl as ugl
-from . import mixins, shader, texture
+from . import mixins, shader
+from . import texture as texture_module
+
 
 class MeshData(object):
 
@@ -72,16 +75,18 @@ class MeshData(object):
         self.normals = unique_combs_array[:, 3:6]
         self.texcoords = unique_combs_array[:, 6:]
 
+
 class Material(object):
 
     def __init__(self, diffuse=[.8, .8, .8], spec_weight=0., specular=[0., 0., 0.],
-                 ambient=[0., 0., 0.], opacity=1., flat_shading=False):
+                 ambient=[0., 0., 0.], opacity=1., flat_shading=False, texture_file=None):
         self.diffuse = diffuse
         self.spec_weight = spec_weight
         self.specular = specular
         self.ambient = ambient
         self.opacity = opacity
         self.flat_shading = flat_shading
+        self.texture_file = texture_file
 
 
 class MeshLoader(object):
@@ -98,14 +103,22 @@ class MeshLoader(object):
 
         """Construct a Mesh object"""
         uniforms = shader.UniformCollection()
+        texture = None
+
         if self.material:
             for key, val in list(self.material.__dict__.items()):
-                if not isinstance(val, Iterable):
-                    val = int(val) if isinstance(val, bool) else val
-                    val = [val]
-                uniforms[key] = shader.Uniform(key, *val)
+                if key == "texture_file":
+                    if val is not None:
+                        texture = texture_module.Texture.from_image(val)
+                else:
+                    newval = copy.deepcopy(val)
+                    if not isinstance(newval, Iterable):
+                        newval = int(val) if isinstance(val, bool) else newval
+                        newval = [newval]
 
-        return Mesh(self.name, self.meshdata, uniforms=uniforms, **kwargs)
+                    uniforms[key] = shader.Uniform(key, *newval)
+
+        return Mesh(self.name, self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
 
 
 class EmptyMesh(mixins.PhysicalNode):
@@ -114,15 +127,15 @@ class EmptyMesh(mixins.PhysicalNode):
         super(EmptyMesh, self).__init__(*args, **kwargs)
 
     def _draw(self, shader=None, **kwargs):
-        self.update()
+        pass
 
 
 class Mesh(EmptyMesh, mixins.Picklable):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, name, meshdata, uniforms=shader.UniformCollection(), drawstyle='fill', visible=True, point_size=4,
-                 **kwargs):
+    def __init__(self, name, meshdata, uniforms=shader.UniformCollection(), drawstyle='fill', visible=True,
+                 point_size=4, texture=None, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -144,11 +157,11 @@ class Mesh(EmptyMesh, mixins.Picklable):
         Returns:
             Mesh instance
         """
+        self.data = meshdata
+
         super(Mesh, self).__init__(**kwargs)
 
         self.name = name
-
-        self.data = meshdata
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.data.vertices, axis=0)
@@ -160,7 +173,7 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.uniforms = uniforms if type(uniforms) == shader.UniformCollection else shader.UniformCollection(uniforms)
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
-        self.texture = texture.BaseTexture()
+        self.texture = texture or texture_module.BaseTexture()
         self.drawstyle = drawstyle
         self.point_size = point_size
 
@@ -168,8 +181,32 @@ class Mesh(EmptyMesh, mixins.Picklable):
         self.visible = visible
         self.vao = None
 
+        self.is_updated = False
+
+    def __str__(self):
+        return "%s(%d) at %s" % (self.name, len(self.children), self.position_global)
+
+    def __repr__(self):
+        return str(self)
+
+    def update(self):
+        super(Mesh, self).update()
+
+        vertices_local = np.vstack([self.data.vertices.T, np.ones(len(self.data.vertices))])
+        vertices_global = np.dot(self.model_matrix_global, vertices_local).T
+
+        # if needed, one can store global vertex coordinates
+        vg = vertices_global
+
+        self.min_xyz = np.array((vg[:, 0].min(), vg[:, 1].min(), vg[:, 2].min()))
+        self.max_xyz = np.array((vg[:, 0].max(), vg[:, 1].max(), vg[:, 2].max()))
+
     def _draw(self, shader=None, send_uniforms=True, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
+
+        if not self.is_updated:
+            self.update()
+            self.is_updated = True
 
         if self.visible:
 
@@ -198,6 +235,3 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
                 # Send in the vertex and normal data
                 self.data.draw(Mesh.drawstyle[self.drawstyle])
-
-
-
