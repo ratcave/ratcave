@@ -10,8 +10,8 @@ out vec4 color;
 
 void main( void ) {
     color = vec4(1.);
-//    color.xyz = vec3(1., 0, 0) + texture2D(TextureMap,texCoord).xyz;
-//    return;
+    // color.xyz = vec3(1., 0, 0) + texture2D(TextureMap,texCoord).xyz;
+    // return;
 
     float FXAA_SPAN_MAX = 64.0;
     float FXAA_REDUCE_MUL = 1.0/8.0; // Originally 1.0/8.0
