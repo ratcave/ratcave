@@ -171,19 +171,3 @@ class PhysicalNode(Physical, SceneNode):
     @property
     def position_global(self):
         return tuple(self.model_matrix_global[:3, -1].tolist())
-
-
-class Picklable(object):
-
-    def save(self, filename):
-        """Save the object to a file.  Will be Pickled in the process, but can be loaded easily with Class.load()"""
-        with open(filename, 'wb') as f:
-            pickle.dump(self, f)
-
-    @classmethod
-    def load(cls, filename):
-        """Load the object from a pickle file."""
-        with open(filename) as f:
-            obj = pickle.load(f)
-            assert isinstance(obj, cls), "File's object is {}, but should be {}".format(type(obj), cls)
-        return obj

@@ -4,7 +4,7 @@ import numpy as np
 from . import mixins
 import pyglet.gl as gl
 
-class Camera(mixins.PhysicalNode, mixins.Picklable):
+class Camera(mixins.PhysicalNode):
     """A convenient object for controlling the scene viewing angle."""
 
     def __init__(self, fov_y=60., aspect=1.778, z_near=.01, z_far=4.5, x_shift=0., y_shift=0.,
