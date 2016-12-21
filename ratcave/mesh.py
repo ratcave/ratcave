@@ -130,7 +130,7 @@ class EmptyMesh(mixins.PhysicalNode):
         pass
 
 
-class Mesh(EmptyMesh, mixins.Picklable):
+class Mesh(EmptyMesh):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
