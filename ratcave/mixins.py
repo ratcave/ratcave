@@ -1,8 +1,7 @@
 
 import numpy as np
-import pickle
-from . import utils
 from collections import deque
+import _transformations as trans
 
 # TODO: Check for loops and duplicate nodes in the Scene graph
 class SceneNode(object):
@@ -62,7 +61,7 @@ class SceneNode(object):
 
 class Physical(object):
 
-    __observables = ('x', 'y', 'z', 'rot_x', 'rot_y', 'rot_z', 'scale')
+    __observables = ('x', 'y', 'z', '_rotquaternion', 'scale')
 
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1., *args, **kwargs):
         """XYZ Position, Scale and XYZEuler Rotation Class.
@@ -74,9 +73,9 @@ class Physical(object):
         """
         super(Physical, self).__init__(*args, **kwargs)
         self.__dict__['x'], self.__dict__['y'], self.__dict__['z'] = position
-        self.__dict__['rot_x'], self.__dict__['rot_y'], self.__dict__['rot_z'] = rotation
+        self.__dict__['_rotquaternion'] = (0., 0., 0., 0.)
+
         self.__dict__['scale'] = scale
-        self._rot_matrix = None
 
         self.model_matrix = np.zeros((4,4))
         self.normal_matrix = np.zeros((4,4))
@@ -87,6 +86,7 @@ class Physical(object):
         self.max_xyz = np.array((0, 0, 0))
 
         self.__oldinfo = tuple()
+        self.rotation = rotation
         self.update()
 
     def __setattr__(self, key, value):
@@ -114,11 +114,24 @@ class Physical(object):
     @property
     def rotation(self):
         """XYZ Euler rotation, in degrees"""
-        return self.rot_x, self.rot_y, self.rot_z
+        rotmat = trans.quaternion_matrix(self._rotquaternion)
+        rotation = trans.euler_from_matrix(rotmat, 'rzyx')
+        return rotation
 
     @rotation.setter
     def rotation(self, value):
-        self.rot_x, self.rot_y, self.rot_z = value
+        self._rotquaternion = trans.quaternion_from_euler(*(value + ('rzyx',)))
+
+    @property
+    def rotation_quaternions(self):
+        """rotation, in quaternions"""
+        return self._rotquaternion
+
+    @rotation_quaternions.setter
+    def rotation_quaternions(self, value):
+        if len(value) != 4:
+            raise ValueError("Quaternion must be a 4-element vector ")
+        self._rotquaternion = value
 
     def __gen_info_summary(self):
         return  self.position + self.rotation + (self.scale,)
@@ -127,7 +140,11 @@ class Physical(object):
         return self.__oldinfo != self.__gen_info_summary()
 
     def update_model_matrix(self):
-        self.model_matrix = utils.orienting.calculate_model_matrix(self.position, self.rotation, self.scale)
+        # Set Model and Normal Matrices
+        trans_mat = trans.translation_matrix(self.position)
+        rot_mat = trans.quaternion_matrix(self._rotquaternion)
+        scale_mat = trans.scale_matrix(self.scale)
+        self.model_matrix = np.dot(np.dot(trans_mat, rot_mat), scale_mat)
 
     def update_model_and_normal_matrix(self):
         if self.has_changed():
@@ -136,7 +153,9 @@ class Physical(object):
 
     def update_view_matrix(self):
         # if self.has_changed():  # TODO: Getting some bugs with this line, not sure why
-        self.view_matrix = utils.orienting.calculate_view_matrix(self.position, self.rotation)
+        trans_mat = trans.translation_matrix(tuple(-pos for pos in self.position))
+        rot_mat = trans.quaternion_matrix(trans.quaternion_inverse(self._rotquaternion))
+        self.view_matrix = np.dot(rot_mat, trans_mat)
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
