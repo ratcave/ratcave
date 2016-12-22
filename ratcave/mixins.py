@@ -1,6 +1,6 @@
 
 import numpy as np
-from collections import deque
+from collections import deque, namedtuple
 import _transformations as trans
 
 # TODO: Check for loops and duplicate nodes in the Scene graph
@@ -103,6 +103,38 @@ class Physical(object):
         self.update()
 
     @property
+    def rotx(self):
+        return self.rotation[0]
+
+    @rotx.setter
+    def rotx(self, value):
+        self.rotation = (value, self.rotation[1], self.rotation[2])
+
+    @property
+    def roty(self):
+        return self.rotation[1]
+
+    @roty.setter
+    def roty(self, value):
+        self.rotation = (self.rotation[0], value, self.rotation[2])
+
+    @property
+    def rotz(self):
+        return self.rotation[1]
+
+    @rotz.setter
+    def rotz(self, value):
+        self.rotation = (self.rotation[0], self.rotation[1], value)
+
+    @property
+    def rotx(self):
+        return self.rotation[0]
+
+    @rotx.setter
+    def rotx(self, value):
+        self.rotation = (value, ) + self.rotation[1:]
+
+    @property
     def position(self):
         """xyz local position"""
         return self.x, self.y, self.z
@@ -116,7 +148,7 @@ class Physical(object):
         """XYZ Euler rotation, in degrees"""
         rotmat = trans.quaternion_matrix(self._rotquaternion)
         rotation = trans.euler_from_matrix(rotmat, 'rzyx')
-        return rotation
+        return tuple(rotation)
 
     @rotation.setter
     def rotation(self, value):
