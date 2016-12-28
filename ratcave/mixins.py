@@ -103,36 +103,31 @@ class Physical(object):
         self.update()
 
     @property
-    def rotx(self):
+    def rot_x(self):
         return self.rotation[0]
 
-    @rotx.setter
-    def rotx(self, value):
+    @rot_x.setter
+    def rot_x(self, value):
         self.rotation = (value, self.rotation[1], self.rotation[2])
 
     @property
-    def roty(self):
+    def rot_y(self):
         return self.rotation[1]
 
-    @roty.setter
-    def roty(self, value):
-        self.rotation = (self.rotation[0], value, self.rotation[2])
+    @rot_y.setter
+    def rot_y(self, value):
+        new_quat = trans.quaternion_from_euler(0, value * np.pi / 180., 0, axes='rzyx')
+        self._rotquaternion = trans.quaternion_multiply(self._rotquaternion, new_quat)
+        #
+        # self.rotation = (self.rotation[0], value, self.rotation[2])
 
     @property
-    def rotz(self):
+    def rot_z(self):
         return self.rotation[1]
 
-    @rotz.setter
-    def rotz(self, value):
+    @rot_z.setter
+    def rot_z(self, value):
         self.rotation = (self.rotation[0], self.rotation[1], value)
-
-    @property
-    def rotx(self):
-        return self.rotation[0]
-
-    @rotx.setter
-    def rotx(self, value):
-        self.rotation = (value, ) + self.rotation[1:]
 
     @property
     def position(self):
@@ -147,12 +142,14 @@ class Physical(object):
     def rotation(self):
         """XYZ Euler rotation, in degrees"""
         rotmat = trans.quaternion_matrix(self._rotquaternion)
-        rotation = trans.euler_from_matrix(rotmat, 'rzyx')
-        return tuple(rotation)
+        rotation = trans.euler_from_matrix(rotmat, axes='rzyx')
+        rotation = tuple(el * 180. / np.pi for el in rotation)
+        return rotation
 
     @rotation.setter
     def rotation(self, value):
-        self._rotquaternion = trans.quaternion_from_euler(*(value + ('rzyx',)))
+        value = np.array(value) * np.pi / 180.
+        self._rotquaternion = trans.quaternion_from_euler(*value, axes='rzyx')
 
     @property
     def rotation_quaternions(self):
@@ -163,7 +160,7 @@ class Physical(object):
     def rotation_quaternions(self, value):
         if len(value) != 4:
             raise ValueError("Quaternion must be a 4-element vector ")
-        self._rotquaternion = value
+        self._rotquaternion = np.array(value, dtype=float)
 
     def __gen_info_summary(self):
         return  self.position + self.rotation + (self.scale,)
@@ -195,6 +192,22 @@ class Physical(object):
             self.update_model_and_normal_matrix()
             self.update_view_matrix()
             self.__oldinfo = self.__gen_info_summary()
+
+
+class RotationQuaternion(object):
+
+    def __init__(self, x=0., y=0., z=0., w=0.):
+        self._coll = (x, y, z, w)
+
+    def __repr__(self):
+        arg_str = ', '.join(['{}={}'.format(*el) for el in zip('xyzw', self._coll)])
+        return self.__class__.__name__ + '(' + arg_str + ')'
+
+for idx, coord in enumerate('xyzw'):
+        setattr(RotationQuaternion, coord, property(lambda self: self._array[idx]))
+
+
+
 
 
 class PhysicalNode(Physical, SceneNode):
