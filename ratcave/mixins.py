@@ -73,7 +73,7 @@ class Physical(object):
         """
         super(Physical, self).__init__(*args, **kwargs)
 
-        self.rotation = rotutils.RotationEulerDegrees(*rotation, order='xyz')
+        self.rotation = rotutils.RotationEulerDegrees(*rotation)
         self.position = rotutils.Translation(*position)
         self.scale = scale
 
