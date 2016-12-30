@@ -87,16 +87,13 @@ class Physical(object):
     def _check_if_changed(self):
         """
         Checks if any of the physical parameters (currently position and rotation)
-        has changed since the last model matrix update.  Calls self.on_change() if change is detected.
+        has changed since the last model matrix update.
         """
         if not self._has_changed:
-            for coord in self.pos, self.rot:#, self.scale:
+            for coord in self.pos, self.rot, self.scale:
                 if coord.has_changed:
                     self._has_changed = True
                     coord.has_changed = False
-
-        if self._has_changed:
-            self.on_change()
 
     def on_change(self):
         """Callback for if change in parameters (position, rotation) detected.  Overridable by subclasses."""
