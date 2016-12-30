@@ -73,8 +73,8 @@ class Physical(object):
         """
         super(Physical, self).__init__(*args, **kwargs)
 
-        self.rotation = rotutils.RotationEulerDegrees(*rotation)
-        self.position = rotutils.Translation(*position)
+        self.rot = rotutils.RotationEulerDegrees(*rotation)
+        self.pos = rotutils.Translation(*position)
         self.scale = scale
 
         self.model_matrix = np.zeros((4,4))
@@ -85,10 +85,78 @@ class Physical(object):
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
-        self.model_matrix[:] = np.dot(self.position.to_matrix(), self.rotation.to_matrix())
+        self.model_matrix[:] = np.dot(self.pos.to_matrix(), self.rot.to_matrix())
         self.view_matrix[:] = trans.inverse_matrix(self.model_matrix)
         self.model_matrix[:] = np.dot(self.model_matrix, trans.scale_matrix(self.scale))
         self.normal_matrix[:] = trans.inverse_matrix(self.model_matrix.T)
+
+    ##################################################################################################
+    ### Methods below added for backwards compatibility.  Will be deprecated in the future.         ##
+    ### Use self.rot and self.pos objects instead, which are more performant and have more features.##
+    ##################################################################################################
+    @property
+    def rotation(self):
+        return self.rot[:]
+
+    @rotation.setter
+    def rotation(self, value):
+        self.rot[:] = value
+
+    @property
+    def rot_x(self):
+        return self.rot.x
+
+    @rot_x.setter
+    def rot_x(self, value):
+        self.rot.x = value
+
+    @property
+    def rot_y(self):
+        return self.rot.y
+
+    @rot_y.setter
+    def rot_y(self, value):
+        self.rot.y = value
+
+    @property
+    def rot_z(self):
+        return self.rot.z
+
+    @rot_z.setter
+    def rot_z(self, value):
+        self.rot.z = value
+
+    @property
+    def position(self):
+        return self.pos[:]
+
+    @position.setter
+    def position(self, value):
+        self.pos[:] = value
+
+    @property
+    def x(self):
+        return self.pos.x
+
+    @x.setter
+    def x(self, value):
+        self.pos.x = value
+
+    @property
+    def y(self):
+        return self.pos.y
+
+    @y.setter
+    def y(self, value):
+        self.pos.y = value
+
+    @property
+    def z(self):
+        return self.pos.z
+
+    @z.setter
+    def z(self, value):
+        self.pos.z = value
 
 
 class PhysicalNode(Physical, SceneNode):
