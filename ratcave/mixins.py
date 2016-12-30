@@ -91,9 +91,8 @@ class Physical(object):
         """
         if not self._has_changed:
             for coord in self.pos, self.rot, self.scale:
-                if coord.has_changed:
+                if coord.ping_change():
                     self._has_changed = True
-                    coord.has_changed = False
 
     def on_change(self):
         """Callback for if change in parameters (position, rotation) detected.  Overridable by subclasses."""

@@ -6,10 +6,16 @@ class ChangeTracker(object):
 
     def __init__(self, *args, **kwargs):
         super(ChangeTracker, self).__init__()
-        self.has_changed = False
+        self._has_changed = False
 
     def __setitem__(self, *args, **kwargs):
-        self.has_changed = True
+        self._has_changed = True
+
+    def ping_change(self):
+        """Returns self.has_changed, then immediately sets it to False"""
+        status, self._has_changed = self._has_changed, False
+        return status
+
 
 
 class Coordinates(ChangeTracker):
