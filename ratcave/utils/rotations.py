@@ -2,10 +2,20 @@ import numpy as np
 import _transformations as trans
 from abc import ABCMeta, abstractmethod
 
+class ChangeTracker(object):
 
-class Coordinates(object):
+    def __init__(self, *args, **kwargs):
+        super(ChangeTracker, self).__init__()
+        self.has_changed = False
+
+    def __setitem__(self, *args, **kwargs):
+        self.has_changed = True
+
+
+class Coordinates(ChangeTracker):
 
     def __init__(self, *args):
+        super(Coordinates, self).__init__(*args)
         self._data = np.array(args, dtype=float)
 
     def __repr__(self):
@@ -13,34 +23,46 @@ class Coordinates(object):
         return "{cls}({coords})".format(cls=self.__class__.__name__, coords=arg_str)
 
     def __getitem__(self, item):
-        return self._data[item]
+        if type(item) == slice:
+            return tuple(self._data[item])
+        else:
+            return self._data[item]
 
     def __setitem__(self, idx, value):
+        super(Coordinates, self).__setitem__(idx, value)
         self._data[idx] = value
 
     @property
     def x(self):
-        return self._data[0]
+        return self[0]
 
     @x.setter
     def x(self, value):
-        self._data[0] = value
+        self[0] = value
 
     @property
     def y(self):
-        return self._data[1]
+        return self[1]
 
     @y.setter
     def y(self, value):
-        self._data[1] = value
+        self[1] = value
 
     @property
     def z(self):
-        return self._data[2]
+        return self[2]
 
     @z.setter
     def z(self, value):
-        self._data[2] = value
+        self[2] = value
+
+    @property
+    def xyz(self):
+        return self[:3]
+
+    @xyz.setter
+    def xyz(self, value):
+        self[:3] = value
 
 
 class RotationBase(object):
@@ -125,15 +147,58 @@ class RotationQuaternion(RotationBase, Coordinates):
 
     @property
     def w(self):
-        return self._data[3]
+        return self[3]
 
     @w.setter
     def w(self, value):
-        self._data[3] = value
+        self[3] = value
+
+    @property
+    def xyzw(self):
+        return self[:4]
+
+    @xyzw.setter
+    def xyzw(self, value):
+        self[:4] = value
 
 
 class Translation(Coordinates):
 
     def to_matrix(self):
         return trans.translation_matrix(self._data)
+
+
+class Scale(Coordinates):
+
+    def to_matrix(self):
+        return trans.scale_matrix(self._data[0])
+
+    @property
+    def y(self):
+        return self[0]
+
+    @y.setter
+    def y(self, value):
+        self[0] = value
+
+    @property
+    def z(self):
+        return self[0]
+
+    @z.setter
+    def z(self, value):
+        self[0] = value
+
+    @property
+    def xyz(self):
+        return self[0]
+
+    @xyz.setter
+    def xyz(self, value):
+        if hasattr(value, '__iter__'):
+            assert value[0] == value[1] == value[2], "Scale doesn't yet support differing dimension values."
+            self[0] = value[0]
+        else:
+            self[0] = value
+
 

@@ -67,28 +67,68 @@ class Physical(object):
         """XYZ Position, Scale and XYZEuler Rotation Class.
 
         Args:
-            position (list): (x, y, z) translation values.
-            rotation (list): (x, y, z) rotation values
+            position: (x, y, z) translation values.
+            rotation: (x, y, z) rotation values
             scale (float): uniform scale factor. 1 = no scaling.
         """
         super(Physical, self).__init__(*args, **kwargs)
 
-        self.rot = rotutils.RotationEulerDegrees(*rotation)
-        self.pos = rotutils.Translation(*position)
-        self.scale = scale
+        self._rot = rotutils.RotationEulerDegrees(*rotation)
+        self._pos = rotutils.Translation(*position)
+        self._scale = rotutils.Scale(scale)
 
         self.model_matrix = np.zeros((4,4))
         self.normal_matrix = np.zeros((4,4))
         self.view_matrix = np.zeros((4,4))
 
+
+        self._has_changed = True
         self.update()
+
+    @property
+    def rot(self):
+        return self._rot
+
+    @property
+    def pos(self):
+        return self._pos
+
+    @property
+    def scale(self):
+        return self._scale
+
+    def _check_if_changed(self):
+        """
+        Checks if any of the physical parameters (currently position and rotation)
+        has changed since the last model matrix update.  Calls self.on_change() if change is detected.
+        """
+        if not self._has_changed:
+            for coord in self.pos, self.rot:#, self.scale:
+                if coord.has_changed:
+                    self._has_changed = True
+                    coord.has_changed = False
+
+        if self._has_changed:
+            self.on_change()
+
+    def on_change(self):
+        """Callback for if change in parameters (position, rotation) detected.  Overridable by subclasses."""
+        pass
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
-        self.model_matrix[:] = np.dot(self.pos.to_matrix(), self.rot.to_matrix())
-        self.view_matrix[:] = trans.inverse_matrix(self.model_matrix)
-        self.model_matrix[:] = np.dot(self.model_matrix, trans.scale_matrix(self.scale))
-        self.normal_matrix[:] = trans.inverse_matrix(self.model_matrix.T)
+        self._check_if_changed()
+        if self._has_changed:
+            # Update Model, View, and Normal Matrices
+            self.model_matrix[:] = np.dot(self.pos.to_matrix(), self.rot.to_matrix())
+            self.view_matrix[:] = trans.inverse_matrix(self.model_matrix)
+            self.model_matrix[:] = np.dot(self.model_matrix, self.scale.to_matrix())
+            self.normal_matrix[:] = trans.inverse_matrix(self.model_matrix.T)
+
+            # Perform on_change() tasks and reset change detection flag.
+            self.on_change()
+            self._has_changed = False
+
 
     ##################################################################################################
     ### Methods below added for backwards compatibility.  Will be deprecated in the future.         ##
@@ -96,11 +136,13 @@ class Physical(object):
     ##################################################################################################
     @property
     def rotation(self):
-        return self.rot[:]
+        cname = self.__class__.__name__
+        raise DeprecationWarning("{}.rotation has side effects that can prevent proper Mesh updating. Use {}.rot[:] or {}.rot.xyz instead.".format(cname, cname, cname))
 
     @rotation.setter
     def rotation(self, value):
-        self.rot[:] = value
+        cname = self.__class__.__name__
+        raise DeprecationWarning("{}.rotation has side effects that can prevent proper Mesh updating. Use {}.rot[:] or {}.rot.xyz instead.".format(cname, cname, cname))
 
     @property
     def rot_x(self):
@@ -128,11 +170,13 @@ class Physical(object):
 
     @property
     def position(self):
-        return self.pos[:]
+        cname = self.__class__.__name__
+        raise DeprecationWarning("{}.position has side effects that can prevent proper Mesh updating. Use {}.pos[:] or {}.pos.xyz instead.".format(cname, cname, cname))
 
     @position.setter
     def position(self, value):
-        self.pos[:] = value
+        cname = self.__class__.__name__
+        raise DeprecationWarning("{}.position has side effects that can prevent proper Mesh updating. Use {}.pos[:] or {}.pos.xyz instead.".format(cname, cname, cname))
 
     @property
     def x(self):
