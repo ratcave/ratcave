@@ -73,29 +73,16 @@ class Physical(object):
         """
         super(Physical, self).__init__(*args, **kwargs)
 
-        self._rot = rotutils.RotationEulerDegrees(*rotation)
-        self._pos = rotutils.Translation(*position)
-        self._scale = rotutils.Scale(scale)
+        self.rot = rotutils.RotationEulerDegrees(*rotation)
+        self.pos = rotutils.Translation(*position)
+        self.scale = rotutils.Scale(scale)
 
         self.model_matrix = np.zeros((4,4))
         self.normal_matrix = np.zeros((4,4))
         self.view_matrix = np.zeros((4,4))
 
-
         self._has_changed = True
         self.update()
-
-    @property
-    def rot(self):
-        return self._rot
-
-    @property
-    def pos(self):
-        return self._pos
-
-    @property
-    def scale(self):
-        return self._scale
 
     def _check_if_changed(self):
         """
@@ -128,79 +115,6 @@ class Physical(object):
             # Perform on_change() tasks and reset change detection flag.
             self.on_change()
             self._has_changed = False
-
-
-    ##################################################################################################
-    ### Methods below added for backwards compatibility.  Will be deprecated in the future.         ##
-    ### Use self.rot and self.pos objects instead, which are more performant and have more features.##
-    ##################################################################################################
-    @property
-    def rotation(self):
-        cname = self.__class__.__name__
-        raise DeprecationWarning("{}.rotation has side effects that can prevent proper Mesh updating. Use {}.rot[:] or {}.rot.xyz instead.".format(cname, cname, cname))
-
-    @rotation.setter
-    def rotation(self, value):
-        cname = self.__class__.__name__
-        raise DeprecationWarning("{}.rotation has side effects that can prevent proper Mesh updating. Use {}.rot[:] or {}.rot.xyz instead.".format(cname, cname, cname))
-
-    @property
-    def rot_x(self):
-        return self.rot.x
-
-    @rot_x.setter
-    def rot_x(self, value):
-        self.rot.x = value
-
-    @property
-    def rot_y(self):
-        return self.rot.y
-
-    @rot_y.setter
-    def rot_y(self, value):
-        self.rot.y = value
-
-    @property
-    def rot_z(self):
-        return self.rot.z
-
-    @rot_z.setter
-    def rot_z(self, value):
-        self.rot.z = value
-
-    @property
-    def position(self):
-        cname = self.__class__.__name__
-        raise DeprecationWarning("{}.position has side effects that can prevent proper Mesh updating. Use {}.pos[:] or {}.pos.xyz instead.".format(cname, cname, cname))
-
-    @position.setter
-    def position(self, value):
-        cname = self.__class__.__name__
-        raise DeprecationWarning("{}.position has side effects that can prevent proper Mesh updating. Use {}.pos[:] or {}.pos.xyz instead.".format(cname, cname, cname))
-
-    @property
-    def x(self):
-        return self.pos.x
-
-    @x.setter
-    def x(self, value):
-        self.pos.x = value
-
-    @property
-    def y(self):
-        return self.pos.y
-
-    @y.setter
-    def y(self, value):
-        self.pos.y = value
-
-    @property
-    def z(self):
-        return self.pos.z
-
-    @z.setter
-    def z(self, value):
-        self.pos.z = value
 
 
 class PhysicalNode(Physical, SceneNode):
