@@ -2,6 +2,7 @@
 import numpy as np
 from collections import deque, namedtuple
 import _transformations as trans
+from .utils import rotations as rotutils
 
 # TODO: Check for loops and duplicate nodes in the Scene graph
 class SceneNode(object):
@@ -61,9 +62,8 @@ class SceneNode(object):
 
 class Physical(object):
 
-    __observables = ('x', 'y', 'z', '_rotquaternion', 'scale')
-
-    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1., *args, **kwargs):
+    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1.,
+                 *args, **kwargs):
         """XYZ Position, Scale and XYZEuler Rotation Class.
 
         Args:
@@ -72,142 +72,23 @@ class Physical(object):
             scale (float): uniform scale factor. 1 = no scaling.
         """
         super(Physical, self).__init__(*args, **kwargs)
-        self.__dict__['x'], self.__dict__['y'], self.__dict__['z'] = position
-        self.__dict__['_rotquaternion'] = (0., 0., 0., 0.)
 
-        self.__dict__['scale'] = scale
+        self.rotation = rotutils.RotationEulerDegrees(*rotation, order='xyz')
+        self.position = rotutils.Translation(*position)
+        self.scale = scale
 
         self.model_matrix = np.zeros((4,4))
         self.normal_matrix = np.zeros((4,4))
         self.view_matrix = np.zeros((4,4))
 
-        # rectangular boundaries
-        self.min_xyz = np.array((0, 0, 0))
-        self.max_xyz = np.array((0, 0, 0))
-
-        self.__oldinfo = tuple()
-        self.rotation = rotation
         self.update()
-
-    def __setattr__(self, key, value):
-        super(Physical, self).__setattr__(key, value)
-
-        if key in Physical.__observables:
-            self.on_change()
-
-    def on_change(self):
-        """
-        This method fires when object position or geometry changes.
-        Can be overwritten by parent classes to add more actions.
-        """
-        self.update()
-
-    @property
-    def rot_x(self):
-        return self.rotation[0]
-
-    @rot_x.setter
-    def rot_x(self, value):
-        self.rotation = (value, self.rotation[1], self.rotation[2])
-
-    @property
-    def rot_y(self):
-        return self.rotation[1]
-
-    @rot_y.setter
-    def rot_y(self, value):
-        new_quat = trans.quaternion_from_euler(0, value * np.pi / 180., 0, axes='rzyx')
-        self._rotquaternion = trans.quaternion_multiply(self._rotquaternion, new_quat)
-        #
-        # self.rotation = (self.rotation[0], value, self.rotation[2])
-
-    @property
-    def rot_z(self):
-        return self.rotation[1]
-
-    @rot_z.setter
-    def rot_z(self, value):
-        self.rotation = (self.rotation[0], self.rotation[1], value)
-
-    @property
-    def position(self):
-        """xyz local position"""
-        return self.x, self.y, self.z
-
-    @position.setter
-    def position(self, value):
-        self.x, self.y, self.z = value
-
-    @property
-    def rotation(self):
-        """XYZ Euler rotation, in degrees"""
-        rotmat = trans.quaternion_matrix(self._rotquaternion)
-        rotation = trans.euler_from_matrix(rotmat, axes='rzyx')
-        rotation = tuple(el * 180. / np.pi for el in rotation)
-        return rotation
-
-    @rotation.setter
-    def rotation(self, value):
-        value = np.array(value) * np.pi / 180.
-        self._rotquaternion = trans.quaternion_from_euler(*value, axes='rzyx')
-
-    @property
-    def rotation_quaternions(self):
-        """rotation, in quaternions"""
-        return self._rotquaternion
-
-    @rotation_quaternions.setter
-    def rotation_quaternions(self, value):
-        if len(value) != 4:
-            raise ValueError("Quaternion must be a 4-element vector ")
-        self._rotquaternion = np.array(value, dtype=float)
-
-    def __gen_info_summary(self):
-        return  self.position + self.rotation + (self.scale,)
-
-    def has_changed(self):
-        return self.__oldinfo != self.__gen_info_summary()
-
-    def update_model_matrix(self):
-        # Set Model and Normal Matrices
-        trans_mat = trans.translation_matrix(self.position)
-        rot_mat = trans.quaternion_matrix(self._rotquaternion)
-        scale_mat = trans.scale_matrix(self.scale)
-        self.model_matrix = np.dot(np.dot(trans_mat, rot_mat), scale_mat)
-
-    def update_model_and_normal_matrix(self):
-        if self.has_changed():
-            self.update_model_matrix()
-            self.normal_matrix = np.linalg.inv(self.model_matrix.T)  # which order is correct: t then i, or the reverse?
-
-    def update_view_matrix(self):
-        # if self.has_changed():  # TODO: Getting some bugs with this line, not sure why
-        trans_mat = trans.translation_matrix(tuple(-pos for pos in self.position))
-        rot_mat = trans.quaternion_matrix(trans.quaternion_inverse(self._rotquaternion))
-        self.view_matrix = np.dot(rot_mat, trans_mat)
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
-        if self.has_changed():
-            self.update_model_and_normal_matrix()
-            self.update_view_matrix()
-            self.__oldinfo = self.__gen_info_summary()
-
-
-class RotationQuaternion(object):
-
-    def __init__(self, x=0., y=0., z=0., w=0.):
-        self._coll = (x, y, z, w)
-
-    def __repr__(self):
-        arg_str = ', '.join(['{}={}'.format(*el) for el in zip('xyzw', self._coll)])
-        return self.__class__.__name__ + '(' + arg_str + ')'
-
-for idx, coord in enumerate('xyzw'):
-        setattr(RotationQuaternion, coord, property(lambda self: self._array[idx]))
-
-
-
+        self.model_matrix[:] = np.dot(self.position.to_matrix(), self.rotation.to_matrix())
+        self.view_matrix[:] = trans.inverse_matrix(self.model_matrix)
+        self.model_matrix[:] = np.dot(self.model_matrix, trans.scale_matrix(self.scale))
+        self.normal_matrix[:] = trans.inverse_matrix(self.model_matrix.T)
 
 
 class PhysicalNode(Physical, SceneNode):
@@ -224,13 +105,13 @@ class PhysicalNode(Physical, SceneNode):
 
         """Calculate world matrix values from the dot product of the parent."""
         if self.parent:
-            self.model_matrix_global = np.dot(self.parent.model_matrix_global, self.model_matrix)
-            self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
-            self.view_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+            self.model_matrix_global[:] = np.dot(self.parent.model_matrix_global, self.model_matrix)
+            self.normal_matrix_global[:] = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+            self.view_matrix_global[:] = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
         else:
-            self.model_matrix_global = self.model_matrix
-            self.normal_matrix_global = self.normal_matrix
-            self.view_matrix_global = self.view_matrix
+            self.model_matrix_global[:] = self.model_matrix
+            self.normal_matrix_global[:] = self.normal_matrix
+            self.view_matrix_global[:] = self.view_matrix
 
     @property
     def position_global(self):

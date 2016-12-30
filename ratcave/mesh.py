@@ -166,7 +166,11 @@ class Mesh(EmptyMesh):
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.data.vertices, axis=0)
         self.data.vertices -= vertex_mean
-        self.position = vertex_mean if 'position' not in kwargs else kwargs['position']
+        self.position.data[:] = vertex_mean if 'position' not in kwargs else kwargs['position']
+
+        # rectangular boundaries
+        self.min_xyz = np.array((0, 0, 0))
+        self.max_xyz = np.array((0, 0, 0))
 
         #: :py:class:`.Physical`, World Mesh coordinates
         #: Local Mesh coordinates (Physical type)
@@ -181,7 +185,7 @@ class Mesh(EmptyMesh):
         self.visible = visible
         self.vao = None
 
-        self.is_updated = False
+        # self.is_updated = False
 
     def __str__(self):
         return "%s(%d) at %s" % (self.name, len(self.children), self.position_global)
@@ -204,9 +208,9 @@ class Mesh(EmptyMesh):
     def _draw(self, shader=None, send_uniforms=True, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
 
-        if not self.is_updated:
-            self.update()
-            self.is_updated = True
+        # if not self.is_updated:
+        self.update()
+        #     self.is_updated = True
 
         if self.visible:
 
@@ -216,7 +220,7 @@ class Mesh(EmptyMesh):
                 # Change Material to Mesh's
                 if send_uniforms:
 
-                    self.update_model_and_normal_matrix()
+                    # self.update_model_and_normal_matrix()
                     self.uniforms.send_to(shader)
                     texture.uniforms.send_to(shader)
 
