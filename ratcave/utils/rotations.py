@@ -24,37 +24,38 @@ class Coordinates(IterObservable):
         super(Coordinates, self).__setitem__(idx, value)
         self._array[idx] = value
 
+    # Note: Index counts backwards from end of array to increase compatibility with Quaternions.
     @property
     def x(self):
-        return self._array[0]
+        return self._array[-3]
 
     @x.setter
     def x(self, value):
-        self._array[0] = value
+        self._array[-3] = value
 
     @property
     def y(self):
-        return self._array[1]
+        return self._array[-2]
 
     @y.setter
     def y(self, value):
-        self._array[1] = value
+        self._array[-2] = value
 
     @property
     def z(self):
-        return self._array[2]
+        return self._array[-1]
 
     @z.setter
     def z(self, value):
-        self._array[2] = value
+        self._array[-1] = value
 
     @property
     def xyz(self):
-        return self._array[:3]
+        return self._array[-3:]
 
     @xyz.setter
     def xyz(self, value):
-        self._array[:3] = value
+        self._array[-3:] = value
 
 
 class RotationBase(object):
@@ -138,19 +139,27 @@ class RotationQuaternion(RotationBase, Coordinates):
 
     @property
     def w(self):
-        return self._array[3]
+        return self._array[-4]
 
     @w.setter
     def w(self, value):
-        self._array[3] = value
+        self._array[-4] = value
+
+    @property
+    def wxyz(self):
+        return self._array[-4:]
+
+    @wxyz.setter
+    def wxyz(self, value):
+        self._array[-4:] = value
 
     @property
     def xyzw(self):
-        return self._array[:4]
+        return self._array[[1, 2, 3, 0]]
 
     @xyzw.setter
     def xyzw(self, value):
-        self._array[:4] = value
+        self._array[[1, 2, 3, 0]] = value
 
 
 class Translation(Coordinates):
