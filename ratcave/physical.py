@@ -17,8 +17,8 @@ class Physical(AutoRegisterObserver):
         """
         super(Physical, self).__init__(**kwargs)
 
-        self._rot = rotutils.RotationEulerDegrees(*rotation)
-        self._pos = rotutils.Translation(*position)
+        self._rotation = rotutils.RotationEulerDegrees(*rotation)
+        self._position = rotutils.Translation(*position)
         self._scale = rotutils.Scale(scale)
 
         self.model_matrix = np.zeros((4, 4))
@@ -28,29 +28,29 @@ class Physical(AutoRegisterObserver):
         self.update()
 
     @property
-    def pos(self):
-        return self._pos
+    def position(self):
+        return self._position
 
-    @pos.setter
-    def pos(self, coords):
+    @position.setter
+    def position(self, coords):
         if isinstance(coords, rotutils.Translation):
-            self._pos = coords
+            self._position = coords
         else:
-            self._pos = rotutils.Translation(*coords)
+            self._position = rotutils.Translation(*coords)
 
     @property
-    def rot(self):
-        return self._rot
+    def rotation(self):
+        return self._rotation
 
-    @rot.setter
-    def rot(self, coords):
+    @rotation.setter
+    def rotation(self, coords):
         if isinstance(coords, rotutils.RotationBase):
-            self._rot = coords
+            self._rotation = coords
         elif hasattr(coords, '__iter__'):
             if len(coords) == 3:
-                self._rot = rotutils.RotationEulerDegrees(*coords)
+                self._rotation = rotutils.RotationEulerDegrees(*coords)
             elif len(coords) == 4:
-                self._rot = rotutils.RotationQuaternion(*coords)
+                self._rotation = rotutils.RotationQuaternion(*coords)
         else:
             raise ValueError("rot must be xyz values, xyzw values, or inherit from RotationBase")
 
@@ -72,7 +72,7 @@ class Physical(AutoRegisterObserver):
         super(Physical, self).update()
 
         # Update Model, View, and Normal Matrices
-        self.model_matrix[:] = np.dot(self.pos.to_matrix(), self.rot.to_matrix())
+        self.model_matrix[:] = np.dot(self.position.to_matrix(), self.rotation.to_matrix())
         self.view_matrix[:] = trans.inverse_matrix(self.model_matrix)
         self.model_matrix[:] = np.dot(self.model_matrix, self.scale.to_matrix())
         self.normal_matrix[:] = trans.inverse_matrix(self.model_matrix.T)

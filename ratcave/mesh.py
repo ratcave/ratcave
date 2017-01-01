@@ -166,7 +166,7 @@ class Mesh(EmptyMesh):
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.data.vertices, axis=0)
         self.data.vertices -= vertex_mean
-        self.pos[:] = vertex_mean if 'position' not in kwargs else kwargs['position']
+        self.position[:] = vertex_mean if 'position' not in kwargs else kwargs['position']
 
         # rectangular boundaries
         self.min_xyz = np.array((0, 0, 0))
