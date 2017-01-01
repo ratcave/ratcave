@@ -70,6 +70,9 @@ class RotationBase(object):
     @abstractmethod
     def to_matrix(self): pass
 
+    @classmethod
+    def from_matrix(cls, matrix): pass
+
 
 class RotationEuler(RotationBase, Coordinates):
 
@@ -100,6 +103,12 @@ class RotationEulerRadians(RotationEuler):
         else:
             return RotationEulerDegrees(*np.degrees(self._array))
 
+    @classmethod
+    def from_matrix(cls, matrix):
+        coords = trans.euler_from_matrix(matrix, axes=cls.axes)
+        return cls(*coords)
+
+
 
 class RotationEulerDegrees(RotationEuler):
     def to_radians(self):
@@ -116,6 +125,11 @@ class RotationEulerDegrees(RotationEuler):
 
     def to_matrix(self):
         return self.to_radians().to_matrix()
+
+    @classmethod
+    def from_matrix(cls, matrix):
+        coords = trans.euler_from_matrix(matrix, axes=cls.axes)
+        return cls(*np.degrees(coords))
 
 
 class RotationQuaternion(RotationBase, Coordinates):
@@ -140,6 +154,11 @@ class RotationQuaternion(RotationBase, Coordinates):
             return RotationEulerRadians(*euler_data)
         else:
             return RotationEulerDegrees(*np.degrees(euler_data))
+
+    @classmethod
+    def from_matrix(cls, matrix):
+        coords = trans.quaternion_from_matrix(matrix)
+        return cls(*coords)
 
     @property
     def w(self):
