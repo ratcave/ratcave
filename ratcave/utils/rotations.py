@@ -155,11 +155,17 @@ class RotationQuaternion(RotationBase, Coordinates):
 
 class Translation(Coordinates):
 
+    def __init__(self, *args, **kwargs):
+        assert len(args) == 3, "Must be xyz coordinates"
+        super(Translation, self).__init__(*args, **kwargs)
+
     def to_matrix(self):
         return trans.translation_matrix(self._data)
 
 
 class Scale(Coordinates):
+
+
 
     def to_matrix(self):
         return trans.scale_matrix(self._data[0])

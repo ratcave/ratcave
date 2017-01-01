@@ -17,15 +17,55 @@ class Physical(AutoRegisterObserver):
         """
         super(Physical, self).__init__(**kwargs)
 
-        self.rot = rotutils.RotationEulerDegrees(*rotation)
-        self.pos = rotutils.Translation(*position)
-        self.scale = rotutils.Scale(scale)
+        self._rot = rotutils.RotationEulerDegrees(*rotation)
+        self._pos = rotutils.Translation(*position)
+        self._scale = rotutils.Scale(scale)
 
         self.model_matrix = np.zeros((4, 4))
         self.normal_matrix = np.zeros((4, 4))
         self.view_matrix = np.zeros((4, 4))
 
         self.update()
+
+    @property
+    def pos(self):
+        return self._pos
+
+    @pos.setter
+    def pos(self, coords):
+        if isinstance(coords, rotutils.Translation):
+            self._pos = coords
+        else:
+            self._pos = rotutils.Translation(*coords)
+
+    @property
+    def rot(self):
+        return self._rot
+
+    @rot.setter
+    def rot(self, coords):
+        if isinstance(coords, rotutils.RotationBase):
+            self._rot = coords
+        elif hasattr(coords, '__iter__'):
+            if len(coords) == 3:
+                self._rot = rotutils.RotationEulerDegrees(*coords)
+            elif len(coords) == 4:
+                self._rot = rotutils.RotationQuaternion(*coords)
+        else:
+            raise ValueError("rot must be xyz values, xyzw values, or inherit from RotationBase")
+
+    @property
+    def scale(self):
+        return self._scale
+
+    @scale.setter
+    def scale(self, coords):
+        if isinstance(coords, rotutils.Scale):
+            self._scale = coords
+        elif hasattr(coords, '__iter__'):
+            self._scale = rotutils.Scale(*coords)
+        else:
+            self._scale = rotutils.Scale(coords)
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
