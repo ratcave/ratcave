@@ -77,6 +77,65 @@ class Physical(AutoRegisterObserver):
         self.model_matrix[:] = np.dot(self.model_matrix, self.scale.to_matrix())
         self.normal_matrix[:] = trans.inverse_matrix(self.model_matrix.T)
 
+    ##############################################################################################
+    ### Properties added to increase backwards compatibility.  Plan is to deprecate in future. ###
+    ##############################################################################################
+    @property
+    def x(self):
+        return self.position.x
+
+    @x.setter
+    def x(self, value):
+        self.position.x = value
+
+    @property
+    def y(self):
+        return self.position.y
+
+    @y.setter
+    def y(self, value):
+        self.position.y = value
+
+    @property
+    def z(self):
+        return self.position.z
+
+    @z.setter
+    def z(self, value):
+        self.position.z = value
+
+    @property
+    def rot_x(self):
+        assert isinstance(self.rotation, rotutils.RotationEulerDegrees)
+        return self.rotation.x
+
+    @rot_x.setter
+    def rot_x(self, value):
+        assert isinstance(self.rotation, rotutils.RotationEulerDegrees)
+        self.rotation.x = value
+
+    @property
+    def rot_y(self):
+        assert isinstance(self.rotation, rotutils.RotationEulerDegrees)
+        return self.rotation.y
+
+    @rot_y.setter
+    def rot_y(self, value):
+        assert isinstance(self.rotation, rotutils.RotationEulerDegrees)
+        self.rotation.y = value
+
+    @property
+    def rot_z(self):
+        assert isinstance(self.rotation, rotutils.RotationEulerDegrees)
+        return self.rotation.z
+
+    @rot_z.setter
+    def rot_z(self, value):
+        assert isinstance(self.rotation, rotutils.RotationEulerDegrees)
+        self.rotation.z = value
+
+
+
 
 class PhysicalNode(Physical, SceneNode):
 
