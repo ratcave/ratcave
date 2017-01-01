@@ -1,27 +1,13 @@
 import numpy as np
 import _transformations as trans
 from abc import ABCMeta, abstractmethod
+from .observers import IterObservable
 
-class ChangeTracker(object):
+
+class Coordinates(IterObservable):
 
     def __init__(self, *args, **kwargs):
-        super(ChangeTracker, self).__init__()
-        self._has_changed = False
-
-    def __setitem__(self, *args, **kwargs):
-        self._has_changed = True
-
-    def ping_change(self):
-        """Returns self.has_changed, then immediately sets it to False"""
-        status, self._has_changed = self._has_changed, False
-        return status
-
-
-
-class Coordinates(ChangeTracker):
-
-    def __init__(self, *args):
-        super(Coordinates, self).__init__(*args)
+        super(Coordinates, self).__init__(**kwargs)
         self._data = np.array(args, dtype=float)
 
     def __repr__(self):
@@ -82,7 +68,6 @@ class RotationBase(object):
 
     @abstractmethod
     def to_matrix(self): pass
-
 
 
 class RotationEuler(RotationBase, Coordinates):

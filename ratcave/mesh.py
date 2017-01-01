@@ -11,7 +11,7 @@ import copy
 import numpy as np
 from pyglet import gl
 from .utils import gl as ugl
-from . import mixins, shader
+from . import physical, shader
 from . import texture as texture_module
 
 
@@ -121,7 +121,7 @@ class MeshLoader(object):
         return Mesh(self.name, self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
 
 
-class EmptyMesh(mixins.PhysicalNode):
+class EmptyMesh(physical.PhysicalNode):
 
     def __init__(self, *args, **kwargs):
         super(EmptyMesh, self).__init__(*args, **kwargs)

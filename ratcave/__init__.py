@@ -6,7 +6,7 @@ from .camera import Camera
 from .fbo import FBO
 from .light import Light
 from .mesh import Mesh, MeshData, Material
-from .mixins import Physical
+from .physical import Physical, PhysicalNode
 from .scene import Scene
 from .shader import Shader, Uniform, UniformCollection
 from .texture import Texture, TextureCube

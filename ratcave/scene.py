@@ -3,7 +3,7 @@
 import warnings
 import pyglet.gl as gl
 
-from . import mixins, Camera, Light, resources, mesh
+from . import Camera, Light, resources, mesh
 from .utils import gl as glutils
 from .texture import TextureCube
 
