@@ -11,7 +11,7 @@ class Coordinates(IterObservable):
         self._array = np.array(args, dtype=float)
 
     def __repr__(self):
-        arg_str = ', '.join(['{}={}'.format(*el) for el in zip('xyzw', self._array)])
+        arg_str = ', '.join(['{}={}'.format(*el) for el in zip('xyz', self._array)])
         return "{cls}({coords})".format(cls=self.__class__.__name__, coords=arg_str)
 
     def __getitem__(self, item):
@@ -120,8 +120,12 @@ class RotationEulerDegrees(RotationEuler):
 
 class RotationQuaternion(RotationBase, Coordinates):
 
-    def __init__(self, x, y, z, w, **kwargs):
-        super(RotationQuaternion, self).__init__(x, y, z, w)
+    def __init__(self, w, x, y, z, **kwargs):
+        super(RotationQuaternion, self).__init__(w, x, y, z)
+
+    def __repr__(self):
+        arg_str = ', '.join(['{}={}'.format(*el) for el in zip('wxyz', self._array)])
+        return "{cls}({coords})".format(cls=self.__class__.__name__, coords=arg_str)
 
     def to_quaternion(self):
         return self
