@@ -8,53 +8,53 @@ class Coordinates(IterObservable):
 
     def __init__(self, *args, **kwargs):
         super(Coordinates, self).__init__(**kwargs)
-        self._data = np.array(args, dtype=float)
+        self._array = np.array(args, dtype=float)
 
     def __repr__(self):
-        arg_str = ', '.join(['{}={}'.format(*el) for el in zip('xyzw', self._data)])
+        arg_str = ', '.join(['{}={}'.format(*el) for el in zip('xyzw', self._array)])
         return "{cls}({coords})".format(cls=self.__class__.__name__, coords=arg_str)
 
     def __getitem__(self, item):
         if type(item) == slice:
-            return tuple(self._data[item])
+            return tuple(self._array[item])
         else:
-            return self._data[item]
+            return self._array[item]
 
     def __setitem__(self, idx, value):
         super(Coordinates, self).__setitem__(idx, value)
-        self._data[idx] = value
+        self._array[idx] = value
 
     @property
     def x(self):
-        return self[0]
+        return self._array[0]
 
     @x.setter
     def x(self, value):
-        self[0] = value
+        self._array[0] = value
 
     @property
     def y(self):
-        return self[1]
+        return self._array[1]
 
     @y.setter
     def y(self, value):
-        self[1] = value
+        self._array[1] = value
 
     @property
     def z(self):
-        return self[2]
+        return self._array[2]
 
     @z.setter
     def z(self, value):
-        self[2] = value
+        self._array[2] = value
 
     @property
     def xyz(self):
-        return self[:3]
+        return self._array[:3]
 
     @xyz.setter
     def xyz(self, value):
-        self[:3] = value
+        self._array[:3] = value
 
 
 class RotationBase(object):
@@ -84,25 +84,25 @@ class RotationEulerRadians(RotationEuler):
         return self
 
     def to_degrees(self):
-        return RotationEulerDegrees(*np.degrees(self._data))
+        return RotationEulerDegrees(*np.degrees(self._array))
 
     def to_quaternion(self):
-        return RotationQuaternion(*trans.quaternion_from_euler(*self._data, axes=self.axes))
+        return RotationQuaternion(*trans.quaternion_from_euler(*self._array, axes=self.axes))
 
     def to_matrix(self):
-        return trans.euler_matrix(*self._data, axes=self.axes)
+        return trans.euler_matrix(*self._array, axes=self.axes)
 
     def to_euler(self, units='rad'):
         assert units.lower() in ['rad', 'deg']
         if units.lower() == 'rad':
-            return RotationEulerRadians(*self._data)
+            return RotationEulerRadians(*self._array)
         else:
-            return RotationEulerDegrees(*np.degrees(self._data))
+            return RotationEulerDegrees(*np.degrees(self._array))
 
 
 class RotationEulerDegrees(RotationEuler):
     def to_radians(self):
-        return RotationEulerRadians(*np.radians(self._data))
+        return RotationEulerRadians(*np.radians(self._array))
 
     def to_degrees(self):
         return self
@@ -126,7 +126,7 @@ class RotationQuaternion(RotationBase, Coordinates):
         return self
 
     def to_matrix(self):
-        return trans.quaternion_matrix(self._data)
+        return trans.quaternion_matrix(self._array)
 
     def to_euler(self, units='rad'):
         euler_data = trans.euler_from_matrix(self.to_matrix(), axes=RotationEuler.axes)
@@ -138,19 +138,19 @@ class RotationQuaternion(RotationBase, Coordinates):
 
     @property
     def w(self):
-        return self[3]
+        return self._array[3]
 
     @w.setter
     def w(self, value):
-        self[3] = value
+        self._array[3] = value
 
     @property
     def xyzw(self):
-        return self[:4]
+        return self._array[:4]
 
     @xyzw.setter
     def xyzw(self, value):
-        self[:4] = value
+        self._array[:4] = value
 
 
 class Translation(Coordinates):
@@ -160,7 +160,7 @@ class Translation(Coordinates):
         super(Translation, self).__init__(*args, **kwargs)
 
     def to_matrix(self):
-        return trans.translation_matrix(self._data)
+        return trans.translation_matrix(self._array)
 
 
 class Scale(Coordinates):
@@ -168,34 +168,34 @@ class Scale(Coordinates):
 
 
     def to_matrix(self):
-        return trans.scale_matrix(self._data[0])
+        return trans.scale_matrix(self._array[0])
 
     @property
     def y(self):
-        return self[0]
+        return self._array[0]
 
     @y.setter
     def y(self, value):
-        self[0] = value
+        self._array[0] = value
 
     @property
     def z(self):
-        return self[0]
+        return self._array[0]
 
     @z.setter
     def z(self, value):
-        self[0] = value
+        self._array[0] = value
 
     @property
     def xyz(self):
-        return self[0]
+        return self._array[0]
 
     @xyz.setter
     def xyz(self, value):
         if hasattr(value, '__iter__'):
             assert value[0] == value[1] == value[2], "Scale doesn't yet support differing dimension values."
-            self[0] = value[0]
+            self._array[0] = value[0]
         else:
-            self[0] = value
+            self._array[0] = value
 
 
