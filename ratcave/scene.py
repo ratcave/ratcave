@@ -46,10 +46,10 @@ class Scene(object):
                     self.camera.update()
                     shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
                     shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
-                    shader.uniformf('camera_position', *self.camera.position._data)
+                    shader.uniformf('camera_position', *self.camera.position.xyz)
 
                 if send_light_uniforms:
-                    shader.uniformf('light_position', *self.light.position._data)
+                    shader.uniformf('light_position', *self.light.position.xyz)
 
                 for mesh in self.root:
                     mesh._draw(shader=shader, send_uniforms=send_mesh_uniforms)
@@ -74,9 +74,9 @@ class Scene(object):
 
                 self.camera.update()
 
-                shader.uniformf('light_position', *self.light.position._data)
+                shader.uniformf('light_position', *self.light.position.xyz)
                 shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
-                shader.uniformf('camera_position', *self.camera.position._data)
+                shader.uniformf('camera_position', *self.camera.position.xyz)
 
                 # Pre-Calculate all 6 view matrices
                 view_matrices = []
