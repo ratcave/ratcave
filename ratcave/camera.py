@@ -45,9 +45,9 @@ class Camera(physical.PhysicalNode):
     def _update_shift_matrix(self):
         """np.array: The Camera's lens-shift matrix."""
         self.shift_matrix =  np.array([[1.,           0.,           self.x_shift, 0.],
-                         [0.,           1.,           self.y_shift, 0.],
-                         [0.,           0.,                     1., 0.],
-                         [0.,           0.,                     0., 1.]])
+                                       [0.,           1.,           self.y_shift, 0.],
+                                       [0.,           0.,                     1., 0.],
+                                       [0.,           0.,                     0., 1.]])
 
     def _update_projection_matrix(self):
         """np.array: The Camera's Projection Matrix.  Will be an Orthographic matrix if ortho_mode is set to True."""
@@ -70,13 +70,14 @@ class Camera(physical.PhysicalNode):
                                   [             0.,    ff,              0.,                 0.],
                                   [             0.,    0., (zf+zn)/(zn-zf), (2.*zf*zn)/(zn-zf)],
                                   [             0.,    0.,             -1.,                 0.]])
+
+            self._update_shift_matrix()
             persp_mat = np.dot(persp_mat, self.shift_matrix)  # Apply lens shift
 
         self.projection_matrix = persp_mat
 
     def update(self):
         super(Camera, self).update()
-        self._update_shift_matrix()
         self._update_projection_matrix()
 
     def reset_aspect(self):
