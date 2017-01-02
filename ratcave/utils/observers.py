@@ -4,6 +4,7 @@ class Observable(object):
     def __init__(self, **kwargs):
         super(Observable, self).__init__(**kwargs)
         self.observers = set()
+        self.notify_observers()
 
     def notify_observers(self):
         for observer in self.observers:
