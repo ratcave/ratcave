@@ -1,26 +1,33 @@
 import abc
 import numpy as np
-from . import physical
+from .utils import AutoRegisterObserver, Observer, SetterObserver, Observable, IterObservable
+from .physical import Physical
 import pyglet.gl as gl
 from collections import namedtuple
 import warnings
 
+
 Viewport = namedtuple('Viewport', 'x y width height')
 
-class CameraBase(physical.PhysicalNode):
+
+class ProjectionBase(SetterObserver):
     __metaclass__ = abc.ABCMeta
 
+    _observables = ['z_near', 'z_far']
+
     def __init__(self, z_near=0.1, z_far=4.5, **kwargs):
-        super(CameraBase, self).__init__(**kwargs)
-        self.z_near = z_near
-        self.z_far = z_far
-        self.projection_matrix = np.identity(4, dtype=float)
+        super(ProjectionBase, self).__init__(**kwargs)
+        self.__dict__['z_near'] = z_near
+        self.__dict__['z_far'] = z_far
+        assert 'z_near' in self._observables and 'z_far' in self._observables
+
+        self.__dict__['projection_matrix'] = np.identity(4, dtype=float)
 
     @abc.abstractmethod
     def _update_projection_matrix(self): pass
 
     def update(self):
-        super(CameraBase, self).update()
+        super(ProjectionBase, self).update()
         self._update_projection_matrix()
 
     @property
@@ -35,86 +42,68 @@ class CameraBase(physical.PhysicalNode):
         return float(viewport.width) / viewport.height
 
 
-class OrthoCamera(CameraBase):
+ScreenEdges = namedtuple('ScreenEdges', 'left right bottom top')
+
+
+class OrthoProjection(ProjectionBase):
+
+    _observables = ['origin', 'coords', 'z_near', 'z_far']
 
     def __init__(self, origin='center', coords='relative', **kwargs):
         """
         Parameters
         ----------
         origin: 'center', 'corner',
-        coords
+        coords: 'relative', 'absolute'
         """
-        super(OrthoCamera, self).__init__(**kwargs)
-        self._screen_edges = {'left': 0, 'right': 0, 'bottom': 0, 'top': 0}
-        self.origin = origin
-        self.coords = coords
+        super(OrthoProjection, self).__init__(**kwargs)
+        self.__dict__['origin'] = origin
+        self.__dict__['coords'] = coords
 
-    @property
-    def origin(self):
-        return self._origin
-
-    @origin.setter
-    def origin(self, value):
-        if value.lower() not in ['center', 'corner']:
-            raise ValueError("OrthoCamera.origin must be 'center' or 'corner'.")
-        self._origin = value.lower()
-        self._update_screen_edges()
-
-    @property
-    def coords(self):
-        return self._coords
-
-    @coords.setter
-    def coords(self, value):
-        if value.lower() not in ['relative', 'absolute']:
-            raise ValueError("OrthoCamera.coords must be 'relative' or 'absolute'.")
-        self._coords = value.lower()
-        self._update_screen_edges()
-
-    @property
-    def screen_edges(self):
-        return self._screen_edges
-
-    def _update_screen_edges(self):
+    def _get_screen_edges(self):
         vp = self.viewport
-        se = self.screen_edges
-        se['left'], se['right'] = (0, vp.width) if 'corner' in self.origin else (-vp.width / 2., vp.width / 2.)
-        se['bottom'], se['top'] = (0, vp.height) if 'corner' in self.origin else (-vp.height / 2., vp.height / 2.)
-        for side in se:
-            se[side] /= float(vp.width)  # all by width keeps distance square.
-        self._update_projection_matrix()
+
+        if 'corner' in self.origin:
+            se = ScreenEdges(left=0, right=vp.width, bottom=0, top=vp.height)
+        else:
+            se = ScreenEdges(left=-vp.width / 2., right=vp.width / 2., bottom=-vp.height / 2., top=vp.height / 2.)
+
+        if 'relative' in self.coords:
+            se = ScreenEdges(*(el / vp.width for el in se))
+
+        return se
 
     def _update_projection_matrix(self):
-        se = self.screen_edges
-        left, right, bott, top = se['left'], se['right'], se['bottom'], se['top']
+
+        se = self._get_screen_edges()
         zn, zf = self.z_near, self.z_far
 
-        tx = -(right + left) / (right - left)
-        ty = -(top + bott) / (top - bott)
-        tz = -(zf + zn) - (zf - zn)
+        tx = -(se.right + se.left) / (se.right - se.left)
+        ty = -(se.top + se.bottom) / (se.top - se.bottom)
+        tz = -(zf + zn) / (zf - zn)
 
-        self.projection_matrix[:] = np.array([[2./(right - left),               0,           0, tx],
-                                              [                0, 2./(top - bott),           0, ty],
-                                              [                0,               0, -2./(zf-zn), tz],
-                                              [                0,               0,           0,  1]])
+        self.projection_matrix[:] = np.array([[2./(se.right - se.left),                       0,           0, tx],
+                                              [                      0, 2./(se.top - se.bottom),           0, ty],
+                                              [                      0,                       0, -2./(zf-zn), tz],
+                                              [                      0,                       0,           0,  1]])
 
 
-class PerspectiveCamera(CameraBase):
+class PerspectiveProjection(ProjectionBase):
+
+    _observables = ['fov_y', 'x_shift', 'y_shift', 'z_near', 'z_far']
 
     def __init__(self, fov_y=60., x_shift=0., y_shift=0., **kwargs):
-        super(PerspectiveCamera, self).__init__(**kwargs)
-        self.fov_y = fov_y
-        self.x_shift = x_shift
-        self.y_shift = y_shift
+        super(PerspectiveProjection, self).__init__(**kwargs)
+        self.__dict__['fov_y'] = fov_y
+        self.__dict__['x_shift'] = x_shift
+        self.__dict__['y_shift'] = y_shift
 
-
-
-    def _update_shift_matrix(self):
+    def _get_shift_matrix(self):
         """np.array: The Camera's lens-shift matrix."""
-        self.shift_matrix =  np.array([[1., 0., self.x_shift, 0.],
-                                       [0., 1., self.y_shift, 0.],
-                                       [0., 0.,           1., 0.],
-                                       [0., 0.,           0., 1.]])
+        return np.array([[1., 0., self.x_shift, 0.],
+                         [0., 1., self.y_shift, 0.],
+                         [0., 0.,           1., 0.],
+                         [0., 0.,           0., 1.]])
 
     def _update_projection_matrix(self):
         """np.array: The Camera's Projection Matrix.  Will be an Orthographic matrix if ortho_mode is set to True."""
@@ -128,19 +117,34 @@ class PerspectiveCamera(CameraBase):
                               [             0.,    0., (zf+zn)/(zn-zf), (2.*zf*zn)/(zn-zf)],
                               [             0.,    0.,             -1.,                 0.]])
 
-        self._update_shift_matrix()
-        persp_mat = np.dot(persp_mat, self.shift_matrix)  # Apply lens shift
-
-        self.projection_matrix = persp_mat
+        self.projection_matrix[:] = np.dot(persp_mat, self._get_shift_matrix())  # Apply lens shift
 
 
-class Camera(PerspectiveCamera):
+
+class Camera(object):
 
     def __init__(self, ortho_mode=False, **kwargs):
-        if ortho_mode:
-            raise DeprecationWarning("Camera class deprecated and not usable for ortho_mode anymore. Use OrthoCamera instead")
-        else:
-            warnings.warn("Camera class deprecated. Use PerspectiveCamera instead", DeprecationWarning)
         super(Camera, self).__init__(**kwargs)
+        self.lens = OrthoProjection(**kwargs) if ortho_mode else PerspectiveProjection(**kwargs)
+        self.obj = Physical(**kwargs)
 
+    def update(self):
+        self.lens.update()
+        self.obj.update()
+
+    @property
+    def position(self):
+        return self.obj.position
+
+    @position.setter
+    def position(self, value):
+        self.obj.position = value
+
+    @property
+    def rotation(self):
+        return self.obj.rotation
+
+    @rotation.setter
+    def rotation(self, value):
+        self.obj.rotation = value
 

@@ -19,11 +19,18 @@ class Observable(object):
             observer.notify()
 
 
+class IterObservable(Observable):
+    """Observable that auto-notifies observers if indexed assignment is performed on it."""
+
+    def __setitem__(self, key, value):
+        self.notify_observers()
+
+
 class Observer(object):
 
     def __init__(self, **kwargs):
         super(Observer, self).__init__(**kwargs)
-        self._requires_update = False
+        self._requires_update = True
 
     def notify(self):
         """Flags Observer to perform update() at proper time."""
@@ -52,10 +59,13 @@ class AutoRegisterObserver(Observer):
             value.register_observer(self)
 
 
-class IterObservable(Observable):
-    """Observable that auto-notifies observers if indexed assignment is performed on it."""
+class SetterObserver(Observer):
 
-    def __setitem__(self, key, value):
-        # super(IterObservable, self).__setitem__(key, value)
-        assert not hasattr(super, '__setitem__')
-        self.notify_observers()
+    _observables = []
+
+    def __setattr__(self, key, value):
+        """Automatically notifies self whenever an attribute is set, essentially
+        turning all attributes into Observables."""
+        super(SetterObserver, self).__setattr__(key, value)
+        if key in self._observables:
+            self.notify()
