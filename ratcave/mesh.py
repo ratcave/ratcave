@@ -121,10 +121,10 @@ class MeshLoader(object):
         return Mesh(self.name, self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
 
 
-class EmptyMesh(physical.PhysicalNode):
+class EmptyMesh(physical.PhysicalNodeComposite):
 
     def __init__(self, *args, **kwargs):
-        super(EmptyMesh, self).__init__(*args, **kwargs)
+        super(EmptyMesh, self).__init__(**kwargs)
 
     def _draw(self, shader=None, **kwargs):
         pass
@@ -157,16 +157,17 @@ class Mesh(EmptyMesh):
         Returns:
             Mesh instance
         """
-        self.data = meshdata
+
 
         super(Mesh, self).__init__(**kwargs)
 
+        self.data = meshdata
         self.name = name
 
         # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
         vertex_mean = np.mean(self.data.vertices, axis=0)
         self.data.vertices -= vertex_mean
-        self.position[:] = vertex_mean if 'position' not in kwargs else kwargs['position']
+        self.position = vertex_mean if 'position' not in kwargs else kwargs['position']
 
         # rectangular boundaries
         self.min_xyz = np.array((0, 0, 0))
@@ -187,17 +188,11 @@ class Mesh(EmptyMesh):
 
         # self.is_updated = False
 
-    def __str__(self):
-        return "%s(%d) at %s" % (self.name, len(self.children), self.position_global)
-
-    def __repr__(self):
-        return str(self)
-
     def update(self):
         super(Mesh, self).update()
 
         vertices_local = np.vstack([self.data.vertices.T, np.ones(len(self.data.vertices))])
-        vertices_global = np.dot(self.model_matrix_global, vertices_local).T
+        vertices_global = np.dot(self.obj.model_matrix_global, vertices_local).T
 
         # if needed, one can store global vertex coordinates
         vg = vertices_global
@@ -226,12 +221,11 @@ class Mesh(EmptyMesh):
 
                     # Send Model and Normal Matrix to shader.
                     try:
-                        shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel(), loc=self.modelmat_loc)
-                        shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel(), loc=self.normalmat_loc)
+                        shader.uniform_matrixf('model_matrix', self.obj.model_matrix_global.T.ravel(), loc=self.modelmat_loc)
+                        shader.uniform_matrixf('normal_matrix', self.obj.normal_matrix_global.T.ravel(), loc=self.normalmat_loc)
                     except AttributeError:
                         self.modelmat_loc = shader.get_uniform_location('model_matrix')
                         self.normalmat_loc = shader.get_uniform_location('normal_matrix')
-                        pass
 
                 # Set Point Size, if drawing a point cloud
                 if self.drawstyle == 'point':
