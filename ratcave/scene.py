@@ -44,8 +44,8 @@ class Scene(object):
                 # Send Uniforms that are constant across meshes.
                 if send_camera_uniforms:
                     self.camera.update()
-                    shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
-                    shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
+                    shader.uniform_matrixf('view_matrix', self.camera.lens.view_matrix.T.ravel())
+                    shader.uniform_matrixf('projection_matrix', self.camera.lens.projection_matrix.T.ravel())
                     shader.uniformf('camera_position', *self.camera.position.xyz)
 
                 if send_light_uniforms:
