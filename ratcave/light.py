@@ -1,6 +1,6 @@
-from .camera import Camera
+from .physical import PhysicalNodeComposite
 
-class Light(Camera):
+class Light(PhysicalNodeComposite):
 
     def __init__(self, *args, **kwargs):
         """Light class."""
