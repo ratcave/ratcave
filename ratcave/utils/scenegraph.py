@@ -4,7 +4,6 @@ from collections import deque
 class SceneNode(object):
 
     def __init__(self, parent=None, children=None, **kwargs):
-        super(SceneNode, self).__init__(**kwargs)
         """A Node of the Scenegraph.  Has children, but no parent."""
         self._children = []
         self._parent = None
