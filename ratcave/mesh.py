@@ -100,7 +100,7 @@ class MeshLoader(object):
         self.meshdata = meshdata
         self.material = material
 
-    def load_mesh(self, position=None, **kwargs):
+    def load_mesh(self, **kwargs):
         """
         Construct a Mesh object from MeshData.
         Arguments:
@@ -109,10 +109,10 @@ class MeshLoader(object):
 
         # Override default position to the mean vertices position, if nothing specified.
         vertex_mean = np.mean(self.meshdata.vertices, axis=0)
-        if not position:
+        if 'position' not in kwargs:
             kwargs['position'] = vertex_mean
 
-        # Mean-center the local vertex coordinates
+        # change vertices to local vertex coordinates around Mesh position.
         self.meshdata.vertices -= vertex_mean
 
         uniforms = shader.UniformCollection()

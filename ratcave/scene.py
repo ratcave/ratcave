@@ -16,7 +16,7 @@ class Scene(object):
         # TODO: provide help to make camera aspect and fov_y for cubemapped scenes!
         # Initialize List of all Meshes to draw
 
-        self.root = SceneNode()
+        self.root = mesh.EmptyMesh()
         self.root.add_children(meshes)
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
@@ -45,7 +45,7 @@ class Scene(object):
                 # Send Uniforms that are constant across meshes.
                 if send_camera_uniforms:
                     self.camera.update()
-                    shader.uniform_matrixf('view_matrix', self.camera.lens.view_matrix.T.ravel())
+                    shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
                     shader.uniform_matrixf('projection_matrix', self.camera.lens.projection_matrix.T.ravel())
                     shader.uniformf('camera_position', *self.camera.position.xyz)
 

@@ -43,9 +43,9 @@ class PhysicalNode(Physical, SceneNode):
         """Object with xyz position and rotation properties that are relative to its parent."""
         super(PhysicalNode, self).__init__(**kwargs)
 
-        self.model_matrix_global = np.zeros((4, 4))
-        self.normal_matrix_global = np.zeros((4, 4))
-        self.view_matrix_global = np.zeros((4, 4))
+        self.model_matrix_global = np.identity(4)
+        self.normal_matrix_global = np.identity(4)
+        self.view_matrix_global = np.identity(4)
 
     def update(self):
         super(PhysicalNode, self).update()
