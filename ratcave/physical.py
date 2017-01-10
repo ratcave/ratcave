@@ -63,7 +63,7 @@ class PhysicalNode(Physical, SceneNode):
 
     @property
     def position_global(self):
-        return tuple(self.model_matrix_global[:3, -1].tolist())
+        return tuple(self.model_matrix_global[:3, -1])
 
 
 class PhysicalCompositeBase(object):
