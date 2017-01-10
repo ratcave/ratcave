@@ -1,7 +1,7 @@
 import abc
 import numpy as np
 from .utils import AutoRegisterObserver, Observer, SetterObserver, Observable, IterObservable
-from .physical import Physical, PhysicalNodeComposite
+from .physical import Physical, PhysicalNode
 import pyglet.gl as gl
 from collections import namedtuple
 import warnings
@@ -121,12 +121,11 @@ class PerspectiveProjection(ProjectionBase):
 
 
 
-class Camera(PhysicalNodeComposite):
+class Camera(PhysicalNode):
 
     def __init__(self, ortho_mode=False, **kwargs):
         super(Camera, self).__init__(**kwargs)
         self.lens = OrthoProjection(**kwargs) if ortho_mode else PerspectiveProjection(**kwargs)
-        self.update()
 
     def update(self):
         super(Camera, self).update()

@@ -134,10 +134,7 @@ class MeshLoader(object):
         return CylinderCollisionMesh(name=self.name, meshdata=self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
 
 
-class EmptyMesh(physical.PhysicalNodeComposite):
-
-    def __init__(self, *args, **kwargs):
-        super(EmptyMesh, self).__init__(**kwargs)
+class EmptyMesh(physical.PhysicalNode):
 
     def _draw(self, shader=None, **kwargs):
         pass
@@ -186,13 +183,15 @@ class Mesh(EmptyMesh):
         self.visible = visible
         self.vao = None
 
-        self.update()
+        self._update_global_vertices()
+
+    def _update_global_vertices(self):
+        vertices_local = np.vstack([self.data.vertices.T, np.ones(len(self.data.vertices))])
+        self.vertices_global = np.dot(self.model_matrix_global, vertices_local).T
 
     def update(self):
         super(Mesh, self).update()
-
-        vertices_local = np.vstack([self.data.vertices.T, np.ones(len(self.data.vertices))])
-        self.vertices_global = np.dot(self.obj.model_matrix_global, vertices_local).T
+        self._update_global_vertices()
 
     def _draw(self, shader=None, send_uniforms=True, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
@@ -215,8 +214,8 @@ class Mesh(EmptyMesh):
 
                     # Send Model and Normal Matrix to shader.
                     try:
-                        shader.uniform_matrixf('model_matrix', self.obj.model_matrix_global.T.ravel(), loc=self.modelmat_loc)
-                        shader.uniform_matrixf('normal_matrix', self.obj.normal_matrix_global.T.ravel(), loc=self.normalmat_loc)
+                        shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel(), loc=self.modelmat_loc)
+                        shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel(), loc=self.normalmat_loc)
                     except AttributeError:
                         self.modelmat_loc = shader.get_uniform_location('model_matrix')
                         self.normalmat_loc = shader.get_uniform_location('normal_matrix')
