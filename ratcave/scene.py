@@ -5,6 +5,7 @@ import pyglet.gl as gl
 
 from . import Camera, Light, resources, mesh
 from .utils import gl as glutils
+from .utils import SceneNode
 from .texture import TextureCube
 
 
@@ -15,7 +16,7 @@ class Scene(object):
         # TODO: provide help to make camera aspect and fov_y for cubemapped scenes!
         # Initialize List of all Meshes to draw
 
-        self.root = mesh.EmptyMesh()
+        self.root = SceneNode()
         self.root.add_children(meshes)
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
