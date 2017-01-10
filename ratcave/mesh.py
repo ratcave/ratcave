@@ -8,6 +8,8 @@
     This documentation was auto-generated from the mesh.py file.
 """
 import copy
+import abc
+from collections import Iterable
 import numpy as np
 from pyglet import gl
 from .utils import gl as ugl
@@ -98,10 +100,21 @@ class MeshLoader(object):
         self.meshdata = meshdata
         self.material = material
 
-    def load_mesh(self, **kwargs):
-        from collections import Iterable
+    def load_mesh(self, position=None, **kwargs):
+        """
+        Construct a Mesh object from MeshData.
+        Arguments:
+          - position (3-coord tuple or None):  if None, puts Mesh position at center of vertices.
+        """
 
-        """Construct a Mesh object"""
+        # Override default position to the mean vertices position, if nothing specified.
+        vertex_mean = np.mean(self.meshdata.vertices, axis=0)
+        if not position:
+            kwargs['position'] = vertex_mean
+
+        # Mean-center the local vertex coordinates
+        self.meshdata.vertices -= vertex_mean
+
         uniforms = shader.UniformCollection()
         texture = None
 
@@ -118,7 +131,7 @@ class MeshLoader(object):
 
                     uniforms[key] = shader.Uniform(key, *newval)
 
-        return Mesh(self.name, self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
+        return CylinderCollisionMesh(name=self.name, meshdata=self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
 
 
 class EmptyMesh(physical.PhysicalNodeComposite):
@@ -158,23 +171,10 @@ class Mesh(EmptyMesh):
             Mesh instance
         """
 
-
         super(Mesh, self).__init__(**kwargs)
 
         self.data = meshdata
         self.name = name
-
-        # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
-        vertex_mean = np.mean(self.data.vertices, axis=0)
-        self.data.vertices -= vertex_mean
-        self.position = vertex_mean if 'position' not in kwargs else kwargs['position']
-
-        # rectangular boundaries
-        self.min_xyz = np.array((0, 0, 0))
-        self.max_xyz = np.array((0, 0, 0))
-
-        #: :py:class:`.Physical`, World Mesh coordinates
-        #: Local Mesh coordinates (Physical type)
         self.uniforms = uniforms if type(uniforms) == shader.UniformCollection else shader.UniformCollection(uniforms)
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
@@ -186,19 +186,13 @@ class Mesh(EmptyMesh):
         self.visible = visible
         self.vao = None
 
-        # self.is_updated = False
+        self.update()
 
     def update(self):
         super(Mesh, self).update()
 
         vertices_local = np.vstack([self.data.vertices.T, np.ones(len(self.data.vertices))])
-        vertices_global = np.dot(self.obj.model_matrix_global, vertices_local).T
-
-        # if needed, one can store global vertex coordinates
-        vg = vertices_global
-
-        self.min_xyz = np.array((vg[:, 0].min(), vg[:, 1].min(), vg[:, 2].min()))
-        self.max_xyz = np.array((vg[:, 0].max(), vg[:, 1].max(), vg[:, 2].max()))
+        self.vertices_global = np.dot(self.obj.model_matrix_global, vertices_local).T
 
     def _draw(self, shader=None, send_uniforms=True, *args, **kwargs):
         super(Mesh, self)._draw(*args, **kwargs)
@@ -233,3 +227,62 @@ class Mesh(EmptyMesh):
 
                 # Send in the vertex and normal data
                 self.data.draw(Mesh.drawstyle[self.drawstyle])
+
+
+class CollisionMeshBase(Mesh):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def collides_with(self, xyz):
+        """Returns True if 3-value coordinate 'xyz' is inside the mesh."""
+        pass
+
+
+# class CubeCollisionMesh(CollisionMeshBase):
+#     """Calculates collision by checking if a point is inside a cube around the mesh vertices."""
+#
+#     def __init__(self, *args, **kwargs):
+#         super(CubeCollisionMesh, self).__init__(*args, **kwargs)
+#         # rectangular boundaries
+#         self.collision_cube_min = np.zeros(3)
+#         self.collision_cube_max = np.zeros(3)
+#
+#     def update(self):
+#         """Checks if the model matrix needs updating, and updates collision cube data if so."""
+#         super(CubeCollisionMesh, self).update()
+#
+#         self.collision_cube_min[:] = self.vertices_global.min(axis=0)[:3]
+#         self.collision_cube_max[:] = self.vertices_global.max(axis=0)[:3]
+#
+#     def collides_with(self, xyz):
+#         """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
+#         raise NotImplementedError("Doesn't properly rotate cube to fit (See AABB collision vs OOB collision)")
+#         # return np.all([np.min(self.vertices_global, axis=0)[:3] < xyz, xyz < np.max(self.vertices_global, axis=0)[:3]])
+
+
+class SphereCollisionMesh(CollisionMeshBase):
+    """Calculates collision by checking if a point is inside a sphere around the mesh vertices."""
+
+    def __init__(self, *args, **kwargs):
+        super(SphereCollisionMesh, self).__init__(*args, **kwargs)
+        self.collision_radius = np.linalg.norm(self.vertices_global, axis=1).max()
+
+    def collides_with(self, xyz):
+        """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
+        return np.linalg.norm(xyz - self.position_global) < self.collision_radius
+
+
+class CylinderCollisionMesh(CollisionMeshBase):
+
+    def __init__(self, up_axis='y', *args, **kwargs):
+        super(CylinderCollisionMesh, self).__init__(*args, **kwargs)
+        self.up_axis = up_axis
+        self._collision_columns = {'x': (1, 2), 'y': (0, 2), 'z': (1, 2)}[up_axis]
+        self.collision_radius = np.linalg.norm(self.vertices_global[:, self._collision_columns], axis=1).max()
+
+    def collides_with(self, xyz):
+        cc = self._collision_columns
+        return np.linalg.norm(xyz[:, cc] - self.position_global[cc]) < self.collision_radius
+
+
+

@@ -61,10 +61,6 @@ class PhysicalNode(Physical, SceneNode):
             self.normal_matrix_global[:] = self.normal_matrix
             self.view_matrix_global[:] = self.view_matrix
 
-    @property
-    def position_global(self):
-        return tuple(self.model_matrix_global[:3, -1])
-
 
 class PhysicalCompositeBase(object):
     """
@@ -75,6 +71,10 @@ class PhysicalCompositeBase(object):
 
     def update(self):
         self.obj.update()
+
+    @property
+    def position_global(self):
+        return tuple(self.obj.model_matrix_global[:3, -1])
 
     @property
     def position(self):
