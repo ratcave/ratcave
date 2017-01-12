@@ -87,9 +87,7 @@ class Scene(Drawable):
         with glutils.enable_states(gl_states):
             # gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
-                self.camera.update()
                 self.light.update()
-                self.uniforms.send()
 
                 # Pre-Calculate all 6 view matrices
                 for mesh_idx, mesh in enumerate(self.root):
