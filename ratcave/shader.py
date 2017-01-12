@@ -14,7 +14,7 @@ class UniformArray(np.ndarray): pass
 
 class UniformCollection(UserDict, object):
     """Dict-like that converts data to arrays and sends all data to a Shader as uniform arrays."""
-
+    # todo: Switch all uniforms functions to array equivalents, to get pointer-passing performance benefit.
     _sendfuns = {'f': [gl.glUniform1f, gl.glUniform2f, gl.glUniform3f, gl.glUniform4f],
                 'i':   [gl.glUniform1i, gl.glUniform2i, gl.glUniform3i, gl.glUniform4i]
                 }
