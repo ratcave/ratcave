@@ -1,5 +1,5 @@
 from pyglet import gl
-from ctypes import byref, create_string_buffer, c_char, c_char_p, c_int, c_float, cast, pointer, POINTER
+from ctypes import byref, create_string_buffer, c_char, c_char_p, c_int, c_float, c_double, cast, pointer, POINTER
 import numpy as np
 from .utils import gl as ugl
 try:
@@ -139,4 +139,5 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
         # obtain the uniform location
         if not loc:
             loc = self.get_uniform_location(name)
-        gl.glUniformMatrix4fv(loc, 1, True, (c_float * 16)(*mat.ravel()))  # uplaod the 4x4 floating point matrix
+        matp = mat.astype(np.float32).ctypes.data_as(POINTER(c_float * 16)).contents
+        gl.glUniformMatrix4fv(loc, 1, True, matp)
