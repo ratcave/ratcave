@@ -50,9 +50,14 @@ class UniformCollection(UserDict, object):
                 array.loc = gl.glGetUniformLocation(shader_id.value, name)
                 loc = array.loc
 
-            if array.ndim == 2:
-                matp = array.astype(np.float32).ctypes.data_as(POINTER(c_float * 16)).contents
-                gl.glUniformMatrix4fv(loc, 1, True, matp)
+            if array.ndim == 2:  # Assuming a 4x4 float32 matrix (common for graphics operations)
+                try:
+                    pointer = array.pointer
+                except AttributeError:
+                    array.pointer = array.ctypes.data_as(POINTER(c_float * 16)).contents
+                    pointer = array.pointer
+                gl.glUniformMatrix4fv(loc, 1, True, pointer)
+
             else:
                 sendfun = self._sendfuns[array.dtype.kind][len(array) - 1]  # Find correct glUniform function
                 sendfun(loc, *array)
