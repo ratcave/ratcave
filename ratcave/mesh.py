@@ -224,8 +224,8 @@ class Mesh(MeshBase):
 
                     # Send Model and Normal Matrix to shader.
                     try:
-                        shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel(), loc=self.modelmat_loc)
-                        shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel(), loc=self.normalmat_loc)
+                        shader.uniform_matrixf('model_matrix', self.model_matrix_global, loc=self.modelmat_loc)
+                        shader.uniform_matrixf('normal_matrix', self.normal_matrix_global, loc=self.normalmat_loc)
                     except AttributeError:
                         self.modelmat_loc = shader.get_uniform_location('model_matrix')
                         self.normalmat_loc = shader.get_uniform_location('normal_matrix')

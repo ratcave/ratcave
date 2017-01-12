@@ -45,8 +45,8 @@ class Scene(object):
                 # Send Uniforms that are constant across meshes.
                 if send_camera_uniforms:
                     self.camera.update()
-                    shader.uniform_matrixf('view_matrix', self.camera.view_matrix.T.ravel())
-                    shader.uniform_matrixf('projection_matrix', self.camera.lens.projection_matrix.T.ravel())
+                    shader.uniform_matrixf('view_matrix', self.camera.view_matrix)
+                    shader.uniform_matrixf('projection_matrix', self.camera.lens.projection_matrix)
                     shader.uniformf('camera_position', *self.camera.position.xyz)
 
                 if send_light_uniforms:
@@ -76,7 +76,7 @@ class Scene(object):
                 self.camera.update()
 
                 shader.uniformf('light_position', *self.light.position.xyz)
-                shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix.T.ravel())
+                shader.uniform_matrixf('projection_matrix', self.camera.projection_matrix)
                 shader.uniformf('camera_position', *self.camera.position.xyz)
 
                 # Pre-Calculate all 6 view matrices
@@ -85,7 +85,7 @@ class Scene(object):
                 for rotation in [[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]:
                     self.camera.rotation[:] = rotation
                     self.camera.update_view_matrix()
-                    view_matrices.append(self.camera.view_matrix.T.ravel())
+                    view_matrices.append(self.camera.view_matrix)
 
                 for mesh_idx, mesh in enumerate(self.root):
                     for face, view_matrix in enumerate(view_matrices):
