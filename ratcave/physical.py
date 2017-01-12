@@ -22,9 +22,9 @@ class Physical(AutoRegisterObserver):
         self.position = rotutils.Translation(*position)
         self.scale = rotutils.Scale(scale)
 
-        self.model_matrix = np.zeros((4, 4))
-        self.normal_matrix = np.zeros((4, 4))
-        self.view_matrix = np.zeros((4, 4))
+        self.model_matrix = np.identity(4)
+        self.normal_matrix = np.identity(4)
+        self.view_matrix = np.identity(4)
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
