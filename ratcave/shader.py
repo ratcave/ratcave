@@ -139,6 +139,4 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
         # obtain the uniform location
         if not loc:
             loc = self.get_uniform_location(name)
-        gl.glUniformMatrix4fv(loc, 1, False, (c_float * 16)(*mat.ravel('F')))  # uplaod the 4x4 floating point matrix
-        # cmat = mat.T.ctypes.data_as(POINTER(c_float * 16)).contents
-        # gl.glUniformMatrix4fv(loc, 1, False, cmat)  # uplaod the 4x4 floating point matrix
+        gl.glUniformMatrix4fv(loc, 1, True, (c_float * 16)(*mat.ravel()))  # uplaod the 4x4 floating point matrix
