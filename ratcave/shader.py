@@ -25,7 +25,12 @@ class UniformCollection(UserDict, object):
             self[key] = value
 
     def __setitem__(self, key, value):
-        uniform = np.array([value]) if not hasattr(value, '__iter__') else np.array(value)
+        if isinstance(value, np.ndarray):
+            if value.dtype != np.float32:
+                raise TypeError("Matrix Uniform Arrays must be 32-bit floats for rendering to work properly.")
+            uniform = value  # Don't copy the data if it's already a numpy array
+        else:
+            uniform = np.array([value]) if not hasattr(value, '__iter__') else np.array(value)
         uniform = uniform.view(UniformArray)  # Cast as a UniformArray for 'loc' to be set as an attribute later.
         name = key.encode('ascii')
         self.data[name] = uniform
@@ -45,8 +50,12 @@ class UniformCollection(UserDict, object):
                 array.loc = gl.glGetUniformLocation(shader_id.value, name)
                 loc = array.loc
 
-            sendfun = self._sendfuns[array.dtype.kind][len(array) - 1]  # Find correct glUniform function
-            sendfun(loc, *array)
+            if array.ndim == 2:
+                matp = array.astype(np.float32).ctypes.data_as(POINTER(c_float * 16)).contents
+                gl.glUniformMatrix4fv(loc, 1, True, matp)
+            else:
+                sendfun = self._sendfuns[array.dtype.kind][len(array) - 1]  # Find correct glUniform function
+                sendfun(loc, *array)
 
 
 

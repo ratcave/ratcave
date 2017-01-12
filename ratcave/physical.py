@@ -22,9 +22,9 @@ class Physical(AutoRegisterObserver):
         self.position = rotutils.Translation(*position)
         self.scale = rotutils.Scale(scale)
 
-        self.model_matrix = np.identity(4)
-        self.normal_matrix = np.identity(4)
-        self.view_matrix = np.identity(4)
+        self.model_matrix = np.identity(4, dtype=np.float32)
+        self.normal_matrix = np.identity(4, dtype=np.float32)
+        self.view_matrix = np.identity(4, dtype=np.float32)
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
@@ -43,9 +43,9 @@ class PhysicalNode(Physical, SceneNode):
         """Object with xyz position and rotation properties that are relative to its parent."""
         super(PhysicalNode, self).__init__(**kwargs)
 
-        self.model_matrix_global = np.identity(4)
-        self.normal_matrix_global = np.identity(4)
-        self.view_matrix_global = np.identity(4)
+        self.model_matrix_global = np.identity(4, dtype=np.float32)
+        self.normal_matrix_global = np.identity(4, dtype=np.float32)
+        self.view_matrix_global = np.identity(4, dtype=np.float32)
 
     def update(self):
         super(PhysicalNode, self).update()

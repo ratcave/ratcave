@@ -7,12 +7,14 @@ from . import Camera, Light, resources, mesh
 from .utils import gl as glutils
 from .utils import SceneNode
 from .texture import TextureCube
+from .draw import Drawable
 
 
-class Scene(object):
+class Scene(Drawable):
 
-    def __init__(self, meshes=(), camera=None, light=None, bgColor=(0.4, 0.4, 0.4)):
+    def __init__(self, meshes=(), camera=None, light=None, bgColor=(0.4, 0.4, 0.4), **kwargs):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
+        super(Scene, self).__init__(**kwargs)
         # TODO: provide help to make camera aspect and fov_y for cubemapped scenes!
         # Initialize List of all Meshes to draw
 
@@ -21,6 +23,30 @@ class Scene(object):
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
         self.bgColor = bgColor
+
+    @property
+    def camera(self):
+        return self._camera
+
+    @camera.setter
+    def camera(self, value):
+        if not isinstance(value, Camera):
+            raise TypeError("Scene.camera must be a Camera instance.")
+        self._camera = value
+        self.uniforms['view_matrix'] = self._camera.view_matrix_global.view()
+        self.uniforms['projection_matrix'] = self._camera.lens.projection_matrix.view()
+        self.uniforms['camera_position'] = self._camera.model_matrix_global[:3, 3]
+
+    @property
+    def light(self):
+        return self._light
+
+    @light.setter
+    def light(self, value):
+        if not isinstance(value, Light):
+            raise TypeError("Scene.light must be a Light instance.")
+        self._light = value
+        self.uniforms['light_position'] = self._light.model_matrix_global[:3, 3]
 
     def clear(self):
         """Clear Screen and Apply Background Color"""
@@ -36,24 +62,15 @@ class Scene(object):
         with glutils.enable_states(gl_states):
             # gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
-            # Bind Shader
-            with shader:
+            if clear:
+                self.clear()
 
-                if clear:
-                    self.clear()
+            self.camera.update()
+            self.light.update()
+            self.uniforms.send()
 
-                # Send Uniforms that are constant across meshes.
-                if send_camera_uniforms:
-                    self.camera.update()
-                    shader.uniform_matrixf('view_matrix', self.camera.view_matrix)
-                    shader.uniform_matrixf('projection_matrix', self.camera.lens.projection_matrix)
-                    shader.uniformf('camera_position', *self.camera.position.xyz)
-
-                if send_light_uniforms:
-                    shader.uniformf('light_position', *self.light.position.xyz)
-
-                for mesh in self.root:
-                    mesh.draw(shader=shader, send_uniforms=send_mesh_uniforms)
+            for mesh in self.root:
+                mesh.draw(send_uniforms=send_mesh_uniforms)
 
 
     def draw360_to_texture(self, cubetexture, shader=resources.genShader, autoclear=True, userdata={},

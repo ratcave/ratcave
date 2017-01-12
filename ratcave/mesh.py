@@ -15,7 +15,7 @@ from pyglet import gl
 from .utils import gl as ugl
 from . import physical, shader
 from . import texture as texture_module
-
+from .draw import Drawable
 
 class MeshData(object):
 
@@ -134,16 +134,13 @@ class MeshLoader(object):
         return CylinderCollisionMesh(name=self.name, meshdata=self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
 
 
-class Drawable(object):
-    """Interface for drawing."""
-    __metaclass__ = abc.ABCMeta
-
-    def draw(self, shader=None, **kwargs):
-        pass
-
-
 class MeshBase(Drawable, physical.PhysicalNode):
     __metaclass__ = abc.ABCMeta
+
+    def __init__(self, **kwargs):
+        super(MeshBase, self).__init__(**kwargs)
+        self.uniforms['model_matrix'] = self.model_matrix_global.view()
+        self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
 
 
 class EmptyMesh(MeshBase):
@@ -154,7 +151,7 @@ class Mesh(MeshBase):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
-    def __init__(self, name, meshdata, uniforms=shader.UniformCollection(), drawstyle='fill', visible=True,
+    def __init__(self, name, meshdata, drawstyle='fill', visible=True,
                  point_size=4, texture=None, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -182,7 +179,6 @@ class Mesh(MeshBase):
 
         self.data = meshdata
         self.name = name
-        self.uniforms = uniforms if type(uniforms) == shader.UniformCollection else shader.UniformCollection(uniforms)
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         self.texture = texture or texture_module.BaseTexture()
@@ -203,12 +199,10 @@ class Mesh(MeshBase):
         super(Mesh, self).update()
         self._update_global_vertices()
 
-    def draw(self, shader=None, send_uniforms=True, *args, **kwargs):
-        super(Mesh, self).draw(*args, **kwargs)
+    def draw(self, send_uniforms=True,**kwargs):
+        super(Mesh, self).draw(**kwargs)
 
-        # if not self.is_updated:
         self.update()
-        #     self.is_updated = True
 
         if self.visible:
 
@@ -218,17 +212,8 @@ class Mesh(MeshBase):
                 # Change Material to Mesh's
                 if send_uniforms:
 
-                    # self.update_model_and_normal_matrix()
                     self.uniforms.send()
                     texture.uniforms.send()
-
-                    # Send Model and Normal Matrix to shader.
-                    try:
-                        shader.uniform_matrixf('model_matrix', self.model_matrix_global, loc=self.modelmat_loc)
-                        shader.uniform_matrixf('normal_matrix', self.normal_matrix_global, loc=self.normalmat_loc)
-                    except AttributeError:
-                        self.modelmat_loc = shader.get_uniform_location('model_matrix')
-                        self.normalmat_loc = shader.get_uniform_location('normal_matrix')
 
                 # Set Point Size, if drawing a point cloud
                 if self.drawstyle == 'point':

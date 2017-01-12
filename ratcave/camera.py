@@ -21,7 +21,7 @@ class ProjectionBase(SetterObserver):
         self.__dict__['z_far'] = z_far
         assert 'z_near' in self._observables and 'z_far' in self._observables
 
-        self.__dict__['projection_matrix'] = np.identity(4, dtype=float)
+        self.__dict__['projection_matrix'] = np.identity(4, dtype=np.float32)
 
     @abc.abstractmethod
     def _update_projection_matrix(self): pass
@@ -103,7 +103,7 @@ class PerspectiveProjection(ProjectionBase):
         return np.array([[1., 0., self.x_shift, 0.],
                          [0., 1., self.y_shift, 0.],
                          [0., 0.,           1., 0.],
-                         [0., 0.,           0., 1.]])
+                         [0., 0.,           0., 1.]], dtype=np.float32)
 
     def _update_projection_matrix(self):
         """np.array: The Camera's Projection Matrix.  Will be an Orthographic matrix if ortho_mode is set to True."""
@@ -115,7 +115,7 @@ class PerspectiveProjection(ProjectionBase):
         persp_mat =  np.array([[ff/self.aspect,    0.,              0.,                 0.],
                               [             0.,    ff,              0.,                 0.],
                               [             0.,    0., (zf+zn)/(zn-zf), (2.*zf*zn)/(zn-zf)],
-                              [             0.,    0.,             -1.,                 0.]])
+                              [             0.,    0.,             -1.,                 0.]], dtype=np.float32)
 
         self.projection_matrix[:] = np.dot(persp_mat, self._get_shift_matrix())  # Apply lens shift
 
