@@ -219,8 +219,8 @@ class Mesh(MeshBase):
                 if send_uniforms:
 
                     # self.update_model_and_normal_matrix()
-                    self.uniforms.send_to(shader)
-                    texture.uniforms.send_to(shader)
+                    self.uniforms.send()
+                    texture.uniforms.send()
 
                     # Send Model and Normal Matrix to shader.
                     try:

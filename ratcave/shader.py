@@ -30,7 +30,7 @@ class UniformCollection(UserDict, object):
         name = key.encode('ascii')
         self.data[name] = uniform
 
-    def send_to(self, shader):
+    def send(self):
 
         for name, array in iteritems(self):
 
@@ -38,7 +38,7 @@ class UniformCollection(UserDict, object):
             try:
                 loc = array.loc
             except AttributeError:
-                array.loc = gl.glGetUniformLocation(shader.id, name)
+                array.loc = gl.glGetUniformLocation(Shader._bound.id, name)
                 loc = array.loc
 
             sendfun = self._sendfuns[array.dtype.kind][len(array) - 1]  # Find correct glUniform function
@@ -56,7 +56,6 @@ class UniformCollection(UserDict, object):
 
 class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
 
-    _bound = None  # The Shader instance that is currently bound
     bindfun = gl.glUseProgram
     uniformf_funs = (gl.glUniform1f, gl.glUniform2f, gl.glUniform3f, gl.glUniform4f)
     uniformi_funs = (gl.glUniform1i, gl.glUniform2i, gl.glUniform3i, gl.glUniform4i)
