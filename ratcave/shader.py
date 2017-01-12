@@ -38,7 +38,11 @@ class UniformCollection(UserDict, object):
             try:
                 loc = array.loc
             except AttributeError:
-                array.loc = gl.glGetUniformLocation(Shader._bound.id, name)
+                shader_id = c_int(0)
+                gl.glGetIntegerv(gl.GL_CURRENT_PROGRAM, byref(shader_id))
+                if shader_id.value == 0:
+                    raise UnboundLocalError("Shader not bound to OpenGL context--uniform cannot be sent.")
+                array.loc = gl.glGetUniformLocation(shader_id.value, name)
                 loc = array.loc
 
             sendfun = self._sendfuns[array.dtype.kind][len(array) - 1]  # Find correct glUniform function
