@@ -66,7 +66,7 @@ class UniformCollection(UserDict, object):
 
 #
 # Copyright Tristam Macdonald 2008
-#
+# Modified by Nicholas Del Grosso 2016
 # Distributed under the Boost Software License, Version 1.0
 # (see http://www.boost.org/LICENSE_1_0.txt)
 #
@@ -75,8 +75,6 @@ class UniformCollection(UserDict, object):
 class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
 
     bindfun = gl.glUseProgram
-    uniformf_funs = (gl.glUniform1f, gl.glUniform2f, gl.glUniform3f, gl.glUniform4f)
-    uniformi_funs = (gl.glUniform1i, gl.glUniform2i, gl.glUniform3i, gl.glUniform4i)
 
     def __init__(self, vert='', frag='', geom=''):
         """
@@ -136,22 +134,3 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
             buffer = create_string_buffer(link_status.value)  # create a buffer for the log
             gl.glGetProgramInfoLog(self.id, link_status, None, buffer)  # retrieve the log text
             print(buffer.value)  # print the log to the console
-
-    def get_uniform_location(self, name):
-        return gl.glGetUniformLocation(self.id, name.encode('ascii'))
-
-    def uniformf(self, name, *vals):
-        """Send data as a float uniform, named 'name'.  Shader must be already bound."""
-        self.uniformf_funs[len(vals)-1](self.get_uniform_location(name), *vals)
-
-    def uniformi(self, name, *vals):
-        """Send data as an integer uniform, named 'name'.  Shader must be already bound."""
-        self.uniformi_funs[len(vals)-1](self.get_uniform_location(name), *vals)
-
-    def uniform_matrixf(self, name, mat, loc=None):
-        """Send 4x4 NumPy matrix data as a uniform to the shader, named 'name'. Shader must be already bound."""
-        # obtain the uniform location
-        if not loc:
-            loc = self.get_uniform_location(name)
-        matp = mat.astype(np.float32).ctypes.data_as(POINTER(c_float * 16)).contents
-        gl.glUniformMatrix4fv(loc, 1, True, matp)
