@@ -129,18 +129,28 @@ class MeshLoader(object):
                         newval = int(val) if isinstance(val, bool) else newval
                         newval = [newval]
 
-                    uniforms[key] = shader.Uniform(key, *newval)
+                    uniforms[key] = newval
 
         return CylinderCollisionMesh(name=self.name, meshdata=self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
 
 
-class EmptyMesh(physical.PhysicalNode):
+class Drawable(object):
+    """Interface for drawing."""
+    __metaclass__ = abc.ABCMeta
 
-    def _draw(self, shader=None, **kwargs):
+    def draw(self, shader=None, **kwargs):
         pass
 
 
-class Mesh(EmptyMesh):
+class MeshBase(Drawable, physical.PhysicalNode):
+    __metaclass__ = abc.ABCMeta
+
+
+class EmptyMesh(MeshBase):
+    pass
+
+
+class Mesh(MeshBase):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
 
@@ -193,8 +203,8 @@ class Mesh(EmptyMesh):
         super(Mesh, self).update()
         self._update_global_vertices()
 
-    def _draw(self, shader=None, send_uniforms=True, *args, **kwargs):
-        super(Mesh, self)._draw(*args, **kwargs)
+    def draw(self, shader=None, send_uniforms=True, *args, **kwargs):
+        super(Mesh, self).draw(*args, **kwargs)
 
         # if not self.is_updated:
         self.update()

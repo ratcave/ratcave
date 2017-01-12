@@ -8,7 +8,7 @@ from .light import Light
 from .mesh import Mesh, MeshData, Material
 from .physical import Physical, PhysicalNode
 from .scene import Scene
-from .shader import Shader, Uniform, UniformCollection
+from .shader import Shader, UniformCollection
 from .texture import Texture, TextureCube
 from .wavefront import WavefrontReader
 

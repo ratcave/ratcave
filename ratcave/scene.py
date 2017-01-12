@@ -53,7 +53,7 @@ class Scene(object):
                     shader.uniformf('light_position', *self.light.position.xyz)
 
                 for mesh in self.root:
-                    mesh._draw(shader=shader, send_uniforms=send_mesh_uniforms)
+                    mesh.draw(shader=shader, send_uniforms=send_mesh_uniforms)
 
 
     def draw360_to_texture(self, cubetexture, shader=resources.genShader, autoclear=True, userdata={},
@@ -93,6 +93,6 @@ class Scene(object):
                         if autoclear and not mesh_idx:
                             self.clear()
                         shader.uniform_matrixf('view_matrix', view_matrix, loc=view_matrix_loc)
-                        mesh._draw(shader=shader, send_uniforms=not face)
+                        mesh.draw(shader=shader, send_uniforms=not face)
 
 

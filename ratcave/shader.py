@@ -2,93 +2,48 @@ from pyglet import gl
 from ctypes import byref, create_string_buffer, c_char, c_char_p, c_int, c_float, cast, pointer, POINTER
 import numpy as np
 from .utils import gl as ugl
+try:
+    from UserDict import UserDict  # Python 2
+except ImportError:
+    from collections import UserDict  # Python 3
+from six import iteritems
 
-class Uniform(object):
+
+class UniformArray(np.ndarray): pass
+
+
+class UniformCollection(UserDict, object):
+    """Dict-like that converts data to arrays and sends all data to a Shader as uniform arrays."""
 
     _sendfuns = {'f': [gl.glUniform1f, gl.glUniform2f, gl.glUniform3f, gl.glUniform4f],
                 'i':   [gl.glUniform1i, gl.glUniform2i, gl.glUniform3i, gl.glUniform4i]
                 }
 
-    def __init__(self, name, *vals):
-        """A fixed-length, fixed-type array with a pre-assigned glUniform function for quick shader data sending."""
-        self.name = name.encode('ascii')
-        assert len(vals) > 0 and len(vals) <= 4
-        self._value = np.array(vals)  # A semi-mutable array, in that its length can't be modified.
-        self.sendfun = Uniform._sendfuns[self._value.dtype.kind][len(self._value) - 1]
-        self.loc = None
-
-    def __repr__(self):
-        return '{}{}'.format(self.name, tuple(self.value.tolist()))
-
-    def __getitem__(self, item):
-        return self.value[item]
-
-    def __setitem__(self, item, value):
-        self.value[item] = value
-
-    @property
-    def value(self):
-        return self._value
-
-    def send_to(self, shader):
-        """Sends uniform to a currently-bound shader, returning its location (-1 means not sent)"""
-        # glGetUniformLocation only needs to be called once, when the shader is linked.  Not a big performance boost, though.
-        if type(self.loc) == type(None):
-            self.loc = gl.glGetUniformLocation(shader.id, self.name)
-
-        self.sendfun(self.loc, *self.value)
-        return self.loc
-
-
-    @classmethod
-    def from_dict(cls, data_dict):
-        """A factory function that can build multiple uniforms from a name: val dictionary"""
-        # Change all kwarg values to a sequence, to be put into Uniform
-        for key, val in list(data_dict.items()):
-            if not isinstance(val, (list, tuple)):
-                data_dict[key] = [val]
-
-        return [cls(key, *val) for key, val in list(data_dict.items())]
-
-
-class UniformCollection(object):
-
-    def __init__(self, uniform_dict={}):
-        self._uniforms = {}
-        for key, value in uniform_dict.items():
+    def __init__(self, **kwargs):
+        super(UniformCollection, self).__init__()
+        for key, value in iteritems(kwargs):
             self[key] = value
 
     def __setitem__(self, key, value):
-
-        if type(value) == Uniform:
-            self._uniforms[key] = value
-
-        elif type(value) != Uniform:
-            # try:
-            # if key in self._uniforms:
-            try:
-                self._uniforms[key].value[:] = value
-            except KeyError:
-                try:
-                    iter(value)
-                    self._uniforms[key] = Uniform(key, *value)
-                except TypeError:
-                    self._uniforms[key] = Uniform(key, value)
-            except:
-                raise TypeError("Attempt to add uniform {} to UniformCollection failed.".format(key))
-
-    def __getitem__(self, key):
-        return self._uniforms[key]
-
-    def __str__(self):
-        return "UniformCollection: {}".format(self._uniforms)
-
-    def __repr__(self):
-        return self.__str__()
+        uniform = np.array([value]) if not hasattr(value, '__iter__') else np.array(value)
+        uniform = uniform.view(UniformArray)  # Cast as a UniformArray for 'loc' to be set as an attribute later.
+        name = key.encode('ascii')
+        self.data[name] = uniform
 
     def send_to(self, shader):
-        for uniform in self._uniforms.values():
-            uniform.send_to(shader)
+
+        for name, array in iteritems(self):
+
+            # Attach a shader location value to the array, for quick memory lookup. (gl calls are expensive, for some reason)
+            try:
+                loc = array.loc
+            except AttributeError:
+                array.loc = gl.glGetUniformLocation(shader.id, name)
+                loc = array.loc
+
+            sendfun = self._sendfuns[array.dtype.kind][len(array) - 1]  # Find correct glUniform function
+            sendfun(loc, *array)
+
 
 
 #
@@ -101,6 +56,7 @@ class UniformCollection(object):
 
 class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
 
+    _bound = None  # The Shader instance that is currently bound
     bindfun = gl.glUseProgram
     uniformf_funs = (gl.glUniform1f, gl.glUniform2f, gl.glUniform3f, gl.glUniform4f)
     uniformi_funs = (gl.glUniform1i, gl.glUniform2i, gl.glUniform3i, gl.glUniform4i)
