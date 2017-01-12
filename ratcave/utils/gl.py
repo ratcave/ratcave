@@ -65,24 +65,31 @@ class BindTargetMixin(object):
     """
 
     bindfun = None
+    _bound = None
 
     def bind(self):
         self.bindfun(self.target, self.id)
+        self.__class__._bound = self
 
     @classmethod
     def unbind(cls):
         cls.bindfun(cls.target, 0)
+        cls._bound = None
 
 
 class BindNoTargetMixin(BindTargetMixin):
     """Same as BindTargetMixin, but for bind functions that don't have a specified target."""
 
+    _bound = None
+
     def bind(self):
         self.bindfun(self.id)
+        self.__class__._bound = self
 
     @classmethod
     def unbind(cls):
         cls.bindfun(0)
+        cls._bound = None
 
 
 class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
