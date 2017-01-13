@@ -1,6 +1,5 @@
 import abc
 import numpy as np
-from .utils import AutoRegisterObserver, Observer, SetterObserver, Observable, IterObservable
 from .physical import Physical, PhysicalGraph
 import pyglet.gl as gl
 from collections import namedtuple
@@ -11,24 +10,45 @@ from .draw import Drawable
 Viewport = namedtuple('Viewport', 'x y width height')
 
 
-class ProjectionBase(SetterObserver):
+class ProjectionBase(object):
     __metaclass__ = abc.ABCMeta
-
-    _observables = ['z_near', 'z_far']
 
     def __init__(self, z_near=0.1, z_far=4.5, **kwargs):
         super(ProjectionBase, self).__init__(**kwargs)
-        self.__dict__['z_near'] = z_near
-        self.__dict__['z_far'] = z_far
-        assert 'z_near' in self._observables and 'z_far' in self._observables
+        self.projection_matrix = np.identity(4, dtype=np.float32)
+        self._z_near = z_near
+        self._z_far = z_far
 
-        self.__dict__['projection_matrix'] = np.identity(4, dtype=np.float32)
+    @property
+    def z_near(self):
+        return self._z_near
+
+    @z_near.setter
+    def z_near(self, value):
+        if value < 0:
+            raise ValueError("Camera.z_near must be positive.")
+        elif value >= self.z_far:
+            raise ValueError("Camera.z_near must be less than z_far.")
+        self._z_near = value
+        self._update_projection_matrix()
+
+    @property
+    def z_far(self):
+        return self._z_far
+
+    @z_far.setter
+    def z_far(self, value):
+        if value < 0:
+            raise ValueError("Camera.z_far must be positive.")
+        elif value <= self.z_near:
+            raise ValueError("Camera.z_far must be greater than z_near.")
+        self._z_far = value
+        self._update_projection_matrix()
 
     @abc.abstractmethod
     def _update_projection_matrix(self): pass
 
     def update(self):
-        super(ProjectionBase, self).update()
         self._update_projection_matrix()
 
     @property
@@ -48,8 +68,6 @@ ScreenEdges = namedtuple('ScreenEdges', 'left right bottom top')
 
 class OrthoProjection(ProjectionBase):
 
-    _observables = ['origin', 'coords', 'z_near', 'z_far']
-
     def __init__(self, origin='center', coords='relative', **kwargs):
         """
         Parameters
@@ -58,8 +76,31 @@ class OrthoProjection(ProjectionBase):
         coords: 'relative', 'absolute'
         """
         super(OrthoProjection, self).__init__(**kwargs)
-        self.__dict__['origin'] = origin
-        self.__dict__['coords'] = coords
+        self._origin = origin
+        self._coords = coords
+        self._update_projection_matrix()
+
+    @property
+    def origin(self):
+        return self._origin
+
+    @origin.setter
+    def origin(self, value):
+        if value.lower() not in ['center', 'corner']:
+            raise ValueError()
+        self._origin = value.lower()
+        self._update_projection_matrix()
+
+    @property
+    def coords(self):
+        return self._coords
+
+    @coords.setter
+    def coords(self, value):
+        if value.lower() not in ['relative', 'absolute']:
+            raise ValueError()
+        self._coords = value.lower()
+        self._update_projection_matrix()
 
     def _get_screen_edges(self):
         vp = self.viewport
@@ -91,13 +132,41 @@ class OrthoProjection(ProjectionBase):
 
 class PerspectiveProjection(ProjectionBase):
 
-    _observables = ['fov_y', 'x_shift', 'y_shift', 'z_near', 'z_far']
-
     def __init__(self, fov_y=60., x_shift=0., y_shift=0., **kwargs):
         super(PerspectiveProjection, self).__init__(**kwargs)
-        self.__dict__['fov_y'] = fov_y
-        self.__dict__['x_shift'] = x_shift
-        self.__dict__['y_shift'] = y_shift
+        self._fov_y = fov_y
+        self._x_shift = x_shift
+        self._y_shift = y_shift
+        self._update_projection_matrix()
+
+    @property
+    def fov_y(self):
+        return self._fov_y
+
+    @fov_y.setter
+    def fov_y(self, value):
+        if value <= 0:
+            raise ValueError("Camera.fov_y should be positive.")
+        self._fov_y = value
+        self._update_projection_matrix()
+
+    @property
+    def x_shift(self):
+        return self._x_shift
+
+    @x_shift.setter
+    def x_shift(self, value):
+        self._x_shift = value
+        self._update_projection_matrix()
+
+    @property
+    def y_shift(self):
+        return self._y_shift
+
+    @y_shift.setter
+    def y_shift(self, value):
+        self._y_shift = value
+        self._update_projection_matrix()
 
     def _get_shift_matrix(self):
         """np.array: The Camera's lens-shift matrix."""
