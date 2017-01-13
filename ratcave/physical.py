@@ -22,19 +22,43 @@ class Physical(AutoRegisterObserver):
         self.position = rotutils.Translation(*position)
         self.scale = rotutils.Scale(scale)
 
-        self.model_matrix = np.identity(4, dtype=np.float32)
-        self.normal_matrix = np.identity(4, dtype=np.float32)
-        self.view_matrix = np.identity(4, dtype=np.float32)
+        self._model_matrix = np.identity(4, dtype=np.float32)
+        self._normal_matrix = np.identity(4, dtype=np.float32)
+        self._view_matrix = np.identity(4, dtype=np.float32)
+
+    @property
+    def model_matrix(self):
+        return self._model_matrix
+
+    @model_matrix.setter
+    def model_matrix(self, value):
+        self._model_matrix[:] = value
+
+    @property
+    def normal_matrix(self):
+        return self._normal_matrix
+
+    @normal_matrix.setter
+    def normal_matrix(self, value):
+        self._normal_matrix[:] = value
+
+    @property
+    def view_matrix(self):
+        return self._view_matrix
+
+    @view_matrix.setter
+    def view_matrix(self, value):
+        self._view_matrix[:] = value
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
         super(Physical, self).update()
 
         # Update Model, View, and Normal Matrices
-        self.model_matrix[:] = np.dot(self.position.to_matrix(), self.rotation.to_matrix())
-        self.view_matrix[:] = trans.inverse_matrix(self.model_matrix)
-        self.model_matrix[:] = np.dot(self.model_matrix, self.scale.to_matrix())
-        self.normal_matrix[:] = trans.inverse_matrix(self.model_matrix.T)
+        self.model_matrix = np.dot(self.position.to_matrix(), self.rotation.to_matrix())
+        self.view_matrix = trans.inverse_matrix(self.model_matrix)
+        self.model_matrix = np.dot(self.model_matrix, self.scale.to_matrix())
+        self.normal_matrix = trans.inverse_matrix(self.model_matrix.T)
 
 
 class PhysicalGraph(Physical, SceneGraph):
@@ -43,22 +67,47 @@ class PhysicalGraph(Physical, SceneGraph):
         """Object with xyz position and rotation properties that are relative to its parent."""
         super(PhysicalGraph, self).__init__(**kwargs)
 
-        self.model_matrix_global = np.identity(4, dtype=np.float32)
-        self.normal_matrix_global = np.identity(4, dtype=np.float32)
-        self.view_matrix_global = np.identity(4, dtype=np.float32)
+        self._model_matrix_global = np.identity(4, dtype=np.float32)
+        self._normal_matrix_global = np.identity(4, dtype=np.float32)
+        self._view_matrix_global = np.identity(4, dtype=np.float32)
+
+    @property
+    def model_matrix_global(self):
+        return self._model_matrix_global
+
+    @model_matrix_global.setter
+    def model_matrix_global(self, value):
+        self._model_matrix_global[:] = value
+
+    @property
+    def normal_matrix_global(self):
+        return self._normal_matrix_global
+
+    @normal_matrix_global.setter
+    def normal_matrix_global(self, value):
+        self._normal_matrix_global[:] = value
+
+    @property
+    def view_matrix_global(self):
+        return self._view_matrix_global
+
+    @view_matrix_global.setter
+    def view_matrix_global(self, value):
+        self._view_matrix_global[:] = value
+
 
     def update(self):
         super(PhysicalGraph, self).update()
 
         """Calculate world matrix values from the dot product of the parent."""
         if self.parent:
-            self.model_matrix_global[:] = np.dot(self.parent.model_matrix_global, self.model_matrix)
-            self.normal_matrix_global[:] = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
-            self.view_matrix_global[:] = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+            self.model_matrix_global = np.dot(self.parent.model_matrix_global, self.model_matrix)
+            self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+            self.view_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
         else:
-            self.model_matrix_global[:] = self.model_matrix
-            self.normal_matrix_global[:] = self.normal_matrix
-            self.view_matrix_global[:] = self.view_matrix
+            self.model_matrix_global = self.model_matrix
+            self.normal_matrix_global = self.normal_matrix
+            self.view_matrix_global = self.view_matrix
 
     @property
     def position_global(self):
