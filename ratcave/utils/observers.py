@@ -57,15 +57,3 @@ class AutoRegisterObserver(Observer):
         super(AutoRegisterObserver, self).__setattr__(key, value)
         if isinstance(value, Observable):
             value.register_observer(self)
-
-
-class SetterObserver(Observer):
-
-    _observables = []
-
-    def __setattr__(self, key, value):
-        """Automatically notifies self whenever an attribute is set, essentially
-        turning all attributes into Observables."""
-        super(SetterObserver, self).__setattr__(key, value)
-        if key in self._observables:
-            self.notify()
