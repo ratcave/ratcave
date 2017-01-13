@@ -134,7 +134,7 @@ class MeshLoader(object):
         return CylinderCollisionMesh(name=self.name, meshdata=self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
 
 
-class MeshBase(Drawable, physical.PhysicalNode):
+class MeshBase(Drawable, physical.PhysicalGraph):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, **kwargs):

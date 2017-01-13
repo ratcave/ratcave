@@ -1,4 +1,4 @@
-from .physical import PhysicalNode
+from .physical import PhysicalGraph
 
-class Light(PhysicalNode):
+class Light(PhysicalGraph):
     pass

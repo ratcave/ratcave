@@ -1,7 +1,7 @@
 from collections import deque
 
 # TODO: Check for loops and duplicate nodes in the Scene graph
-class SceneNode(object):
+class SceneGraph(object):
 
     def __init__(self, parent=None, children=None, **kwargs):
         """A Node of the Scenegraph.  Has children, but no parent."""
@@ -32,7 +32,7 @@ class SceneNode(object):
 
     @parent.setter
     def parent(self, value):
-        assert isinstance(value, SceneNode)
+        assert isinstance(value, SceneGraph)
         if self._parent is not None:
             self._parent._children.remove(self)
         self._parent = value
@@ -42,7 +42,7 @@ class SceneNode(object):
         """Adds a list of objects as children in the scene graph."""
 
         for child in children:
-            assert isinstance(child, SceneNode)
+            assert isinstance(child, SceneGraph)
             child._parent = self
             self._children.append(child)
 

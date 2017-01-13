@@ -2,7 +2,7 @@ import abc
 import numpy as np
 import _transformations as trans
 from .utils import rotations as rotutils
-from .utils import SceneNode, AutoRegisterObserver
+from .utils import SceneGraph, AutoRegisterObserver
 
 
 class Physical(AutoRegisterObserver):
@@ -37,18 +37,18 @@ class Physical(AutoRegisterObserver):
         self.normal_matrix[:] = trans.inverse_matrix(self.model_matrix.T)
 
 
-class PhysicalNode(Physical, SceneNode):
+class PhysicalGraph(Physical, SceneGraph):
 
     def __init__(self, **kwargs):
         """Object with xyz position and rotation properties that are relative to its parent."""
-        super(PhysicalNode, self).__init__(**kwargs)
+        super(PhysicalGraph, self).__init__(**kwargs)
 
         self.model_matrix_global = np.identity(4, dtype=np.float32)
         self.normal_matrix_global = np.identity(4, dtype=np.float32)
         self.view_matrix_global = np.identity(4, dtype=np.float32)
 
     def update(self):
-        super(PhysicalNode, self).update()
+        super(PhysicalGraph, self).update()
 
         """Calculate world matrix values from the dot product of the parent."""
         if self.parent:
