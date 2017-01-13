@@ -1,28 +1,35 @@
-
-
-import warnings
 import pyglet.gl as gl
 
 from . import Camera, Light, resources, mesh
 from .utils import gl as glutils
-from .utils import SceneNode
 from .texture import TextureCube
 from .draw import Drawable
 
 
 class Scene(Drawable):
 
-    def __init__(self, meshes=(), camera=None, light=None, bgColor=(0.4, 0.4, 0.4), **kwargs):
+    def __init__(self, meshes=None, camera=None, light=None, bgColor=(0.4, 0.4, 0.4), **kwargs):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
         super(Scene, self).__init__(**kwargs)
-        # TODO: provide help to make camera aspect and fov_y for cubemapped scenes!
         # Initialize List of all Meshes to draw
 
-        self.root = mesh.EmptyMesh()
-        self.root.add_children(meshes)
+        self.meshes = meshes
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
         self.bgColor = bgColor
+
+    @property
+    def meshes(self):
+        return self._meshes
+
+    @meshes.setter
+    def meshes(self, value):
+        if not hasattr(value, '__iter__'):
+            raise TypeError("Scene.meshes must be iterable.")
+        for el in value:
+            if not isinstance(el, mesh.MeshBase):
+                raise TypeError("All elements in Scene.meshes must be a Mesh.")
+        self._meshes = value
 
     @property
     def camera(self):
@@ -69,7 +76,7 @@ class Scene(Drawable):
             self.light.update()
             self.uniforms.send()
 
-            for mesh in self.root:
+            for mesh in self.meshes:
                 mesh.draw(send_uniforms=send_mesh_uniforms)
 
 
@@ -90,7 +97,7 @@ class Scene(Drawable):
                 self.light.update()
 
                 # Pre-Calculate all 6 view matrices
-                for mesh_idx, mesh in enumerate(self.root):
+                for mesh_idx, mesh in enumerate(self.meshes):
                     for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
                         self.camera.rotation.xyz = rotation
                         self.camera.update()
