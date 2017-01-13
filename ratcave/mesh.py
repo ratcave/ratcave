@@ -40,8 +40,7 @@ class MeshData(object):
         assert self.vertices.shape[0] == self.normals.shape[0]
         assert self.vertices.shape[0] == self.texcoords.shape[0]
 
-        self.is_loaded = False
-        self.glbuffer = False
+        self.glbuffer = None
 
     def load(self):
         self.reindex()
@@ -49,10 +48,9 @@ class MeshData(object):
         with self.glbuffer:
             for loc, verts in enumerate([self.vertices, self.normals, self.texcoords]):
                 self.glbuffer.assign_vertex_attrib_location(ugl.VBO(verts), loc)
-        self.is_loaded = True
 
     def draw(self, mode):
-        if not self.is_loaded:
+        if not self.glbuffer:
             self.load()
 
         with self.glbuffer as vao:
