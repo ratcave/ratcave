@@ -41,7 +41,7 @@ class Scene(Drawable):
             raise TypeError("Scene.camera must be a Camera instance.")
         self._camera = value
         self.uniforms['view_matrix'] = self._camera.view_matrix_global.view()
-        self.uniforms['projection_matrix'] = self._camera.lens.projection_matrix.view()
+        self.uniforms['projection_matrix'] = self._camera.projection_matrix.view()
         self.uniforms['camera_position'] = self._camera.model_matrix_global[:3, 3]
 
     @property

@@ -131,6 +131,8 @@ class Camera(PhysicalGraph):
         super(Camera, self).update()
         self.lens.update()
 
-
+    @property
+    def projection_matrix(self):
+        return self.lens.projection_matrix
 
 
