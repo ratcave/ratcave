@@ -80,7 +80,7 @@ class Scene(Drawable):
                 mesh.draw(send_uniforms=send_mesh_uniforms)
 
 
-    def draw360_to_texture(self, cubetexture, autoclear=True, userdata={},
+    def draw360_to_texture(self, cubetexture, userdata={},
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
         """
         Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light, and
@@ -94,18 +94,18 @@ class Scene(Drawable):
         with glutils.enable_states(gl_states):
             # gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
-                self.light.update()
+            self.light.update()
 
-                # Pre-Calculate all 6 view matrices
-                for mesh_idx, mesh in enumerate(self.meshes):
-                    for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
-                        self.camera.rotation.xyz = rotation
-                        self.camera.update()
-                        self.uniforms.send()
+            for mesh_idx, mesh in enumerate(self.meshes):
+                for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
+                    cubetexture.attach_to_fbo(face)
+                    if not mesh_idx:
+                        self.clear()
 
-                        cubetexture.attach_to_fbo(face)
-                        if autoclear and not mesh_idx:
-                            self.clear()
-                        mesh.draw(send_uniforms=not face)
+                    self.camera.rotation.xyz = rotation
+                    self.camera.update()
+                    self.uniforms.send()
+
+                    mesh.draw(send_uniforms=not face)
 
 
