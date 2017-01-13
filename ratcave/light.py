@@ -1,4 +1,8 @@
 from .physical import PhysicalGraph
+from .draw import Drawable
 
-class Light(PhysicalGraph):
-    pass
+class Light(PhysicalGraph, Drawable):
+
+    def __init__(self, **kwargs):
+        super(Light, self).__init__(**kwargs)
+        self.uniforms['light_position'] = self.model_matrix_global[:3, 3]

@@ -5,6 +5,7 @@ from .physical import Physical, PhysicalGraph
 import pyglet.gl as gl
 from collections import namedtuple
 import warnings
+from .draw import Drawable
 
 
 Viewport = namedtuple('Viewport', 'x y width height')
@@ -121,11 +122,15 @@ class PerspectiveProjection(ProjectionBase):
 
 
 
-class Camera(PhysicalGraph):
+class Camera(PhysicalGraph, Drawable):
 
     def __init__(self, ortho_mode=False, **kwargs):
         super(Camera, self).__init__(**kwargs)
         self.lens = OrthoProjection(**kwargs) if ortho_mode else PerspectiveProjection(**kwargs)
+        self.uniforms['projection_matrix'] = self.projection_matrix.view()
+
+        self.uniforms['view_matrix'] = self.view_matrix_global.view()
+        self.uniforms['camera_position'] = self.model_matrix_global[:3, 3]
 
     def update(self):
         super(Camera, self).update()

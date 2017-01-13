@@ -40,9 +40,7 @@ class Scene(Drawable):
         if not isinstance(value, Camera):
             raise TypeError("Scene.camera must be a Camera instance.")
         self._camera = value
-        self.uniforms['view_matrix'] = self._camera.view_matrix_global.view()
-        self.uniforms['projection_matrix'] = self._camera.projection_matrix.view()
-        self.uniforms['camera_position'] = self._camera.model_matrix_global[:3, 3]
+        self.uniforms.update(self._camera.uniforms)
 
     @property
     def light(self):
@@ -53,7 +51,7 @@ class Scene(Drawable):
         if not isinstance(value, Light):
             raise TypeError("Scene.light must be a Light instance.")
         self._light = value
-        self.uniforms['light_position'] = self._light.model_matrix_global[:3, 3]
+        self.uniforms.update(self._light.uniforms)
 
     def clear(self):
         """Clear Screen and Apply Background Color"""
