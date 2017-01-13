@@ -141,10 +141,6 @@ class MeshBase(Drawable, physical.PhysicalGraph):
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
 
 
-class EmptyMesh(MeshBase):
-    pass
-
-
 class Mesh(MeshBase):
 
     drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}

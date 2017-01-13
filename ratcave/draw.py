@@ -1,5 +1,6 @@
 import abc
 from . import shader
+from .physical import PhysicalGraph
 
 class Drawable(object):
     """Interface for drawing."""
@@ -11,3 +12,9 @@ class Drawable(object):
 
     def draw(self, **kwargs):
         pass
+
+
+
+class EmptyEntity(Drawable, PhysicalGraph):
+    """An object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
+    pass
