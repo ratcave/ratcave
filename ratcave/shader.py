@@ -3,16 +3,16 @@ from ctypes import byref, create_string_buffer, c_char, c_char_p, c_int, c_float
 import numpy as np
 from .utils import gl as ugl
 try:
-    from UserDict import UserDict  # Python 2
+    from UserDict import IterableUserDict# Python 2
 except ImportError:
-    from collections import UserDict  # Python 3
+    from collections import UserDict as IterableUserDict  # Python 3
 from six import iteritems
 
 
 class UniformArray(np.ndarray): pass
 
 
-class UniformCollection(UserDict, object):
+class UniformCollection(IterableUserDict, object):
     """Dict-like that converts data to arrays and sends all data to a Shader as uniform arrays."""
     # todo: Switch all uniforms functions to array equivalents, to get pointer-passing performance benefit.
     _sendfuns = {'f': [gl.glUniform1f, gl.glUniform2f, gl.glUniform3f, gl.glUniform4f],
