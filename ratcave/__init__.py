@@ -12,5 +12,6 @@ from .shader import Shader, UniformCollection
 from .texture import Texture, TextureCube
 from .wavefront import WavefrontReader
 from .utils import SceneGraph
+from .materials import Material
 
 __all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'WavefrontReader', 'resources']
