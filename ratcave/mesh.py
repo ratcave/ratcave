@@ -30,10 +30,7 @@ class MeshBase(Drawable, physical.PhysicalGraph):
 
 class Mesh(MeshBase):
 
-    drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
-
-    def __init__(self, name, arrays, drawstyle='fill', visible=True, point_size=4, texture=None,
-                 mean_center=True, **kwargs):
+    def __init__(self, name, arrays, texture=None, visible=True, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -45,10 +42,8 @@ class Mesh(MeshBase):
         Args:
             name (str): the mesh's name.
             arrays (tuple): a list of 2D arrays to be rendered.  Arrays will be accessible in shader in same attrib location order.
-            uniforms (list): a list of all Uniform objects
-            drawstyle (str): 'point': only vertices, 'line': points and edges, 'fill': points, edges, and faces (full)
+            texture (Texture): a Texture instance, which is linked when the Mesh is rendered.
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
-            point_size (int): How big to draw the points, when drawstyle is 'point'
 
         Returns:
             Mesh instance
@@ -56,25 +51,20 @@ class Mesh(MeshBase):
 
         super(Mesh, self).__init__(**kwargs)
         self.name = name
-        arrays = (np.array(array, dtype=np.float32) for array in arrays)
+        arrays = tuple(np.array(array, dtype=np.float32) for array in arrays)
         self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
 
         # Mean-center vertices, if specified.  Assume first array is vertices.
-        if mean_center:
-            vertex_mean = self.arrays[0].mean(axis=0)
-            self.arrays[0] -= vertex_mean  # assume
-            self.position = vertex_mean if not 'position' in kwargs else kwargs['position']
-
-
-        self.vao = None
+        vertex_mean = self.arrays[0].mean(axis=0)
+        self.arrays[0][:] -= vertex_mean  # assume
+        self.position = vertex_mean if not 'position' in kwargs else kwargs['position']
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         if texture and not isinstance(texture, texture_module.BaseTexture):
             raise TypeError("Mesh.texture should be a Texture instance.")
         self.texture = texture
-        self.drawstyle = drawstyle
-        self.point_size = point_size
         self.visible = visible
+        self.vao = None
 
     @classmethod
     def from_incomplete_data(cls, name, vertices, normals=None, texcoords=None, **kwargs):
@@ -84,7 +74,6 @@ class Mesh(MeshBase):
         texcoords = texcoords if texcoords else np.zeros((vertices.shape[0], 2), dtype=np.float32)
         return cls(name=name, arrays=(vertices, normals, texcoords), **kwargs)
 
-
     def load(self):
         """Put array location in VAO for shader in same order as arrays given to Mesh."""
         self.vao = ugl.VAO(indices=self.array_indices)
@@ -92,7 +81,7 @@ class Mesh(MeshBase):
             for loc, verts in enumerate(self.arrays):
                 self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
 
-    def draw(self, send_uniforms=True,**kwargs):
+    def draw(self, send_uniforms=True, **kwargs):
         super(Mesh, self).draw(**kwargs)
 
         if not self.vao:
@@ -111,13 +100,9 @@ class Mesh(MeshBase):
                 self.uniforms.send()
                 self.texture.uniforms.send()
 
-            # Set Point Size, if drawing a point cloud
-            if self.drawstyle == 'point':
-                gl.glPointSize(int(self.point_size))
-
             # Send in the vertex and normal data
             with self.vao as vao:
-                vao.draw(Mesh.drawstyle[self.drawstyle])
+                vao.draw()
 
             if self.texture:
                 self.texture.unbind()
