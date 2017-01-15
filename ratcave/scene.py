@@ -27,7 +27,7 @@ class Scene(Drawable):
         if not hasattr(value, '__iter__'):
             raise TypeError("Scene.meshes must be iterable.")
         for el in value:
-            if not isinstance(el, mesh.MeshBase):
+            if not isinstance(el, mesh.Mesh):
                 raise TypeError("All elements in Scene.meshes must be a Mesh.")
         self._meshes = value
 

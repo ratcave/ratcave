@@ -9,7 +9,6 @@
 """
 import abc
 import numpy as np
-from pyglet import gl
 from .utils import gl as ugl
 from .utils import vertices as vertutils
 from . import physical
@@ -17,18 +16,7 @@ from . import texture as texture_module
 from .draw import Drawable
 
 
-class MeshBase(Drawable, physical.PhysicalGraph):
-    __metaclass__ = abc.ABCMeta
-
-    def __init__(self, **kwargs):
-        super(MeshBase, self).__init__(**kwargs)
-        self.uniforms['model_matrix'] = self.model_matrix_global.view()
-        self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
-
-
-
-
-class Mesh(MeshBase):
+class Mesh(Drawable, physical.PhysicalGraph):
 
     def __init__(self, name, arrays, texture=None, visible=True, **kwargs):
         """
@@ -50,6 +38,9 @@ class Mesh(MeshBase):
         """
 
         super(Mesh, self).__init__(**kwargs)
+        self.uniforms['model_matrix'] = self.model_matrix_global.view()
+        self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
+
         self.name = name
         arrays = tuple(np.array(array, dtype=np.float32) for array in arrays)
         self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
