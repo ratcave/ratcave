@@ -58,12 +58,10 @@ class Scene(HasUniforms):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self, clear=True,
-             send_mesh_uniforms=True, send_camera_uniforms=True, send_light_uniforms=True, userdata={},
+    def draw(self, clear=True, send_mesh_uniforms=True,
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
 
-        # Enable 3D OpenGL states (glEnable, then later glDisable)
         with glutils.enable_states(gl_states):
             # gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
