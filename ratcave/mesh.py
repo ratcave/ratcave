@@ -54,13 +54,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
         self.arrays[0][:] -= vertex_mean
         self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
 
-        #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
-        texture = texture if texture else texture_module.BaseTexture()
-        if texture and not isinstance(texture, texture_module.BaseTexture):
-            raise TypeError("Mesh.texture should be a Texture instance.")
-        self.texture = texture
-        self.uniforms.update(self.texture.uniforms)
-
+        self.texture = texture if texture else texture_module.BaseTexture()
         self.visible = visible
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
 
@@ -71,6 +65,21 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
     @vertices.setter
     def vertices(self, value):
         self.arrays[0][:] = value
+
+    @property
+    def texture(self):
+        return self._texture
+
+    @texture.setter
+    def texture(self, value):
+        if isinstance(value, str):
+            tex = texture_module.Texture.from_image(value)
+        elif isinstance(value, texture_module.BaseTexture):
+            tex = value
+        else:
+            raise TypeError("Texture must be given a filename or a ratcave.Texture instance.")
+        self._texture = tex
+        self.uniforms.update(tex.uniforms)
 
     @classmethod
     def from_incomplete_data(cls, name, vertices, normals=None, texcoords=None, **kwargs):
