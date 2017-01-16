@@ -13,10 +13,10 @@ from .utils import gl as ugl
 from .utils import vertices as vertutils
 from . import physical
 from . import texture as texture_module
-from .draw import Drawable
+from .draw import HasUniforms
 
 
-class Mesh(Drawable, physical.PhysicalGraph):
+class Mesh(HasUniforms, physical.PhysicalGraph):
 
     def __init__(self, name, arrays, texture=None, visible=True, **kwargs):
         """
@@ -85,12 +85,11 @@ class Mesh(Drawable, physical.PhysicalGraph):
                 self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
 
     def draw(self, send_uniforms=True, **kwargs):
-        super(Mesh, self).draw(**kwargs)
-
         if self.visible:
             self.update()
             with self.texture, self.vao as vao:
-                self.uniforms.send()
+                if send_uniforms:
+                    self.uniforms.send()
                 vao.draw()
 
 

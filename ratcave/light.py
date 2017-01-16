@@ -1,7 +1,7 @@
 from .physical import PhysicalGraph
-from .draw import Drawable
+from .draw import HasUniforms
 
-class Light(PhysicalGraph, Drawable):
+class Light(PhysicalGraph, HasUniforms):
 
     def __init__(self, **kwargs):
         super(Light, self).__init__(**kwargs)

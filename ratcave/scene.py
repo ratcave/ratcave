@@ -3,10 +3,10 @@ import pyglet.gl as gl
 from . import Camera, Light, resources, mesh
 from .utils import gl as glutils
 from .texture import TextureCube
-from .draw import Drawable
+from .draw import HasUniforms
 
 
-class Scene(Drawable):
+class Scene(HasUniforms):
 
     def __init__(self, meshes=None, camera=None, light=None, bgColor=(0.4, 0.4, 0.4), **kwargs):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""

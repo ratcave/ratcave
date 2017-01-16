@@ -2,16 +2,17 @@ from.utils import gl as ugl
 import pyglet
 import pyglet.gl as gl
 from . import shader
+from .draw import HasUniforms
 
-
-class BaseTexture(object):
+class BaseTexture(HasUniforms):
 
     int_flag = 0
     tex_name = 'TextureMap'
     cube_name = 'CubeMap'
 
-    def __init__(self):
-        self.uniforms = shader.UniformCollection(textype=self.int_flag)
+    def __init__(self, **kwargs):
+        super(BaseTexture, self).__init__(**kwargs)
+        self.uniforms['textype'] = self.int_flag
 
     def __enter__(self):
         return self
@@ -31,11 +32,11 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     int_flag = 1
     bindfun = gl.glBindTexture
 
-    def __init__(self, id=None, width=1024, height=1024, data=None):
+    def __init__(self, id=None, width=1024, height=1024, data=None, **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
+        super(Texture, self).__init__(**kwargs)
 
         self._slot = self._all_slots.pop()
-        self.uniforms = shader.UniformCollection(textype=self.int_flag)
 
         if id != None:
             self.id = id
@@ -103,8 +104,6 @@ class TextureCube(Texture):
         """the Color Cube Texture class."""
         # TODO: check that width == height!
         super(TextureCube, self).__init__(*args, **kwargs)
-
-        self.uniforms = shader.UniformCollection(textype=self.int_flag)
 
     def _apply_filter_settings(self, *args, **kwargs):
         super(TextureCube, self)._apply_filter_settings()

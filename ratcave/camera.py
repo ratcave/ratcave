@@ -4,7 +4,7 @@ from .physical import Physical, PhysicalGraph
 import pyglet.gl as gl
 from collections import namedtuple
 import warnings
-from .draw import Drawable
+from .draw import HasUniforms
 
 
 Viewport = namedtuple('Viewport', 'x y width height')
@@ -191,7 +191,7 @@ class PerspectiveProjection(ProjectionBase):
 
 
 
-class Camera(PhysicalGraph, Drawable):
+class Camera(PhysicalGraph, HasUniforms):
 
     def __init__(self, ortho_mode=False, **kwargs):
         super(Camera, self).__init__(**kwargs)
