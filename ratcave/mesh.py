@@ -62,9 +62,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
         self.uniforms.update(self.texture.uniforms)
 
         self.visible = visible
-
-        self.vao = ugl.VAO(indices=self.array_indices)
-        self._fill_vao()
+        self.vao = None  # Will be created upon first draw, when OpenGL context is available.
 
     @property
     def vertices(self):
@@ -89,9 +87,15 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
                 self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
 
     def draw(self, send_uniforms=True):
+
+        if not self.vao:
+            self.vao = ugl.VAO(indices=self.array_indices)
+            self._fill_vao()
+
         if self.visible:
             self.update()
-            with self.texture, self.vao as vao:
+            # with self.texture, \
+            with self.vao as vao:
                 if send_uniforms:
                     self.uniforms.send()
                 vao.draw()
