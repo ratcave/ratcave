@@ -51,11 +51,17 @@ class Mesh(Drawable, physical.PhysicalGraph):
         self.position = vertex_mean if not 'position' in kwargs else kwargs['position']
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
+        texture = texture if texture else texture_module.BaseTexture()
         if texture and not isinstance(texture, texture_module.BaseTexture):
             raise TypeError("Mesh.texture should be a Texture instance.")
         self.texture = texture
+        self.uniforms.update(self.texture.uniforms)
+
         self.visible = visible
-        self.vao = None
+
+        self.vao = ugl.VAO(indices=self.array_indices)
+        self._fill_vao()
+
 
     @classmethod
     def from_incomplete_data(cls, name, vertices, normals=None, texcoords=None, **kwargs):
@@ -65,9 +71,8 @@ class Mesh(Drawable, physical.PhysicalGraph):
         texcoords = texcoords if texcoords else np.zeros((vertices.shape[0], 2), dtype=np.float32)
         return cls(name=name, arrays=(vertices, normals, texcoords), **kwargs)
 
-    def load(self):
+    def _fill_vao(self):
         """Put array location in VAO for shader in same order as arrays given to Mesh."""
-        self.vao = ugl.VAO(indices=self.array_indices)
         with self.vao:
             for loc, verts in enumerate(self.arrays):
                 self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
@@ -75,28 +80,11 @@ class Mesh(Drawable, physical.PhysicalGraph):
     def draw(self, send_uniforms=True, **kwargs):
         super(Mesh, self).draw(**kwargs)
 
-        if not self.vao:
-            self.load()
-
-        self.update()
-
         if self.visible:
-
-            # Bind the VAO and Texture, and draw.
-            if self.texture:
-                self.texture.bind()
-
-            # Change Material to Mesh's
-            if send_uniforms:
+            self.update()
+            with self.texture, self.vao as vao:
                 self.uniforms.send()
-                self.texture.uniforms.send()
-
-            # Send in the vertex and normal data
-            with self.vao as vao:
                 vao.draw()
-
-            if self.texture:
-                self.texture.unbind()
 
 
 class CollisionMeshBase(Mesh):
