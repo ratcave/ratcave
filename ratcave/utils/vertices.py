@@ -1,3 +1,6 @@
+import itertools
+import numpy as np
+
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = itertools.tee(iterable)
@@ -23,9 +26,7 @@ def reindex_vertices(arrays=None):
 
     ucombs = struct_to_ndarray(unique_combs)
     new_arrays = tuple(ucombs[:, start:end] for start, end in pairwise(np.append(0, np.cumsum(array_ncols))))
-    import ipdb
-    ipdb.set_trace()
-    new_arrays = tuple(np.array(all_arrays[:, ncols], dtype=np.float32) for ncols in array_ncols)
+    new_arrays = tuple(np.array(array, dtype=np.float32) for array in new_arrays)
     return new_arrays, new_indices
 
 
@@ -38,6 +39,4 @@ def calculate_normals(vertices):
         vecs /= np.linalg.norm(vecs, axis=1, keepdims=True)  # normalize vectors
         normal = np.cross(*vecs)  # normal is the cross products of vectors.
         normals[start:end, :] = normal / np.linalg.norm(normal)
-        import ipdb
-        ipdb.set_trace()
     return normals

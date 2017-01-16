@@ -47,8 +47,8 @@ class Mesh(Drawable, physical.PhysicalGraph):
 
         # Mean-center vertices and move position to vertex mean.
         vertex_mean = self.arrays[0].mean(axis=0)
-        self.arrays[0] -= vertex_mean
-        self.position = vertex_mean if not 'position' in kwargs else kwargs['position']
+        self.arrays[0][:] -= vertex_mean
+        self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
         texture = texture if texture else texture_module.BaseTexture()

@@ -4,7 +4,7 @@ from os import path
 import copy
 
 import numpy as np
-from .mesh import Mesh, MeshData, MeshLoader, Material
+from .mesh import Mesh
 from .scene import Scene
 
 
