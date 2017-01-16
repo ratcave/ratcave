@@ -29,7 +29,7 @@ class Mesh(Drawable, physical.PhysicalGraph):
 
         Args:
             name (str): the mesh's name.
-            arrays (tuple): a list of 2D arrays to be rendered.  Arrays will be accessible in shader in same attrib location order.
+            arrays (tuple): a list of 2D arrays to be rendered.  All arrays should have same number of rows. Arrays will be accessible in shader in same attrib location order.
             texture (Texture): a Texture instance, which is linked when the Mesh is rendered.
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
 
@@ -45,9 +45,9 @@ class Mesh(Drawable, physical.PhysicalGraph):
         arrays = tuple(np.array(array, dtype=np.float32) for array in arrays)
         self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
 
-        # Mean-center vertices, if specified.  Assume first array is vertices.
+        # Mean-center vertices and move position to vertex mean.
         vertex_mean = self.arrays[0].mean(axis=0)
-        self.arrays[0][:] -= vertex_mean  # assume
+        self.arrays[0] -= vertex_mean
         self.position = vertex_mean if not 'position' in kwargs else kwargs['position']
 
         #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
@@ -62,6 +62,13 @@ class Mesh(Drawable, physical.PhysicalGraph):
         self.vao = ugl.VAO(indices=self.array_indices)
         self._fill_vao()
 
+    @property
+    def vertices(self):
+        return self.arrays[0].view()
+
+    @vertices.setter
+    def vertices(self, value):
+        self.arrays[0][:] = value
 
     @classmethod
     def from_incomplete_data(cls, name, vertices, normals=None, texcoords=None, **kwargs):
