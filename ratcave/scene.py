@@ -1,6 +1,6 @@
 import pyglet.gl as gl
 
-from . import Camera, Light, resources, mesh
+from . import Camera, Light, mesh
 from .utils import gl as glutils
 from .texture import TextureCube
 from .shader import HasUniforms
@@ -58,7 +58,7 @@ class Scene(HasUniforms):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self, shader=resources.genShader, clear=True,
+    def draw(self, clear=True,
              send_mesh_uniforms=True, send_camera_uniforms=True, send_light_uniforms=True, userdata={},
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
@@ -78,7 +78,7 @@ class Scene(HasUniforms):
                 mesh.draw(send_uniforms=send_mesh_uniforms)
 
 
-    def draw360_to_texture(self, cubetexture, userdata={},
+    def draw360_to_texture(self, cubetexture,
              gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
         """
         Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light, and
