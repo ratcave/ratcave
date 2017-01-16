@@ -1,5 +1,5 @@
 from .physical import PhysicalGraph
-from .draw import HasUniforms
+from .shader import HasUniforms
 
 class Light(PhysicalGraph, HasUniforms):
 

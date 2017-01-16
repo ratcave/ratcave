@@ -4,7 +4,7 @@ from .physical import Physical, PhysicalGraph
 import pyglet.gl as gl
 from collections import namedtuple
 import warnings
-from .draw import HasUniforms
+from .shader import HasUniforms
 
 
 Viewport = namedtuple('Viewport', 'x y width height')

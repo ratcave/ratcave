@@ -3,7 +3,7 @@ import pyglet.gl as gl
 from . import Camera, Light, resources, mesh
 from .utils import gl as glutils
 from .texture import TextureCube
-from .draw import HasUniforms
+from .shader import HasUniforms
 
 
 class Scene(HasUniforms):

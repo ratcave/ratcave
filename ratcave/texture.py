@@ -1,8 +1,7 @@
 from.utils import gl as ugl
 import pyglet
 import pyglet.gl as gl
-from . import shader
-from .draw import HasUniforms
+from .shader import HasUniforms
 
 class BaseTexture(HasUniforms):
 

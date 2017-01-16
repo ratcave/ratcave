@@ -1,3 +1,4 @@
+import abc
 from pyglet import gl
 from ctypes import byref, create_string_buffer, c_char, c_char_p, c_int, c_float, c_double, cast, pointer, POINTER
 import numpy as np
@@ -63,13 +64,13 @@ class UniformCollection(IterableUserDict, object):
                 sendfun(loc, *array)
 
 
+class HasUniforms(object):
+    """Interface for drawing."""
+    __metaclass__ = abc.ABCMeta
 
-#
-# Copyright Tristam Macdonald 2008
-# Modified by Nicholas Del Grosso 2016
-# Distributed under the Boost Software License, Version 1.0
-# (see http://www.boost.org/LICENSE_1_0.txt)
-#
+    def __init__(self, uniforms=None, **kwargs):
+        super(HasUniforms, self).__init__(**kwargs)
+        self.uniforms = UniformCollection(uniforms) if uniforms else UniformCollection()
 
 
 class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
