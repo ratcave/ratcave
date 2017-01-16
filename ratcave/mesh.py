@@ -88,7 +88,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
             for loc, verts in enumerate(self.arrays):
                 self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
 
-    def draw(self, send_uniforms=True, **kwargs):
+    def draw(self, send_uniforms=True):
         if self.visible:
             self.update()
             with self.texture, self.vao as vao:
