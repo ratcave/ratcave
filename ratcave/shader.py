@@ -70,7 +70,7 @@ class HasUniforms(object):
 
     def __init__(self, uniforms=None, **kwargs):
         super(HasUniforms, self).__init__(**kwargs)
-        self.uniforms = UniformCollection(uniforms) if uniforms else UniformCollection()
+        self.uniforms = UniformCollection(**uniforms) if uniforms else UniformCollection()
 
 
 class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):

@@ -85,8 +85,8 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
     def from_incomplete_data(cls, name, vertices, normals=None, texcoords=None, **kwargs):
         """Return a Mesh with (vertices, normals, texcoords) as arrays, in that order.
            Useful for when you want a standardized array location format across different amounts of info in each mesh."""
-        normals = normals if normals else vertutils.calculate_normals(vertices)
-        texcoords = texcoords if texcoords else np.zeros((vertices.shape[0], 2), dtype=np.float32)
+        normals = normals if type(normals) != type(None) else vertutils.calculate_normals(vertices)
+        texcoords = texcoords if type(texcoords) != type(None) else np.zeros((vertices.shape[0], 2), dtype=np.float32)
         return cls(name=name, arrays=(vertices, normals, texcoords), **kwargs)
 
     def _fill_vao(self):
