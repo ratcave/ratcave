@@ -27,8 +27,8 @@ class Scene(HasUniforms):
         if not hasattr(value, '__iter__'):
             raise TypeError("Scene.meshes must be iterable.")
         for el in value:
-            if not isinstance(el, mesh.Mesh):
-                raise TypeError("All elements in Scene.meshes must be a Mesh.")
+            if not hasattr(el, 'draw'):
+                raise TypeError("All elements in Scene.meshes must have a draw() method.")
         self._meshes = value
 
     @property

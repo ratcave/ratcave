@@ -17,7 +17,9 @@ from . import texture as texture_module
 
 class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
     """An object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
-    pass
+
+    def draw(self, *args, **kwargs):
+        pass
 
 
 class Mesh(shader.HasUniforms, physical.PhysicalGraph):
