@@ -39,13 +39,17 @@ class SceneGraph(object):
         self._parent = value
         self._parent._children.append(self)
 
-    def add_children(self, children=list()):
-        """Adds a list of objects as children in the scene graph."""
+    def add_child(self, child):
+        """Adds an object as a child in the scene graph."""
+        if not issubclass(child.__class__, SceneGraph):
+            raise TypeError("child must have parent/child iteration implemented to be a node in a SceneGraph.")
+        child._parent = self
+        self._children.append(child)
 
+    def add_children(self, *children):
+        """Convenience function: Adds objects as children in the scene graph."""
         for child in children:
-            assert isinstance(child, SceneGraph)
-            child._parent = self
-            self._children.append(child)
+            self.add_child(child)
 
     def remove_children(self, children):
         for child in children:
