@@ -45,6 +45,8 @@ class WavefrontReader(object):
                 mesh.uniforms[key] = value
             elif key in ['spec_weight', 'Ni']:  # float materials: should be specially converted to float if not already done.
                 mesh.uniforms[key] = float(value)
+            elif isinstance(value, str):
+                setattr(mesh, key, value)
             else:
                 print('Warning: Not applying uniform {}: {}'.format(key, value))
         return mesh
