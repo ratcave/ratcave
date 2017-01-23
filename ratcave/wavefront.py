@@ -34,10 +34,17 @@ class WavefrontReader(object):
         normals = body['vn'] if 'vn' in body else None
         texcoords = body['vt'] if 'vt' in body else None
 
+        mesh = Mesh.from_incomplete_data(name=name, vertices=vertices, normals=normals, texcoords=texcoords, **kwargs)
+
         uniforms = kwargs['uniforms'] if 'uniforms' in kwargs else {}
         material_props = {self.material_property_map[key]: value for key, value in iteritems(body['material'])}
-        uniforms.update(material_props)
-
-        mesh = Mesh.from_incomplete_data(name=name, vertices=vertices, normals=normals, texcoords=texcoords,
-                                         uniforms=uniforms, **kwargs)
+        for key, value in iteritems(material_props):
+            if hasattr(value, '__len__'):  # iterable materials
+                mesh.uniforms[key] = value
+            elif key in ['d', 'illum']:  # integer materials
+                mesh.uniforms[key] = value
+            elif key in ['spec_weight', 'Ni']:  # float materials: should be specially converted to float if not already done.
+                mesh.uniforms[key] = float(value)
+            else:
+                print('Warning: Not applying uniform {}: {}'.format(key, value))
         return mesh
