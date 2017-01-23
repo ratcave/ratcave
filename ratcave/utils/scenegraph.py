@@ -51,7 +51,7 @@ class SceneGraph(object):
         for child in children:
             self.add_child(child)
 
-    def remove_children(self, children):
+    def remove_children(self, *children):
         for child in children:
             child._parent = None
             self._children.remove(child)
