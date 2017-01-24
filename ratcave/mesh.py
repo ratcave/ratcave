@@ -15,6 +15,14 @@ from . import physical, shader
 from . import texture as texture_module
 
 
+# Meshes
+def gen_fullscreen_quad(name='FullScreenQuad'):
+    verts = np.array([[-1, -1, -.5], [-1, 1, -.5], [1, 1, -.5], [-1, -1, -.5], [1, 1, -.5], [1, -1, -.5]], dtype=np.float32)
+    normals=np.array([[0, 0, -1]] * 6, dtype=np.float32)
+    texcoords=np.array([[0, 0], [0, 1], [1, 1], [0, 0], [1, 1], [1, 0]], dtype=np.float32)
+    return Mesh(name, (verts, normals, texcoords), mean_center=False)
+
+
 class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
     """An object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
 
@@ -22,9 +30,11 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
         pass
 
 
+
+
 class Mesh(shader.HasUniforms, physical.PhysicalGraph):
 
-    def __init__(self, name, arrays, texture=None, visible=True, **kwargs):
+    def __init__(self, name, arrays, texture=None, visible=True, mean_center=True, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -52,9 +62,14 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
         self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
 
         # Mean-center vertices and move position to vertex mean.
-        vertex_mean = self.arrays[0].mean(axis=0)
-        self.arrays[0][:] -= vertex_mean
-        self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
+        vertex_mean = self.arrays[0][self.array_indices, :].mean(axis=0)
+        if mean_center:
+            self.arrays[0][:] -= vertex_mean
+        if 'position' in kwargs:
+            self.position.xyz = kwargs['position']
+        elif mean_center:
+            self.position.xyz = vertex_mean
+        # self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
 
         self.texture = texture if texture else texture_module.BaseTexture()
         self.visible = visible
@@ -105,8 +120,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
 
         if self.visible:
             self.update()
-            # with self.texture, \
-            with self.vao as vao:
+            with self.texture, self.vao as vao:
                 if send_uniforms:
                     self.uniforms.send()
                 vao.draw()

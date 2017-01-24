@@ -5,7 +5,7 @@ from . import resources
 from .camera import Camera
 from .fbo import FBO
 from .light import Light
-from .mesh import Mesh, EmptyEntity
+from .mesh import Mesh, EmptyEntity, gen_fullscreen_quad
 from .physical import Physical, PhysicalGraph
 from .scene import Scene
 from .shader import Shader, UniformCollection

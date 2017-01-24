@@ -1,8 +1,6 @@
 
 from os import path
-
 from .shader import Shader
-from . import mesh
 
 """
 Here are some sample obj files for prototyping your app!
@@ -35,14 +33,3 @@ shadowShader = Shader(open(path.join(shader_path, 'shadowShader.vert')).read(),
 aaShader = Shader(open(path.join(shader_path, 'antialiasShader.vert')).read(),
                   open(path.join(shader_path, 'antialiasShader.frag')).read())
 
-
-
-
-# Meshes
-def gen_fullscreen_quad():
-    fullscreen_quad_data = mesh.MeshData(vertices=[-1, -1, 0, -1, 1, 0, 1, 1, 0, -1, -1, 0,  1, 1, 0, 1, -1, 0],
-                                         face_indices=[0, 1, 2, 0, 2, 3],
-                                         normals=[0, 0, -1] * 6,
-                                         texcoords=[0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0])
-    fullscreen_quad = mesh.MeshLoader('Quad', fullscreen_quad_data).load_mesh()
-    return fullscreen_quad

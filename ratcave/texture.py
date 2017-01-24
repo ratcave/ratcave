@@ -12,6 +12,8 @@ class BaseTexture(HasUniforms):
     def __init__(self, **kwargs):
         super(BaseTexture, self).__init__(**kwargs)
         self.uniforms['textype'] = self.int_flag
+        self.uniforms[self.tex_name] = 0
+        self.uniforms[self.cube_name] = 0
 
     def __enter__(self):
         return self
@@ -36,6 +38,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         super(Texture, self).__init__(**kwargs)
 
         self._slot = self._all_slots.pop()
+        self.uniforms[self.tex_name] = self._slot
 
         if id != None:
             self.id = id
@@ -63,10 +66,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.unbind()
         gl.glActiveTexture(gl.GL_TEXTURE0)
-
-    @staticmethod
-    def _generate_id():
-        return ugl.create_opengl_object(gl.glGenTextures)
+        pass
 
     def _genTex2D(self):
         """Creates an empty texture in OpenGL."""
