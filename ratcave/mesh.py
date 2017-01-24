@@ -18,7 +18,7 @@ from . import texture as texture_module
 # Meshes
 def gen_fullscreen_quad(name='FullScreenQuad'):
     verts = np.array([[-1, -1, -.5], [-1, 1, -.5], [1, 1, -.5], [-1, -1, -.5], [1, 1, -.5], [1, -1, -.5]], dtype=np.float32)
-    normals=np.array([[0, 0, -1]] * 6, dtype=np.float32)
+    normals=np.array([[0, 0, 1]] * 6, dtype=np.float32)
     texcoords=np.array([[0, 0], [0, 1], [1, 1], [0, 0], [1, 1], [1, 0]], dtype=np.float32)
     return Mesh(name, (verts, normals, texcoords), mean_center=False)
 
