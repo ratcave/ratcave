@@ -33,12 +33,13 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     int_flag = 1
     bindfun = gl.glBindTexture
 
-    def __init__(self, id=None, width=1024, height=1024, data=None, **kwargs):
+    def __init__(self, id=None, width=1024, height=1024, data=None, mipmap=True, **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
         super(Texture, self).__init__(**kwargs)
 
         self._slot = self._all_slots.pop()
         self.uniforms[self.tex_name] = self._slot
+        self.mipmap = mipmap
 
         if id != None:
             self.id = id
@@ -48,8 +49,9 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
             self.width = width
             self.height = height
             self.bind()
-            self._apply_filter_settings()
             self._genTex2D()
+            self._apply_filter_settings()
+
 
         self.unbind()
 
@@ -72,11 +74,15 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         """Creates an empty texture in OpenGL."""
         gl.glTexImage2D(self.target0, 0, self.internal_fmt, self.width, self.height, 0, self.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
 
+    def generate_mipmap(self):
+        gl.glGenerateMipmap(self.target)
+
     def _apply_filter_settings(self):
         """Applies some hard-coded texture filtering settings."""
         # TODO: Allow easy customization of filters
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR_MIPMAP_LINEAR)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
@@ -91,7 +97,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         img = pyglet.image.load(img_filename)
         tex = img.get_mipmapped_texture() if mipmap else img.get_texture()
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
-        return cls(id=tex.id, data=tex, **kwargs)
+        return cls(id=tex.id, data=tex, mipmap=mipmap, **kwargs)
 
 
 class TextureCube(Texture):

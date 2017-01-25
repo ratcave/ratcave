@@ -30,6 +30,6 @@ genShader = Shader(open(path.join(shader_path, 'combShader.vert')).read(),
 shadowShader = Shader(open(path.join(shader_path, 'shadowShader.vert')).read(),
                       open(path.join(shader_path, 'shadowShader.frag')).read())
 
-aaShader = Shader(open(path.join(shader_path, 'antialiasShader.vert')).read(),
-                  open(path.join(shader_path, 'antialiasShader.frag')).read())
+deferredShader = Shader(open(path.join(shader_path, 'basicDeferred.vert')).read(),
+                  open(path.join(shader_path, 'basicDeferred.frag')).read())
 
