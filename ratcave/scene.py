@@ -8,7 +8,8 @@ from .shader import HasUniforms
 
 class Scene(HasUniforms):
 
-    def __init__(self, meshes=None, camera=None, light=None, bgColor=(0.4, 0.4, 0.4), **kwargs):
+    def __init__(self, meshes=None, camera=None, light=None, bgColor=(0.4, 0.4, 0.4),
+                 gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D), **kwargs):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
         super(Scene, self).__init__(**kwargs)
         # Initialize List of all Meshes to draw
@@ -17,6 +18,7 @@ class Scene(HasUniforms):
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
         self.bgColor = bgColor
+        self.gl_states = gl_states
 
     @property
     def meshes(self):
@@ -58,12 +60,10 @@ class Scene(HasUniforms):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self, clear=True, send_mesh_uniforms=True,
-             gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
+    def draw(self, clear=True, send_mesh_uniforms=True):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
 
-        with glutils.enable_states(gl_states):
-            # gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+        with glutils.enable_states(self.gl_states):
 
             if clear:
                 self.clear()
@@ -76,8 +76,7 @@ class Scene(HasUniforms):
                 mesh.draw(send_uniforms=send_mesh_uniforms)
 
 
-    def draw360_to_texture(self, cubetexture,
-             gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D)):#, gl.GL_BLEND)):
+    def draw360_to_texture(self, cubetexture):
         """
         Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light, and
         applies it to each face of cubetexture, which should be currently bound to an FBO.
@@ -86,9 +85,7 @@ class Scene(HasUniforms):
         assert self.camera.lens.aspect == 1. and self.camera.lens.fov_y == 90  # todo: fix aspect property, which currently reads from viewport.
         assert type(cubetexture) == TextureCube, "Must render to TextureCube"
 
-        # Enable 3D OpenGL states (glEnable, then later glDisable)
-        with glutils.enable_states(gl_states):
-            # gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+        with glutils.enable_states(self.gl_states):
 
             self.light.update()
 

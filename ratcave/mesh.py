@@ -34,7 +34,7 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
 
 class Mesh(shader.HasUniforms, physical.PhysicalGraph):
 
-    def __init__(self, name, arrays, texture=None, visible=True, mean_center=True, **kwargs):
+    def __init__(self, name, arrays, texture=None, visible=True, mean_center=True, gl_states=(), **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -74,6 +74,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
         self.texture = texture if texture else texture_module.BaseTexture()
         self.visible = visible
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
+        self.gl_states = gl_states
 
     @property
     def vertices(self):
@@ -113,17 +114,17 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
                 self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
 
     def draw(self, send_uniforms=True):
-
         if not self.vao:
             self.vao = ugl.VAO(indices=self.array_indices)
             self._fill_vao()
 
         if self.visible:
             self.update()
-            with self.texture, self.vao as vao:
-                if send_uniforms:
-                    self.uniforms.send()
-                vao.draw()
+            with ugl.enable_states(self.gl_states):
+                with self.texture, self.vao as vao:
+                    if send_uniforms:
+                        self.uniforms.send()
+                    vao.draw()
 
 
 class CollisionMeshBase(Mesh):
