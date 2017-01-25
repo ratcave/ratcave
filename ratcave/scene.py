@@ -9,7 +9,7 @@ from .shader import HasUniforms
 class Scene(HasUniforms):
 
     def __init__(self, meshes=None, camera=None, light=None, bgColor=(0.4, 0.4, 0.4),
-                 gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D), **kwargs):
+                 gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D, gl.GL_CULL_FACE), **kwargs):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
         super(Scene, self).__init__(**kwargs)
         # Initialize List of all Meshes to draw
