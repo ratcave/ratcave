@@ -13,11 +13,12 @@ Viewport = namedtuple('Viewport', 'x y width height')
 class ProjectionBase(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, z_near=0.1, z_far=4.5, **kwargs):
+    def __init__(self, z_near=0.1, z_far=4.5, aspect=1.25, **kwargs):
         super(ProjectionBase, self).__init__(**kwargs)
         self.projection_matrix = np.identity(4, dtype=np.float32)
         self._z_near = z_near
         self._z_far = z_far
+        self.aspect = aspect
 
     @property
     def z_near(self):
@@ -57,10 +58,10 @@ class ProjectionBase(object):
         gl.glGetIntegerv(gl.GL_VIEWPORT, viewport_array)
         return Viewport(*viewport_array)
 
-    @property
-    def aspect(self):
+    def match_aspect_to_viewport(self):
+        """Updates Camera.aspect to match the viewport's aspect ratio."""
         viewport = self.viewport
-        return float(viewport.width) / viewport.height
+        self.aspect = float(viewport.width) / viewport.height
 
 
 ScreenEdges = namedtuple('ScreenEdges', 'left right bottom top')
