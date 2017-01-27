@@ -13,6 +13,7 @@ from .utils import gl as ugl
 from .utils import vertices as vertutils
 from . import physical, shader
 from . import texture as texture_module
+import pyglet.gl as gl
 
 
 # Meshes
@@ -34,7 +35,13 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
 
 class Mesh(shader.HasUniforms, physical.PhysicalGraph):
 
-    def __init__(self, name, arrays, texture=None, visible=True, mean_center=True, gl_states=(), **kwargs):
+    POINTS = gl.GL_POINTS
+    TRIANGLES = gl.GL_TRIANGLES
+    LINE_LOOP = gl.GL_LINE_LOOP
+    LINES = gl.GL_LINES
+
+    def __init__(self, name, arrays, texture=None, visible=True, mean_center=True,
+                 gl_states=(), drawmode=gl.GL_TRIANGLES, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -75,6 +82,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
         self.visible = visible
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
+        self.drawmode = drawmode
 
     @property
     def vertices(self):
@@ -124,7 +132,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
                 with self.texture, self.vao as vao:
                     if send_uniforms:
                         self.uniforms.send()
-                    vao.draw()
+                    vao.draw(mode=self.drawmode)
 
 
 class CollisionMeshBase(Mesh):
