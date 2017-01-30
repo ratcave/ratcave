@@ -110,6 +110,7 @@ class TextureCube(Texture):
         """the Color Cube Texture class."""
         # TODO: check that width == height!
         super(TextureCube, self).__init__(*args, **kwargs)
+        self.uniforms[self.cube_name] = self._slot
 
     def _apply_filter_settings(self, *args, **kwargs):
         super(TextureCube, self)._apply_filter_settings()

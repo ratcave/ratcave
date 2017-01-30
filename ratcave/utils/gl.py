@@ -5,6 +5,12 @@ from ctypes import byref
 import contextlib
 import numpy as np
 
+POINTS = gl.GL_POINTS
+TRIANGLES = gl.GL_TRIANGLES
+LINE_LOOP = gl.GL_LINE_LOOP
+LINES = gl.GL_LINES
+
+
 def create_opengl_object(gl_gen_function, n=1):
     """Returns int pointing to an OpenGL texture"""
     handle = gl.GLuint(1)

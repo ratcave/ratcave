@@ -31,14 +31,7 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
         pass
 
 
-
-
 class Mesh(shader.HasUniforms, physical.PhysicalGraph):
-
-    POINTS = gl.GL_POINTS
-    TRIANGLES = gl.GL_TRIANGLES
-    LINE_LOOP = gl.GL_LINE_LOOP
-    LINES = gl.GL_LINES
 
     def __init__(self, name, arrays, texture=None, visible=True, mean_center=True,
                  gl_states=(), drawmode=gl.GL_TRIANGLES, **kwargs):
@@ -121,7 +114,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
             for loc, verts in enumerate(self.arrays):
                 self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
 
-    def draw(self, send_uniforms=True):
+    def draw(self):
         if not self.vao:
             self.vao = ugl.VAO(indices=self.array_indices)
             self._fill_vao()
@@ -129,9 +122,9 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
         if self.visible:
             self.update()
             with ugl.enable_states(self.gl_states):
-                with self.texture, self.vao as vao:
-                    if send_uniforms:
-                        self.uniforms.send()
+                # with self.texture, self.vao as vao:
+                with self.vao as vao, self.texture:
+                    self.uniforms.send()
                     vao.draw(mode=self.drawmode)
 
 
@@ -167,6 +160,4 @@ class CylinderCollisionMesh(CollisionMeshBase):
     def collides_with(self, xyz):
         cc = self._collision_columns
         return np.linalg.norm(xyz[:, cc] - self.position_global[cc]) < self.collision_radius
-
-
 

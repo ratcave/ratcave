@@ -9,7 +9,7 @@ from .shader import HasUniforms
 class Scene(HasUniforms):
 
     def __init__(self, meshes=None, camera=None, light=None, bgColor=(0.4, 0.4, 0.4),
-                 gl_states=(gl.GL_DEPTH_TEST, gl.GL_POINT_SMOOTH, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D, gl.GL_CULL_FACE), **kwargs):
+                 gl_states=(gl.GL_DEPTH_TEST, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D, gl.GL_CULL_FACE), **kwargs):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
         super(Scene, self).__init__(**kwargs)
         # Initialize List of all Meshes to draw
@@ -60,20 +60,17 @@ class Scene(HasUniforms):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self, clear=True, send_mesh_uniforms=True):
+    def draw(self):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
 
         with glutils.enable_states(self.gl_states):
-
-            if clear:
-                self.clear()
 
             self.camera.update()
             self.light.update()
             self.uniforms.send()
 
             for mesh in self.meshes:
-                mesh.draw(send_uniforms=send_mesh_uniforms)
+                mesh.draw()
 
 
     def draw360_to_texture(self, cubetexture):
@@ -85,20 +82,12 @@ class Scene(HasUniforms):
         assert self.camera.lens.aspect == 1. and self.camera.lens.fov_y == 90  # todo: fix aspect property, which currently reads from viewport.
         assert type(cubetexture) == TextureCube, "Must render to TextureCube"
 
-        with glutils.enable_states(self.gl_states):
+        for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
+            self.camera.rotation.xyz = rotation
+            cubetexture.attach_to_fbo(face)
+            self.clear()
+            self.draw()
 
-            self.light.update()
 
-            for mesh_idx, mesh in enumerate(self.meshes):
-                for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
-                    cubetexture.attach_to_fbo(face)
-                    if not mesh_idx:
-                        self.clear()
-
-                    self.camera.rotation.xyz = rotation
-                    self.camera.update()
-                    self.uniforms.send()
-
-                    mesh.draw(send_uniforms=not face)
 
 
