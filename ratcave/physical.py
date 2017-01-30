@@ -52,15 +52,16 @@ class Physical(AutoRegisterObserver, Observable):
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
-        super(Physical, self).update()
+        to_update = super(Physical, self).update()
+        if to_update:
+            # Update Model, View, and Normal Matrices
+            self.model_matrix = np.dot(self.position.to_matrix(), self.rotation.to_matrix())
+            self.view_matrix = trans.inverse_matrix(self.model_matrix)
+            self.model_matrix = np.dot(self.model_matrix, self.scale.to_matrix())
+            self.normal_matrix = trans.inverse_matrix(self.model_matrix.T)
 
-        # Update Model, View, and Normal Matrices
-        self.model_matrix = np.dot(self.position.to_matrix(), self.rotation.to_matrix())
-        self.view_matrix = trans.inverse_matrix(self.model_matrix)
-        self.model_matrix = np.dot(self.model_matrix, self.scale.to_matrix())
-        self.normal_matrix = trans.inverse_matrix(self.model_matrix.T)
-
-        self.notify_observers()
+            self.notify_observers()
+        return to_update
 
 
 class PhysicalGraph(Physical, SceneGraph):

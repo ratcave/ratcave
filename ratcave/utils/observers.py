@@ -44,14 +44,15 @@ class Observer(object):
         pass
 
     def update(self):
-        """Check if any updates happened. If not, return early.  Else, perform callback and reset update flag."""
+        """Check if any updates happened. If not, return False.  Else, perform callback and reset update flag, and return True."""
         assert not hasattr(super, 'update')
         if not self._requires_update:
-            return
+            return False
         else:
             self.on_change()
             self._requires_update = False
             self._changed_observables = []
+            return True
 
 
 class AutoRegisterObserver(Observer):
