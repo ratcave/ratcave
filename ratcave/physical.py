@@ -2,10 +2,10 @@ import abc
 import numpy as np
 import _transformations as trans
 from .utils import coordinates as rotutils
-from .utils import SceneGraph, AutoRegisterObserver
+from .utils import SceneGraph, AutoRegisterObserver, Observable
 
 
-class Physical(AutoRegisterObserver):
+class Physical(AutoRegisterObserver, Observable):
 
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1.,
                  **kwargs):
@@ -59,6 +59,8 @@ class Physical(AutoRegisterObserver):
         self.view_matrix = trans.inverse_matrix(self.model_matrix)
         self.model_matrix = np.dot(self.model_matrix, self.scale.to_matrix())
         self.normal_matrix = trans.inverse_matrix(self.model_matrix.T)
+
+        self.notify_observers()
 
 
 class PhysicalGraph(Physical, SceneGraph):
