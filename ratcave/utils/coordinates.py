@@ -8,7 +8,7 @@ class Coordinates(IterObservable):
 
     def __init__(self, *args, **kwargs):
         super(Coordinates, self).__init__(**kwargs)
-        self._array = np.array(args, dtype=float)
+        self._array = np.array(args, dtype=np.float32)
 
     def __repr__(self):
         arg_str = ', '.join(['{}={}'.format(*el) for el in zip('xyz', self._array)])
@@ -27,7 +27,7 @@ class Coordinates(IterObservable):
     # Note: Index counts backwards from end of array to increase compatibility with Quaternions.
     @property
     def x(self):
-        return self[-3].view()
+        return self[-3]
 
     @x.setter
     def x(self, value):
