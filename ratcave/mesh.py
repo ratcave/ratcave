@@ -72,10 +72,22 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
         # self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
 
         self.texture = texture if texture else texture_module.BaseTexture()
-        self.visible = visible
+        self._visible = bool(visible)
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
         self.drawmode = drawmode
+
+    @property
+    def visible(self):
+        """Whether Mesh is drawn or not."""
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        val = bool(value)
+        if val != self._visible:
+            self._visible = bool(value)
+            self.notify_observers()
 
     @property
     def vertices(self):
@@ -119,8 +131,8 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
             self.vao = ugl.VAO(indices=self.array_indices)
             self._fill_vao()
 
+        self.update()
         if self.visible:
-            self.update()
             with ugl.enable_states(self.gl_states):
                 # with self.texture, self.vao as vao:
                 with self.vao as vao, self.texture:
