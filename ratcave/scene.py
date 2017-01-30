@@ -88,7 +88,7 @@ class Scene(HasUniforms):
         for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
             self.camera.rotation.xyz = rotation
             cubetexture.attach_to_fbo(face)
-            self.draw()
+            self.draw(clear=True)
 
 
 
