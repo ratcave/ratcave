@@ -7,16 +7,17 @@ class Observable(object):
         self.notify_observers()
 
     def register_observer(self, observer):
-        if not isinstance(observer, Observer):
+        if not issubclass(observer.__class__, Observer):
             raise TypeError()
         self._observers.add(observer)
+        observer.notify(self)
 
     def unregister_observer(self, observer):
         self._observers.remove(observer)
 
     def notify_observers(self):
         for observer in self._observers:
-            observer.notify()
+            observer.notify(self)
 
 
 class IterObservable(Observable):
@@ -31,10 +32,12 @@ class Observer(object):
     def __init__(self, **kwargs):
         super(Observer, self).__init__(**kwargs)
         self._requires_update = True
+        self._changed_observables = []
 
-    def notify(self):
+    def notify(self, observable):
         """Flags Observer to perform update() at proper time."""
         self._requires_update = True
+        self._changed_observables.append(observable)
 
     def on_change(self):
         """Callback for if change  detected. Meant to be overridable by subclasses."""
@@ -48,6 +51,7 @@ class Observer(object):
         else:
             self.on_change()
             self._requires_update = False
+            self._changed_observables = []
 
 
 class AutoRegisterObserver(Observer):
@@ -55,5 +59,5 @@ class AutoRegisterObserver(Observer):
 
     def __setattr__(self, key, value):
         super(AutoRegisterObserver, self).__setattr__(key, value)
-        if isinstance(value, Observable):
+        if issubclass(value.__class__, Observable):
             value.register_observer(self)
