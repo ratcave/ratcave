@@ -60,8 +60,11 @@ class Scene(HasUniforms):
         gl.glClearColor(*(self.bgColor + (1.,)))
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-    def draw(self):
+    def draw(self, clear=True):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
+
+        if clear:
+            self.clear()
 
         with glutils.enable_states(self.gl_states):
 
@@ -85,7 +88,6 @@ class Scene(HasUniforms):
         for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
             self.camera.rotation.xyz = rotation
             cubetexture.attach_to_fbo(face)
-            self.clear()
             self.draw()
 
 
