@@ -1,7 +1,7 @@
 import abc
 import numpy as np
 import _transformations as trans
-from .utils import rotations as rotutils
+from .utils import coordinates as rotutils
 from .utils import SceneGraph, AutoRegisterObserver
 
 
