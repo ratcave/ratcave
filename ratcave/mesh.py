@@ -32,9 +32,9 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
         pass
 
 
-class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
+class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mixins.ObservableVisibleMixin):
 
-    def __init__(self, arrays, texture=None, visible=True, mean_center=True,
+    def __init__(self, arrays, texture=None, mean_center=True,
                  gl_states=(), drawmode=gl.GL_TRIANGLES, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -72,22 +72,9 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
         # self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
 
         self.texture = texture if texture else texture_module.BaseTexture()
-        self._visible = bool(visible)
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
         self.drawmode = drawmode
-
-    @property
-    def visible(self):
-        """Whether Mesh is drawn or not."""
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        val = bool(value)
-        if val != self._visible:
-            self._visible = bool(value)
-            self.notify_observers()
 
     @property
     def vertices(self):

@@ -192,7 +192,7 @@ class PerspectiveProjection(ProjectionBase):
 
 
 
-class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin):
+class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin, mixins.ObservableVisibleMixin):
 
     def __init__(self, ortho_mode=False, **kwargs):
         super(Camera, self).__init__(**kwargs)
