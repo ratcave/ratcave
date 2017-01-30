@@ -100,17 +100,19 @@ class PhysicalGraph(Physical, SceneGraph):
 
 
     def update(self):
-        super(PhysicalGraph, self).update()
+        to_update = super(PhysicalGraph, self).update()
 
         """Calculate world matrix values from the dot product of the parent."""
-        if self.parent:
-            self.model_matrix_global = np.dot(self.parent.model_matrix_global, self.model_matrix)
-            self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
-            self.view_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
-        else:
-            self.model_matrix_global = self.model_matrix
-            self.normal_matrix_global = self.normal_matrix
-            self.view_matrix_global = self.view_matrix
+        if to_update:
+            if self.parent:
+                self.model_matrix_global = np.dot(self.parent.model_matrix_global, self.model_matrix)
+                self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+                self.view_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+            else:
+                self.model_matrix_global = self.model_matrix
+                self.normal_matrix_global = self.normal_matrix
+                self.view_matrix_global = self.view_matrix
+        return to_update
 
     @property
     def position_global(self):
