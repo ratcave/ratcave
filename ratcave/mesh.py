@@ -11,6 +11,7 @@ import abc
 import numpy as np
 from .utils import gl as ugl
 from .utils import vertices as vertutils
+from .utils import mixins
 from . import physical, shader
 from . import texture as texture_module
 import pyglet.gl as gl
@@ -21,7 +22,7 @@ def gen_fullscreen_quad(name='FullScreenQuad'):
     verts = np.array([[-1, -1, -.5], [-1, 1, -.5], [1, 1, -.5], [-1, -1, -.5], [1, 1, -.5], [1, -1, -.5]], dtype=np.float32)
     normals=np.array([[0, 0, 1]] * 6, dtype=np.float32)
     texcoords=np.array([[0, 0], [0, 1], [1, 1], [0, 0], [1, 1], [1, 0]], dtype=np.float32)
-    return Mesh(name, (verts, normals, texcoords), mean_center=False)
+    return Mesh(name=name, arrays=(verts, normals, texcoords), mean_center=False)
 
 
 class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
@@ -31,9 +32,9 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
         pass
 
 
-class Mesh(shader.HasUniforms, physical.PhysicalGraph):
+class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
 
-    def __init__(self, name, arrays, texture=None, visible=True, mean_center=True,
+    def __init__(self, arrays, texture=None, visible=True, mean_center=True,
                  gl_states=(), drawmode=gl.GL_TRIANGLES, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -57,7 +58,6 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
 
-        self.name = name
         arrays = tuple(np.array(array, dtype=np.float32) for array in arrays)
         self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
 
@@ -113,7 +113,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph):
         self.uniforms.update(tex.uniforms)
 
     @classmethod
-    def from_incomplete_data(cls, name, vertices, normals=None, texcoords=None, **kwargs):
+    def from_incomplete_data(cls, vertices, normals=None, texcoords=None, name=None, **kwargs):
         """Return a Mesh with (vertices, normals, texcoords) as arrays, in that order.
            Useful for when you want a standardized array location format across different amounts of info in each mesh."""
         normals = normals if type(normals) != type(None) else vertutils.calculate_normals(vertices)
