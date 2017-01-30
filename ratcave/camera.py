@@ -198,7 +198,7 @@ class Camera(PhysicalGraph, HasUniforms):
         super(Camera, self).__init__(**kwargs)
         self.lens = OrthoProjection(**kwargs) if ortho_mode else PerspectiveProjection(**kwargs)
         self.uniforms['projection_matrix'] = self.projection_matrix.view()
-
+        self.uniforms['model_matrix'] = self.model_matrix.view()
         self.uniforms['view_matrix'] = self.view_matrix_global.view()
         self.uniforms['camera_position'] = self.model_matrix_global[:3, 3]
 

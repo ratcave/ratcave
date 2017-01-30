@@ -27,7 +27,7 @@ class Coordinates(IterObservable):
     # Note: Index counts backwards from end of array to increase compatibility with Quaternions.
     @property
     def x(self):
-        return self[-3]
+        return self[-3].view()
 
     @x.setter
     def x(self, value):
