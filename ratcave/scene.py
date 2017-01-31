@@ -82,7 +82,7 @@ class Scene(HasUniforms):
         applies it to each face of cubetexture, which should be currently bound to an FBO.
         """
 
-        assert self.camera.lens.aspect == 1. and self.camera.lens.fov_y == 90  # todo: fix aspect property, which currently reads from viewport.
+        assert self.camera.projection.aspect == 1. and self.camera.projection.fov_y == 90  # todo: fix aspect property, which currently reads from viewport.
         assert type(cubetexture) == TextureCube, "Must render to TextureCube"
 
         for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):

@@ -30,7 +30,7 @@ class ProjectionBase(object):
             raise ValueError("Camera.z_near must be positive.")
         elif value >= self.z_far:
             raise ValueError("Camera.z_near must be less than z_far.")
-        self._z_near = value
+        self._z_near = float(value)
         self._update_projection_matrix()
 
     @property
@@ -43,7 +43,7 @@ class ProjectionBase(object):
             raise ValueError("Camera.z_far must be positive.")
         elif value <= self.z_near:
             raise ValueError("Camera.z_far must be greater than z_near.")
-        self._z_far = value
+        self._z_far = float(value)
         self._update_projection_matrix()
 
     @abc.abstractmethod
@@ -112,7 +112,7 @@ class OrthoProjection(ProjectionBase):
             se = ScreenEdges(left=-vp.width / 2., right=vp.width / 2., bottom=-vp.height / 2., top=vp.height / 2.)
 
         if 'relative' in self.coords:
-            se = ScreenEdges(*(el / vp.width for el in se))
+            se = ScreenEdges(*(el / float(vp.width) for el in se))
 
         return se
 
@@ -194,20 +194,34 @@ class PerspectiveProjection(ProjectionBase):
 
 class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin, mixins.ObservableVisibleMixin):
 
-    def __init__(self, ortho_mode=False, **kwargs):
+    def __init__(self, projection=None, **kwargs):
         super(Camera, self).__init__(**kwargs)
-        self.lens = OrthoProjection(**kwargs) if ortho_mode else PerspectiveProjection(**kwargs)
+        self.projection = PerspectiveProjection() if not projection else projection
+        self.reset_uniforms()
+
+    def update(self):
+        super(Camera, self).update()
+        self.projection.update()
+
+    @property
+    def projection(self):
+        return self._projection
+
+    @projection.setter
+    def projection(self, value):
+        if not issubclass(value.__class__, ProjectionBase):
+            raise TypeError("Camera.projection must be a Projection.")
+        self._projection = value
+        self.reset_uniforms()
+
+    def reset_uniforms(self):
         self.uniforms['projection_matrix'] = self.projection_matrix.view()
         self.uniforms['model_matrix'] = self.model_matrix.view()
         self.uniforms['view_matrix'] = self.view_matrix_global.view()
         self.uniforms['camera_position'] = self.model_matrix_global[:3, 3]
 
-    def update(self):
-        super(Camera, self).update()
-        self.lens.update()
-
     @property
     def projection_matrix(self):
-        return self.lens.projection_matrix
+        return self.projection.projection_matrix
 
 

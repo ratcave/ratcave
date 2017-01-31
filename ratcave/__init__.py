@@ -2,7 +2,7 @@
 
 from . import utils
 from . import resources
-from .camera import Camera
+from .camera import Camera, PerspectiveProjection, OrthoProjection
 from .fbo import FBO
 from .light import Light
 from .mesh import Mesh, EmptyEntity, gen_fullscreen_quad
