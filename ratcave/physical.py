@@ -118,7 +118,6 @@ class PhysicalGraph(Physical, SceneGraph):
     def view_matrix_global(self, value):
         self._view_matrix_global[:] = value
 
-
     def update(self):
         to_update = super(PhysicalGraph, self).update()
 
@@ -137,3 +136,12 @@ class PhysicalGraph(Physical, SceneGraph):
     @property
     def position_global(self):
         return tuple(self.model_matrix_global[:3, -1])
+
+    @property
+    def rotation_global(self):
+        return self.rotation.from_matrix(self.model_matrix_global)
+
+    @property
+    def orientation_global(self):
+        """Orientation vector, in world coordinates."""
+        return self.rotation_global.rotate(self.orientation0)
