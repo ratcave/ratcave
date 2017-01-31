@@ -7,7 +7,7 @@ from .utils import SceneGraph, AutoRegisterObserver, Observable
 
 class Physical(AutoRegisterObserver, Observable):
 
-    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1.,
+    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1., orientation=(1., 0., 0.),
                  **kwargs):
         """XYZ Position, Scale and XYZEuler Rotation Class.
 
@@ -18,6 +18,7 @@ class Physical(AutoRegisterObserver, Observable):
         """
         super(Physical, self).__init__(**kwargs)
 
+        self.orientation0 = np.array(orientation, dtype=np.float32)
         self.rotation = rotutils.RotationEulerDegrees(*rotation)
         self.position = rotutils.Translation(*position)
         self.scale = rotutils.Scale(scale)
@@ -49,6 +50,25 @@ class Physical(AutoRegisterObserver, Observable):
     @view_matrix.setter
     def view_matrix(self, value):
         self._view_matrix[:] = value
+
+    @property
+    def orientation0(self):
+        """Starting orientation (3-element unit vector). New orientations are calculated by rotating from this vector."""
+        return self._orientation0
+
+    @orientation0.setter
+    def orientation0(self, vector):
+        assert len(vector) == 3
+        self._orientation0 = trans.unit_vector(vector)
+
+    @property
+    def orientation(self):
+        """The object's orientation as a vector, calculated by rotation from orientation0, the starting orientation."""
+        return self.rotation.rotate(self.orientation0)
+
+    @property
+    def orientation(self):
+        return self.rotation.rotate(self.orientation0)
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
