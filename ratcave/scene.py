@@ -42,7 +42,6 @@ class Scene(HasUniforms):
         if not isinstance(value, Camera):
             raise TypeError("Scene.camera must be a Camera instance.")
         self._camera = value
-        self.uniforms.update(self._camera.uniforms)
 
     @property
     def light(self):
@@ -53,7 +52,6 @@ class Scene(HasUniforms):
         if not isinstance(value, Light):
             raise TypeError("Scene.light must be a Light instance.")
         self._light = value
-        self.uniforms.update(self._light.uniforms)
 
     def clear(self):
         """Clear Screen and Apply Background Color"""
@@ -69,8 +67,9 @@ class Scene(HasUniforms):
         with glutils.enable_states(self.gl_states):
 
             self.camera.update()
+            self.camera.uniforms.send()
             self.light.update()
-            self.uniforms.send()
+            self.light.uniforms.send()
 
             for mesh in self.meshes:
                 mesh.draw()
