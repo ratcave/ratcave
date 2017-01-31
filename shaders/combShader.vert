@@ -1,6 +1,6 @@
 #version 330
 
-layout(location = 0) in vec3 vertexPosition;
+layout(location = 0) in vec4 vertexPosition;
 layout(location = 1) in vec3 normalPosition;
 layout(location = 2) in vec2 uvTexturePosition;
 
@@ -23,7 +23,7 @@ float diffuse_weight = .5;
 void main()
   {
     //Calculate Vertex World Position and Normal Direction
-    vVertex = model_matrix * vec4(vertexPosition, 1.0);
+    vVertex = model_matrix * vertexPosition;
     normal = normalize(normal_matrix * vec4(normalPosition, 1.0)).xyz;
 
     //Calculate Vertex Position on Screen

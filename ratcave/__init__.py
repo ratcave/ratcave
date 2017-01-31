@@ -14,6 +14,7 @@ from .wavefront import WavefrontReader
 from .utils import SceneGraph
 from .utils.gl import POINTS, LINE_LOOP, LINES, TRIANGLES
 from .materials import Material
+from .collision import CylinderCollisionChecker, SphereCollisionChecker
 
 
 __all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'WavefrontReader', 'resources']

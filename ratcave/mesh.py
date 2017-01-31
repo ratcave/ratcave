@@ -71,6 +71,11 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
             self.position.xyz = vertex_mean
         # self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
 
+        # Change vertices from an Nx3 to an Nx4 array by appending ones.  This makes some calculations more efficient.
+        arrays = list(self.arrays)
+        arrays[0] = np.append(self.arrays[0], np.ones((self.arrays[0].shape[0], 1), dtype=np.float32), axis=1)
+        self.arrays = tuple(arrays)
+
         self.texture = texture if texture else texture_module.BaseTexture()
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
@@ -78,11 +83,22 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
 
     @property
     def vertices(self):
+        """Mesh vertices, centered around 0,0,0"""
         return self.arrays[0].view()
 
     @vertices.setter
     def vertices(self, value):
         self.arrays[0][:] = value
+
+    @property
+    def vertices_local(self):
+        """Vertex position, in local coordinate space (modified by model_matrix)"""
+        return np.dot(self.model_matrix, self.vertices)
+
+    @property
+    def vertices_global(self):
+        """Vertex position, in world coordinate space (modified by model_matrix)"""
+        return np.dot(self.model_matrix_global, self.vertices)
 
     @property
     def texture(self):
@@ -127,36 +143,4 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
                     vao.draw(mode=self.drawmode)
 
 
-class CollisionMeshBase(Mesh):
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def collides_with(self, xyz):
-        """Returns True if 3-value coordinate 'xyz' is inside the mesh."""
-        pass
-
-
-class SphereCollisionMesh(CollisionMeshBase):
-    """Calculates collision by checking if a point is inside a sphere around the mesh vertices."""
-
-    def __init__(self, *args, **kwargs):
-        super(SphereCollisionMesh, self).__init__(*args, **kwargs)
-        self.collision_radius = np.linalg.norm(self.vertices_global, axis=1).max()
-
-    def collides_with(self, xyz):
-        """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
-        return np.linalg.norm(xyz - self.position_global) < self.collision_radius
-
-
-class CylinderCollisionMesh(CollisionMeshBase):
-
-    def __init__(self, up_axis='y', *args, **kwargs):
-        super(CylinderCollisionMesh, self).__init__(*args, **kwargs)
-        self.up_axis = up_axis
-        self._collision_columns = {'x': (1, 2), 'y': (0, 2), 'z': (1, 2)}[up_axis]
-        self.collision_radius = np.linalg.norm(self.vertices_global[:, self._collision_columns], axis=1).max()
-
-    def collides_with(self, xyz):
-        cc = self._collision_columns
-        return np.linalg.norm(xyz[:, cc] - self.position_global[cc]) < self.collision_radius
 
