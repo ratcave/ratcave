@@ -29,6 +29,8 @@ class Physical(AutoRegisterObserver, Observable):
 
     @property
     def model_matrix(self):
+        if self._requires_update:
+            self.update()
         return self._model_matrix
 
     @model_matrix.setter
@@ -37,6 +39,8 @@ class Physical(AutoRegisterObserver, Observable):
 
     @property
     def normal_matrix(self):
+        if self._requires_update:
+            self.update()
         return self._normal_matrix
 
     @normal_matrix.setter
@@ -45,6 +49,8 @@ class Physical(AutoRegisterObserver, Observable):
 
     @property
     def view_matrix(self):
+        if self._requires_update:
+            self.update()
         return self._view_matrix
 
     @view_matrix.setter
@@ -64,6 +70,8 @@ class Physical(AutoRegisterObserver, Observable):
     @property
     def orientation(self):
         """The object's orientation as a vector, calculated by rotation from orientation0, the starting orientation."""
+        if self._requires_update:
+            self.update()
         return self.rotation.rotate(self.orientation0)
 
     @property
@@ -96,6 +104,8 @@ class PhysicalGraph(Physical, SceneGraph):
 
     @property
     def model_matrix_global(self):
+        if self._requires_update:
+            self.update()
         return self._model_matrix_global
 
     @model_matrix_global.setter
@@ -104,6 +114,8 @@ class PhysicalGraph(Physical, SceneGraph):
 
     @property
     def normal_matrix_global(self):
+        if self._requires_update:
+            self.update()
         return self._normal_matrix_global
 
     @normal_matrix_global.setter
@@ -112,6 +124,8 @@ class PhysicalGraph(Physical, SceneGraph):
 
     @property
     def view_matrix_global(self):
+        if self._requires_update:
+            self.update()
         return self._view_matrix_global
 
     @view_matrix_global.setter
@@ -135,13 +149,19 @@ class PhysicalGraph(Physical, SceneGraph):
 
     @property
     def position_global(self):
+        if self._requires_update:
+            self.update()
         return tuple(self.model_matrix_global[:3, -1])
 
     @property
     def rotation_global(self):
+        if self._requires_update:
+            self.update()
         return self.rotation.from_matrix(self.model_matrix_global)
 
     @property
     def orientation_global(self):
         """Orientation vector, in world coordinates."""
+        if self._requires_update:
+            self.update()
         return self.rotation_global.rotate(self.orientation0)
