@@ -73,6 +73,10 @@ class RotationBase(object):
     @classmethod
     def from_matrix(cls, matrix): pass
 
+    def rotate(self, vector):
+        """Takes a vector and returns it rotated by self."""
+        return np.dot(self.to_matrix()[:3, :3], vector).flatten()
+
 
 class RotationEuler(RotationBase, Coordinates):
 
