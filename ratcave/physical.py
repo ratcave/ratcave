@@ -74,6 +74,12 @@ class Physical(AutoRegisterObserver, Observable):
             self.update()
         return self.rotation.rotate(self.orientation0)
 
+    @orientation.setter
+    def orientation(self, vec):
+        # From algorithm at http://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d/897677#897677
+        rot_mat = rotutils.rotation_matrix_between_vectors(self.orientation0, vec)
+        self.rotation = self.rotation.from_matrix(rot_mat)
+
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
         to_update = super(Physical, self).update()
