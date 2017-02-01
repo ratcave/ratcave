@@ -7,7 +7,7 @@ from .utils import SceneGraph, AutoRegisterObserver, Observable
 
 class Physical(AutoRegisterObserver, Observable):
 
-    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1., orientation=(1., 0., 0.),
+    def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1., orientation0=(1., 0., 0.),
                  **kwargs):
         """XYZ Position, Scale and XYZEuler Rotation Class.
 
@@ -18,7 +18,7 @@ class Physical(AutoRegisterObserver, Observable):
         """
         super(Physical, self).__init__(**kwargs)
 
-        self.orientation0 = np.array(orientation, dtype=np.float32)
+        self.orientation0 = np.array(orientation0, dtype=np.float32)
         self.rotation = rotutils.RotationEulerDegrees(*rotation)
         self.position = rotutils.Translation(*position)
         self.scale = rotutils.Scale(scale)
