@@ -74,10 +74,6 @@ class Physical(AutoRegisterObserver, Observable):
             self.update()
         return self.rotation.rotate(self.orientation0)
 
-    @property
-    def orientation(self):
-        return self.rotation.rotate(self.orientation0)
-
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""
         to_update = super(Physical, self).update()
