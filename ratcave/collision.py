@@ -1,7 +1,5 @@
 import abc
 import numpy as np
-from .mesh import Mesh
-
 
 class CollisionCheckerBase(object):
     __metaclass__ = abc.ABCMeta
@@ -16,8 +14,17 @@ class SphereCollisionChecker(CollisionCheckerBase):
     """Calculates collision by checking if a point is inside a sphere around the mesh vertices."""
 
     def __init__(self, mesh, **kwargs):
-        if not isinstance(mesh, Mesh):
-            raise TypeError("mesh must be a Mesh instance")
+        """
+
+        Parameters
+        ----------
+        mesh: Mesh instance
+        kwargs
+
+        Returns
+        -------
+
+        """
         self.mesh = mesh
         self.collision_radius = np.linalg.norm(mesh.vertices[:, :3], axis=1).max()
 
@@ -31,8 +38,17 @@ class CylinderCollisionChecker(CollisionCheckerBase):
     _non_up_columns = {'x': (1, 2), 'y': (0, 2), 'z': (1, 2)}
 
     def __init__(self, mesh, up_axis='y'):
-        if not isinstance(mesh, Mesh):
-            raise TypeError("mesh must be a Mesh instance")
+        """
+
+        Parameters
+        ----------
+        mesh: Mesh instance
+        up_axis: ('x', 'y', 'z'): Which direction is 'up', which won't factor in the distance calculation.
+
+        Returns
+        -------
+
+        """
         self.mesh = mesh
         self.up_axis = up_axis
         self._collision_columns = self._non_up_columns[up_axis]
