@@ -80,7 +80,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     def _apply_filter_settings(self):
         """Applies some hard-coded texture filtering settings."""
         # TODO: Allow easy customization of filters
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR_MIPMAP_LINEAR)
+        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
 
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
