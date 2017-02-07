@@ -7,135 +7,35 @@
     This module contains the Mesh, MeshData, and Material classes.
     This documentation was auto-generated from the mesh.py file.
 """
-import copy
+import abc
 import numpy as np
-from pyglet import gl
 from .utils import gl as ugl
-from . import mixins, shader
+from .utils import vertices as vertutils
+from .utils import mixins
+from . import physical, shader
 from . import texture as texture_module
+import pyglet.gl as gl
 
 
-class MeshData(object):
-
-    def __init__(self, vertices, face_indices, normals, texcoords=None):
-        """
-        Collects all vertex data for rendering in 3D graphics packages.
-
-        Args:
-            vertices (list): Nx3 vertex array
-            face_indices (list): Nx3 Face index array (0-indexed)
-            normals (list): Nx3 normals array
-            texture_uv (list): Nx2 texture_uv array
-
-        Returns:
-            MeshData object
-        """
-        # CPU Data
-        self.vertices = np.array(vertices, dtype=float).reshape((-1, 3))
-        self.face_indices = np.array(face_indices, dtype=np.uint16).reshape((-1, 1))
-        self.normals = np.array(normals, dtype=float).reshape((-1, 3))
-        self.texcoords = np.array(texcoords, dtype=float).reshape((-1, 2))
-        assert self.vertices.shape[0] == self.normals.shape[0]
-        assert self.vertices.shape[0] == self.texcoords.shape[0]
-
-        self.is_loaded = False
-        self.glbuffer = False
-
-    def load(self):
-        self.reindex()
-        self.glbuffer = ugl.VAO(indices=self.face_indices)
-        with self.glbuffer:
-            for loc, verts in enumerate([self.vertices, self.normals, self.texcoords]):
-                self.glbuffer.assign_vertex_attrib_location(ugl.VBO(verts), loc)
-        self.is_loaded = True
-
-    def draw(self, mode):
-        if not self.is_loaded:
-            self.load()
-
-        with self.glbuffer as vao:
-            vao.draw(mode)
-
-    def reindex(self):
-
-        def to_joined_struct_array_view(*arrays):
-            """Concatenates (columnwise) each array given as input, then returns it as a structured array."""
-            array = np.hstack(arrays)
-            dtype = array.dtype.descr * array.shape[1]
-            return array.view(dtype)
-
-        all_vert_combs = to_joined_struct_array_view(self.vertices, self.normals, self.texcoords)
-        unique_combs = np.unique(all_vert_combs)
-        unique_vert_combs_sorted = np.sort(unique_combs)
-
-        self.face_indices = np.array([np.searchsorted(unique_vert_combs_sorted, vert) for vert in all_vert_combs],
-                                     dtype=np.uint32).reshape((-1, 1))
-        unique_combs_array = unique_combs.view(float).reshape((unique_combs.shape[0], -1))
-        self.vertices = unique_combs_array[:, :3]
-        self.normals = unique_combs_array[:, 3:6]
-        self.texcoords = unique_combs_array[:, 6:]
+# Meshes
+def gen_fullscreen_quad(name='FullScreenQuad'):
+    verts = np.array([[-1, -1, -.5], [-1, 1, -.5], [1, 1, -.5], [-1, -1, -.5], [1, 1, -.5], [1, -1, -.5]], dtype=np.float32)
+    normals=np.array([[0, 0, 1]] * 6, dtype=np.float32)
+    texcoords=np.array([[0, 0], [0, 1], [1, 1], [0, 0], [1, 1], [1, 0]], dtype=np.float32)
+    return Mesh(name=name, arrays=(verts, normals, texcoords), mean_center=False)
 
 
-class Material(object):
+class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
+    """An object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
 
-    def __init__(self, diffuse=[.8, .8, .8], spec_weight=0., specular=[0., 0., 0.],
-                 ambient=[0., 0., 0.], opacity=1., flat_shading=False, texture_file=None):
-        self.diffuse = diffuse
-        self.spec_weight = spec_weight
-        self.specular = specular
-        self.ambient = ambient
-        self.opacity = opacity
-        self.flat_shading = flat_shading
-        self.texture_file = texture_file
-
-
-class MeshLoader(object):
-
-    def __init__(self, name, meshdata, material=None):
-        """Creates various types of Meshes from MeshData and Material objects."""
-
-        self.name = name
-        self.meshdata = meshdata
-        self.material = material
-
-    def load_mesh(self, **kwargs):
-        from collections import Iterable
-
-        """Construct a Mesh object"""
-        uniforms = shader.UniformCollection()
-        texture = None
-
-        if self.material:
-            for key, val in list(self.material.__dict__.items()):
-                if key == "texture_file":
-                    if val is not None:
-                        texture = texture_module.Texture.from_image(val)
-                else:
-                    newval = copy.deepcopy(val)
-                    if not isinstance(newval, Iterable):
-                        newval = int(val) if isinstance(val, bool) else newval
-                        newval = [newval]
-
-                    uniforms[key] = shader.Uniform(key, *newval)
-
-        return Mesh(self.name, self.meshdata, uniforms=uniforms, texture=texture, **kwargs)
-
-
-class EmptyMesh(mixins.PhysicalNode):
-
-    def __init__(self, *args, **kwargs):
-        super(EmptyMesh, self).__init__(*args, **kwargs)
-
-    def _draw(self, shader=None, **kwargs):
+    def draw(self, *args, **kwargs):
         pass
 
 
-class Mesh(EmptyMesh, mixins.Picklable):
+class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mixins.ObservableVisibleMixin):
 
-    drawstyle = {'fill': gl.GL_TRIANGLES, 'line': gl.GL_LINE_LOOP, 'point': gl.GL_POINTS}
-
-    def __init__(self, name, meshdata, uniforms=shader.UniformCollection(), drawstyle='fill', visible=True,
-                 point_size=4, texture=None, **kwargs):
+    def __init__(self, arrays, texture=None, mean_center=True,
+                 gl_states=(), drawmode=gl.GL_TRIANGLES, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -146,92 +46,101 @@ class Mesh(EmptyMesh, mixins.Picklable):
 
         Args:
             name (str): the mesh's name.
-            vertices: the Nx3 vertex coordinate data
-            normals: the Nx3 normal coordinate data
-            texcoords: the Nx2 texture coordinate data
-            uniforms (list): a list of all Uniform objects
-            drawstyle (str): 'point': only vertices, 'line': points and edges, 'fill': points, edges, and faces (full)
+            arrays (tuple): a list of 2D arrays to be rendered.  All arrays should have same number of rows. Arrays will be accessible in shader in same attrib location order.
+            texture (Texture): a Texture instance, which is linked when the Mesh is rendered.
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
-            point_size (int): How big to draw the points, when drawstyle is 'point'
 
         Returns:
             Mesh instance
         """
-        self.data = meshdata
 
         super(Mesh, self).__init__(**kwargs)
+        self.uniforms['model_matrix'] = self.model_matrix_global.view()
+        self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
 
-        self.name = name
+        arrays = tuple(np.array(array, dtype=np.float32) for array in arrays)
+        self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
 
-        # Convert Mean position into Global Coordinates. If "centered" is True, though, simply leave global position to 0
-        vertex_mean = np.mean(self.data.vertices, axis=0)
-        self.data.vertices -= vertex_mean
-        self.position = vertex_mean if 'position' not in kwargs else kwargs['position']
+        # Mean-center vertices and move position to vertex mean.
+        vertex_mean = self.arrays[0][self.array_indices, :].mean(axis=0)
+        if mean_center:
+            self.arrays[0][:] -= vertex_mean
+        if 'position' in kwargs:
+            self.position.xyz = kwargs['position']
+        elif mean_center:
+            self.position.xyz = vertex_mean
+        # self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
 
-        #: :py:class:`.Physical`, World Mesh coordinates
-        #: Local Mesh coordinates (Physical type)
-        self.uniforms = uniforms if type(uniforms) == shader.UniformCollection else shader.UniformCollection(uniforms)
+        # Change vertices from an Nx3 to an Nx4 array by appending ones.  This makes some calculations more efficient.
+        arrays = list(self.arrays)
+        arrays[0] = np.append(self.arrays[0], np.ones((self.arrays[0].shape[0], 1), dtype=np.float32), axis=1)
+        self.arrays = tuple(arrays)
 
-        #: Pyglet texture object for mapping an image file to the vertices (set using Mesh.load_texture())
-        self.texture = texture or texture_module.BaseTexture()
-        self.drawstyle = drawstyle
-        self.point_size = point_size
+        self.texture = texture if texture else texture_module.BaseTexture()
+        self.vao = None  # Will be created upon first draw, when OpenGL context is available.
+        self.gl_states = gl_states
+        self.drawmode = drawmode
 
-        #: Bool: if the Mesh is visible for rendering. If false, will not be rendered.
-        self.visible = visible
-        self.vao = None
+    @property
+    def vertices(self):
+        """Mesh vertices, centered around 0,0,0"""
+        return self.arrays[0].view()
 
-        self.is_updated = False
+    @vertices.setter
+    def vertices(self, value):
+        self.arrays[0][:] = value
 
-    def __str__(self):
-        return "%s(%d) at %s" % (self.name, len(self.children), self.position_global)
+    @property
+    def vertices_local(self):
+        """Vertex position, in local coordinate space (modified by model_matrix)"""
+        return np.dot(self.model_matrix, self.vertices)
 
-    def __repr__(self):
-        return str(self)
+    @property
+    def vertices_global(self):
+        """Vertex position, in world coordinate space (modified by model_matrix)"""
+        return np.dot(self.model_matrix_global, self.vertices)
 
-    def update(self):
-        super(Mesh, self).update()
+    @property
+    def texture(self):
+        return self._texture
 
-        vertices_local = np.vstack([self.data.vertices.T, np.ones(len(self.data.vertices))])
-        vertices_global = np.dot(self.model_matrix_global, vertices_local).T
+    @texture.setter
+    def texture(self, value):
+        if isinstance(value, str):
+            tex = texture_module.Texture.from_image(value)
+        elif isinstance(value, texture_module.BaseTexture):
+            tex = value
+        else:
+            raise TypeError("Texture must be given a filename or a ratcave.Texture instance.")
+        self._texture = tex
+        self.uniforms.update(tex.uniforms)
 
-        # if needed, one can store global vertex coordinates
-        vg = vertices_global
+    @classmethod
+    def from_incomplete_data(cls, vertices, normals=None, texcoords=None, name=None, **kwargs):
+        """Return a Mesh with (vertices, normals, texcoords) as arrays, in that order.
+           Useful for when you want a standardized array location format across different amounts of info in each mesh."""
+        normals = normals if type(normals) != type(None) else vertutils.calculate_normals(vertices)
+        texcoords = texcoords if type(texcoords) != type(None) else np.zeros((vertices.shape[0], 2), dtype=np.float32)
+        return cls(name=name, arrays=(vertices, normals, texcoords), **kwargs)
 
-        self.min_xyz = np.array((vg[:, 0].min(), vg[:, 1].min(), vg[:, 2].min()))
-        self.max_xyz = np.array((vg[:, 0].max(), vg[:, 1].max(), vg[:, 2].max()))
+    def _fill_vao(self):
+        """Put array location in VAO for shader in same order as arrays given to Mesh."""
+        with self.vao:
+            for loc, verts in enumerate(self.arrays):
+                self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
 
-    def _draw(self, shader=None, send_uniforms=True, *args, **kwargs):
-        super(Mesh, self)._draw(*args, **kwargs)
+    def draw(self):
+        if not self.vao:
+            self.vao = ugl.VAO(indices=self.array_indices)
+            self._fill_vao()
 
-        if not self.is_updated:
-            self.update()
-            self.is_updated = True
-
+        self.update()
         if self.visible:
+            with ugl.enable_states(self.gl_states):
+                # with self.texture, self.vao as vao:
+                with self.vao as vao, self.texture:
+                    self.uniforms.send()
+                    vao.draw(mode=self.drawmode)
 
-            # Bind the VAO and Texture, and draw.
-            with self.texture as texture:
 
-                # Change Material to Mesh's
-                if send_uniforms:
 
-                    self.update_model_and_normal_matrix()
-                    self.uniforms.send_to(shader)
-                    texture.uniforms.send_to(shader)
-
-                    # Send Model and Normal Matrix to shader.
-                    try:
-                        shader.uniform_matrixf('model_matrix', self.model_matrix_global.T.ravel(), loc=self.modelmat_loc)
-                        shader.uniform_matrixf('normal_matrix', self.normal_matrix_global.T.ravel(), loc=self.normalmat_loc)
-                    except AttributeError:
-                        self.modelmat_loc = shader.get_uniform_location('model_matrix')
-                        self.normalmat_loc = shader.get_uniform_location('normal_matrix')
-                        pass
-
-                # Set Point Size, if drawing a point cloud
-                if self.drawstyle == 'point':
-                    gl.glPointSize(int(self.point_size))
-
-                # Send in the vertex and normal data
-                self.data.draw(Mesh.drawstyle[self.drawstyle])

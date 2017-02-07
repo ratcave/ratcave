@@ -1,8 +1,6 @@
 
 from os import path
-
 from .shader import Shader
-from . import mesh
 
 """
 Here are some sample obj files for prototyping your app!
@@ -10,7 +8,7 @@ Here are some sample obj files for prototyping your app!
 
 # This is an easy way to get the filepaths of some oft-used resources for displaying simple scenes.
 
-resource_path = path.join(path.split(__file__)[0],'assets')
+resource_path = path.join(path.split(__file__)[0], '..', 'assets')
 
 # Images
 img_uvgrid = path.join(resource_path,'uvgrid.png')
@@ -23,7 +21,7 @@ obj_grid3D = path.join(resource_path, 'grid3D.obj')
 
 
 # Shaders
-shader_path = path.join(path.split(__file__)[0], 'shaders')
+shader_path = path.join(path.split(__file__)[0], '..', 'shaders')
 
 # General, Normal Shader
 genShader = Shader(open(path.join(shader_path, 'combShader.vert')).read(),
@@ -32,17 +30,6 @@ genShader = Shader(open(path.join(shader_path, 'combShader.vert')).read(),
 shadowShader = Shader(open(path.join(shader_path, 'shadowShader.vert')).read(),
                       open(path.join(shader_path, 'shadowShader.frag')).read())
 
-aaShader = Shader(open(path.join(shader_path, 'antialiasShader.vert')).read(),
-                  open(path.join(shader_path, 'antialiasShader.frag')).read())
+deferredShader = Shader(open(path.join(shader_path, 'basicDeferred.vert')).read(),
+                  open(path.join(shader_path, 'basicDeferred.frag')).read())
 
-
-
-
-# Meshes
-def gen_fullscreen_quad():
-    fullscreen_quad_data = mesh.MeshData(vertices=[-1, -1, 0, -1, 1, 0, 1, 1, 0, -1, -1, 0,  1, 1, 0, 1, -1, 0],
-                                         face_indices=[0, 1, 2, 0, 2, 3],
-                                         normals=[0, 0, -1] * 6,
-                                         texcoords=[0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0])
-    fullscreen_quad = mesh.MeshLoader('Quad', fullscreen_quad_data).load_mesh()
-    return fullscreen_quad

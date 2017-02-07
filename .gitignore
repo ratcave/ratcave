@@ -2,7 +2,6 @@
 *.pyd
 *~
 _build
-_static
 _templates_build
 build/*
 dist/*
