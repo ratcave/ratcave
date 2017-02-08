@@ -26,6 +26,8 @@ class UniformCollection(IterableUserDict, object):
             self[key] = value
 
     def __setitem__(self, key, value):
+        if isinstance(value, bool):
+            value = int(value)
         if isinstance(value, np.ndarray):
             if value.dtype != np.float32:
                 raise TypeError("Matrix Uniform Arrays must be 32-bit floats for rendering to work properly.")

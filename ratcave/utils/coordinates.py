@@ -248,3 +248,20 @@ class Scale(Coordinates):
             self[0] = value
 
 
+def cross_product_matrix(vec):
+    """Returns a 3x3 cross-product matrix from a 3-element vector."""
+    return np.array([[0, -vec[2], vec[1]],
+                     [vec[2], 0, -vec[0]],
+                     [-vec[1], vec[0], 0]])
+
+
+def rotation_matrix_between_vectors(from_vec, to_vec):
+    """Returns a rotation matrix to rotate from 3d vector "from_vec" to 3d vector "to_vec"."""
+    a, b = (trans.unit_vector(vec) for vec in (from_vec, to_vec))
+    v = np.cross(a, b)
+    cos = np.dot(a, b)
+    if cos == -1.:
+        raise ValueError("Orientation in complete opposite direction")
+    v_cpm = cross_product_matrix(v)
+    rot_mat = np.identity(3) + v_cpm + np.dot(v_cpm, v_cpm) * (1. / 1. + cos)
+    return rot_mat
