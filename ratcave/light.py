@@ -7,4 +7,7 @@ class Light(PhysicalGraph, HasUniforms, mixins.NameLabelMixin, mixins.Observable
 
     def __init__(self, **kwargs):
         super(Light, self).__init__(**kwargs)
+        self.reset_uniforms()
+
+    def reset_uniforms(self):
         self.uniforms['light_position'] = self.model_matrix_global[:3, 3]

@@ -11,6 +11,9 @@ class BaseTexture(HasUniforms):
 
     def __init__(self, **kwargs):
         super(BaseTexture, self).__init__(**kwargs)
+        self.reset_uniforms()
+
+    def reset_uniforms(self):
         self.uniforms['textype'] = self.int_flag
         self.uniforms[self.tex_name] = 0
         self.uniforms[self.cube_name] = 0

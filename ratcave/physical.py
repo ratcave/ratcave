@@ -3,9 +3,9 @@ import numpy as np
 import _transformations as trans
 from .utils import coordinates as rotutils
 from .utils import SceneGraph, AutoRegisterObserver, Observable
+from .utils import mixins
 
-
-class Physical(AutoRegisterObserver, Observable):
+class Physical(AutoRegisterObserver, Observable, mixins.PickleableMixin):
 
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1., orientation0=(1., 0., 0.),
                  **kwargs):

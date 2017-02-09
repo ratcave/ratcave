@@ -1,12 +1,11 @@
 import pyglet.gl as gl
 
-from . import Camera, Light, mesh
+from . import Camera, Light
 from .utils import gl as glutils
 from .texture import TextureCube
-from .shader import HasUniforms
 
 
-class Scene(HasUniforms):
+class Scene(object):
 
     def __init__(self, meshes=None, camera=None, light=None, bgColor=(0.4, 0.4, 0.4),
                  gl_states=(gl.GL_DEPTH_TEST, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D, gl.GL_CULL_FACE), **kwargs):

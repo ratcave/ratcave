@@ -74,6 +74,10 @@ class HasUniforms(object):
         super(HasUniforms, self).__init__(**kwargs)
         self.uniforms = UniformCollection(**uniforms) if uniforms else UniformCollection()
 
+    @abc.abstractmethod
+    def reset_uniforms(self):
+        pass
+
 
 class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
 
