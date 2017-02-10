@@ -50,4 +50,6 @@ class WavefrontReader(object):
                     setattr(mesh, key, value)
                 else:
                     print('Warning: Not applying uniform {}: {}'.format(key, value))
+        else:
+            mesh.uniforms['diffuse'] = (1., 1., 1.)  # at least give the object a chance to be visible!
         return mesh
