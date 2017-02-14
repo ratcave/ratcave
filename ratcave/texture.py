@@ -29,7 +29,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     attachment_point = gl.GL_COLOR_ATTACHMENT0_EXT
     internal_fmt = gl.GL_RGBA
     pixel_fmt=gl.GL_RGBA
-    _all_slots = list(range(1, 25))[::-1]
+    _all_slots = list(range(1, 100))[::-1]  # TODO set this to correct value?
     int_flag = 1
     bindfun = gl.glBindTexture
 
@@ -80,7 +80,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     def _apply_filter_settings(self):
         """Applies some hard-coded texture filtering settings."""
         # TODO: Allow easy customization of filters
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR_MIPMAP_LINEAR)
+        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
 
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
