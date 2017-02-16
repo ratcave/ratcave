@@ -26,6 +26,7 @@ class WavefrontReader(object):
         """
         self.file_name = file_name
         self.bodies = read_wavefront(file_name)
+        self.textures = {}
 
     def get_mesh(self, name, **kwargs):
         """Builds Mesh from geom name in the wavefront file.  Takes all keyword arguments that Mesh takes."""
@@ -41,7 +42,9 @@ class WavefrontReader(object):
         for key, value in iteritems(material_props):
             if isinstance(value, str):
                 if key == 'map_Kd':
-                    mesh.texture = Texture.from_image(value)
+                    if not value in self.textures:
+                        self.textures[value] = Texture.from_image(value)
+                    mesh.texture = self.textures[value]
                 else:
                     setattr(mesh, key, value)
             elif hasattr(value, '__len__'):  # iterable materials

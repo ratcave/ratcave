@@ -98,7 +98,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, self.attachment_point, self.target0, self.id, 0)
 
     @classmethod
-    def from_image(cls, img_filename, mipmap=True, **kwargs):
+    def from_image(cls, img_filename, mipmap=False, **kwargs):
         """Uses Pyglet's image.load function to generate a Texture from an image file. If 'mipmap', then texture will
         have mipmap layers calculated."""
         img = pyglet.image.load(img_filename)
