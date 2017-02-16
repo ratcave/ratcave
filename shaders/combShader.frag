@@ -1,4 +1,4 @@
-#version 330
+#version 150
 #extension GL_NV_shadow_samplers_cube : enable
 
 uniform int hasShadow, hasCubeMap, flat_shading, textype;
