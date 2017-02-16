@@ -98,7 +98,14 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
  
         # attempt to link the program
         self.link()
- 
+
+    @classmethod
+    def from_file(cls, vert_filename, frag_filename):
+        vert_program = open(vert_filename).read()
+        frag_program = open(frag_filename).read()
+        return cls(vert=vert_program, frag=frag_program)
+
+
     def createShader(self, strings, shadertype):
  
         # create the shader handle
