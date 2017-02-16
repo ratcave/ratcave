@@ -1,7 +1,9 @@
+import itertools
 from.utils import gl as ugl
 import pyglet
 import pyglet.gl as gl
 from .shader import HasUniforms
+
 
 class BaseTexture(HasUniforms):
 
@@ -29,7 +31,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     attachment_point = gl.GL_COLOR_ATTACHMENT0_EXT
     internal_fmt = gl.GL_RGBA
     pixel_fmt=gl.GL_RGBA
-    _all_slots = list(range(1, 25))[::-1]
+    _slot_counter = itertools.count(start=1)
     int_flag = 1
     bindfun = gl.glBindTexture
 
@@ -37,7 +39,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
         super(Texture, self).__init__(**kwargs)
 
-        self._slot = self._all_slots.pop()
+        self._slot = next(self._slot_counter)
         self.uniforms[self.tex_name] = self._slot
         self.mipmap = mipmap
 
