@@ -80,10 +80,9 @@ class RotationBase(object):
 
 class RotationEuler(RotationBase, Coordinates):
 
-    axes = 'rxyz'
-
-    def __init__(self, x, y, z, **kwargs):
+    def __init__(self, x, y, z, axes='rxyz', **kwargs):
         super(RotationEuler, self).__init__(x, y, z, **kwargs)
+        self.axes = axes
 
 
 class RotationEulerRadians(RotationEuler):
@@ -92,7 +91,7 @@ class RotationEulerRadians(RotationEuler):
         return self
 
     def to_degrees(self):
-        return RotationEulerDegrees(*np.degrees(self._array))
+        return RotationEulerDegrees(*np.degrees(self._array), axes=self.axes)
 
     def to_quaternion(self):
         return RotationQuaternion(*trans.quaternion_from_euler(*self._array, axes=self.axes))
@@ -103,9 +102,9 @@ class RotationEulerRadians(RotationEuler):
     def to_euler(self, units='rad'):
         assert units.lower() in ['rad', 'deg']
         if units.lower() == 'rad':
-            return RotationEulerRadians(*self._array)
+            return RotationEulerRadians(*self._array, axes=self.axes)
         else:
-            return RotationEulerDegrees(*np.degrees(self._array))
+            return RotationEulerDegrees(*np.degrees(self._array), axes=self.axes)
 
     @classmethod
     def from_matrix(cls, matrix):
@@ -121,7 +120,7 @@ class RotationEulerRadians(RotationEuler):
 
 class RotationEulerDegrees(RotationEuler):
     def to_radians(self):
-        return RotationEulerRadians(*np.radians(self._array))
+        return RotationEulerRadians(*np.radians(self._array), axes=self.axes)
 
     def to_degrees(self):
         return self
