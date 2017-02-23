@@ -13,6 +13,7 @@ from .texture import Texture, TextureCube
 from .wavefront import WavefrontReader
 from .utils import SceneGraph
 from .utils.gl import POINTS, LINE_LOOP, LINES, TRIANGLES
+from .utils.coordinates import RotationEulerDegrees, RotationQuaternion, RotationEulerRadians, Translation, Scale
 from .materials import Material
 from .collision import CylinderCollisionChecker, SphereCollisionChecker
 
