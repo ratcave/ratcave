@@ -1,7 +1,9 @@
+import itertools
 from.utils import gl as ugl
 import pyglet
 import pyglet.gl as gl
 from .shader import HasUniforms
+
 
 class BaseTexture(HasUniforms):
 
@@ -32,15 +34,15 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     attachment_point = gl.GL_COLOR_ATTACHMENT0_EXT
     internal_fmt = gl.GL_RGBA
     pixel_fmt=gl.GL_RGBA
-    _all_slots = list(range(1, 25))[::-1]
+    _slot_counter = itertools.count(start=1)
     int_flag = 1
     bindfun = gl.glBindTexture
 
-    def __init__(self, id=None, width=1024, height=1024, data=None, mipmap=True, **kwargs):
+    def __init__(self, id=None, width=1024, height=1024, data=None, mipmap=False, **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
         super(Texture, self).__init__(**kwargs)
 
-        self._slot = self._all_slots.pop()
+        self._slot = next(self._slot_counter)
         self.uniforms[self.tex_name] = self._slot
         self.mipmap = mipmap
 
@@ -78,12 +80,17 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         gl.glTexImage2D(self.target0, 0, self.internal_fmt, self.width, self.height, 0, self.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
 
     def generate_mipmap(self):
-        gl.glGenerateMipmap(self.target)
+        if self.mipmap:
+            gl.glGenerateMipmap(self.target)
+
 
     def _apply_filter_settings(self):
         """Applies some hard-coded texture filtering settings."""
         # TODO: Allow easy customization of filters
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR_MIPMAP_LINEAR)
+        if self.mipmap:
+            gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR_MIPMAP_LINEAR)
+        else:
+            gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
 
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
@@ -94,7 +101,7 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, self.attachment_point, self.target0, self.id, 0)
 
     @classmethod
-    def from_image(cls, img_filename, mipmap=True, **kwargs):
+    def from_image(cls, img_filename, mipmap=False, **kwargs):
         """Uses Pyglet's image.load function to generate a Texture from an image file. If 'mipmap', then texture will
         have mipmap layers calculated."""
         img = pyglet.image.load(img_filename)

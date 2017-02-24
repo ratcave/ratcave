@@ -73,7 +73,6 @@ class Scene(object):
             for mesh in self.meshes:
                 mesh.draw()
 
-
     def draw360_to_texture(self, cubetexture):
         """
         Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light, and
