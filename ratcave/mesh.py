@@ -31,6 +31,9 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
     def draw(self, *args, **kwargs):
         pass
 
+    def reset_uniforms(self):
+        pass
+
 
 class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mixins.ObservableVisibleMixin):
 
@@ -55,8 +58,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
         """
 
         super(Mesh, self).__init__(**kwargs)
-        self.uniforms['model_matrix'] = self.model_matrix_global.view()
-        self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
+        self.reset_uniforms()
 
         arrays = tuple(np.array(array, dtype=np.float32) for array in arrays)
         self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
@@ -80,6 +82,10 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
         self.drawmode = drawmode
+
+    def reset_uniforms(self):
+        self.uniforms['model_matrix'] = self.model_matrix_global.view()
+        self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
 
     @property
     def vertices(self):

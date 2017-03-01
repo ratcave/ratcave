@@ -63,10 +63,10 @@ Normally, the OpenGL code to bind a framebuffer involves the following::
 
 
     glGetIntegerv(GL_VIEWPORT, old_viewport_size)
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id)  # Rendering off-screen
+    glBindFramebufferEXT(GL_FRAMEBUFFER, fbo_id)  # Rendering off-screen
     glViewport(0, 0, texture_width, texture_height)
     << Draw Scene Here >>
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0)
+    glBindFramebufferEXT(GL_FRAMEBUFFER, 0)
     glViewport(old_viewport_size)
 
 In ratCAVE, this is a simple context manager::

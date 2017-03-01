@@ -219,6 +219,14 @@ class Scale(Coordinates):
         return trans.scale_matrix(self._array[0])
 
     @property
+    def x(self):
+        return self[0]
+
+    @x.setter
+    def x(self, value):
+        self[0] = value
+
+    @property
     def y(self):
         return self[0]
 

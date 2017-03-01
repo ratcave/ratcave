@@ -1,4 +1,6 @@
 from .observers import Observable
+from ..shader import HasUniforms
+import pickle
 
 class NameLabelMixin(object):
 
@@ -24,3 +26,19 @@ class ObservableVisibleMixin(Observable):
         if val != self._visible:
             self._visible = bool(value)
             self.notify_observers()
+
+class PickleableMixin:
+
+    @classmethod
+    def from_pickle(cls, fname):
+        with open(fname) as f:
+            obj = pickle.load(f)
+            if not issubclass(obj.__class__, cls):
+                raise TypeError("Unpickled object was of type {}; Expected a {}".format(obj.__class__.__name__, cls.__name__))
+        if hasattr(obj, 'reset_uniforms'):
+            obj.reset_uniforms()
+        return obj
+
+    def to_pickle(self, fname):
+        with open(fname, 'w') as f:
+            pickle.dump(self, f)
