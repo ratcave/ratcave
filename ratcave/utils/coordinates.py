@@ -107,13 +107,13 @@ class RotationEulerRadians(RotationEuler):
             return RotationEulerDegrees(*np.degrees(self._array), axes=self.axes)
 
     @classmethod
-    def from_matrix(cls, matrix):
+    def from_matrix(cls, matrix, axes='rxyz'):
         # Change to 4x4 if 3x3 rotation matrix is given
         if matrix.shape[0] == 3:
             mat = np.identity(4)
             mat[:3, :3] = matrix
             matrix = mat
-        coords = trans.euler_from_matrix(matrix, axes=cls.axes)
+        coords = trans.euler_from_matrix(matrix, axes=axes)
         return cls(*coords)
 
 
@@ -135,13 +135,13 @@ class RotationEulerDegrees(RotationEuler):
         return self.to_radians().to_matrix()
 
     @classmethod
-    def from_matrix(cls, matrix):
+    def from_matrix(cls, matrix, axes='rxyz'):
         # Change to 4x4 if 3x3 rotation matrix is given
         if matrix.shape[0] == 3:
             mat = np.identity(4)
             mat[:3, :3] = matrix
             matrix = mat
-        coords = trans.euler_from_matrix(matrix, axes=cls.axes)
+        coords = trans.euler_from_matrix(matrix, axes=axes)
         return cls(*np.degrees(coords))
 
 
