@@ -161,7 +161,7 @@ class RotationQuaternion(RotationBase, Coordinates):
         return trans.quaternion_matrix(self._array)
 
     def to_euler(self, units='rad'):
-        euler_data = trans.euler_from_matrix(self.to_matrix(), axes=RotationEuler.axes)
+        euler_data = trans.euler_from_matrix(self.to_matrix(), axes='rxyz')
         assert units.lower() in ['rad', 'deg']
         if units.lower() == 'rad':
             return RotationEulerRadians(*euler_data)
