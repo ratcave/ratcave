@@ -82,7 +82,8 @@ class Scene(object):
         assert self.camera.projection.aspect == 1. and self.camera.projection.fov_y == 90  # todo: fix aspect property, which currently reads from viewport.
         assert type(cubetexture) == TextureCube, "Must render to TextureCube"
 
-        for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
+        # for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
+        for face, rotation in enumerate([[180, -90, 0], [180, 90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  #first 2 switched
             self.camera.rotation.xyz = rotation
             cubetexture.attach_to_fbo(face)
             self.draw(clear=True)
