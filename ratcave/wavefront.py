@@ -38,21 +38,22 @@ class WavefrontReader(object):
         mesh = Mesh.from_incomplete_data(name=name, vertices=vertices, normals=normals, texcoords=texcoords, **kwargs)
 
         uniforms = kwargs['uniforms'] if 'uniforms' in kwargs else {}
-        material_props = {self.material_property_map[key]: value for key, value in iteritems(body['material'])}
-        for key, value in iteritems(material_props):
-            if isinstance(value, str):
-                if key == 'map_Kd':
-                    if not value in self.textures:
-                        self.textures[value] = Texture.from_image(value)
-                    mesh.texture = self.textures[value]
+        if 'material' in body:
+            material_props = {self.material_property_map[key]: value for key, value in iteritems(body['material'])}
+            for key, value in iteritems(material_props):
+                if isinstance(value, str):
+                    if key == 'map_Kd':
+                        if not value in self.textures:
+                            self.textures[value] = Texture.from_image(value)
+                        mesh.texture = self.textures[value]
+                    else:
+                        setattr(mesh, key, value)
+                elif hasattr(value, '__len__'):  # iterable materials
+                    mesh.uniforms[key] = value
+                elif key in ['d', 'illum']:  # integer materials
+                    mesh.uniforms[key] = value
+                elif key in ['spec_weight', 'Ni']:  # float materials: should be specially converted to float if not already done.
+                    mesh.uniforms[key] = float(value)
                 else:
-                    setattr(mesh, key, value)
-            elif hasattr(value, '__len__'):  # iterable materials
-                mesh.uniforms[key] = value
-            elif key in ['d', 'illum']:  # integer materials
-                mesh.uniforms[key] = value
-            elif key in ['spec_weight', 'Ni']:  # float materials: should be specially converted to float if not already done.
-                mesh.uniforms[key] = float(value)
-            else:
-                print('Warning: Not applying uniform {}: {}'.format(key, value))
+                    print('Warning: Not applying uniform {}: {}'.format(key, value))
         return mesh
