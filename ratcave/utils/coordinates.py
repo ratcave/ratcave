@@ -209,6 +209,18 @@ class Translation(Coordinates):
         assert len(args) == 3, "Must be xyz coordinates"
         super(Translation, self).__init__(*args, **kwargs)
 
+    def __add__(self, other):
+        oth = other.xyz if isinstance(other, Translation) else other
+        if len(oth) != 3:
+            raise ValueError("Other must have length of 3")
+        return Translation(*tuple(a + b for (a, b) in zip(self.xyz, oth)))
+
+    def __sub__(self, other):
+        oth = other.xyz if isinstance(other, Translation) else other
+        if len(oth) != 3:
+            raise ValueError("Other must have length of 3")
+        return Translation(*tuple(a - b for (a, b) in zip(self.xyz, other.xyz)))
+
     def to_matrix(self):
         return trans.translation_matrix(self._array)
 
