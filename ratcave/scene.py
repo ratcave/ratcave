@@ -83,11 +83,13 @@ class Scene(object):
         assert type(cubetexture) == TextureCube, "Must render to TextureCube"
 
         # for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
+        old_rotation = self.camera.rotation
+        self.camera.rotation = self.camera.rotation.to_euler(units='deg')
         for face, rotation in enumerate([[180, -90, 0], [180, 90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  #first 2 switched
             self.camera.rotation.xyz = rotation
             cubetexture.attach_to_fbo(face)
             self.draw(clear=True)
-
+        self.camera.rotation = old_rotation
 
 
 
