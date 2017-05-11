@@ -3,3 +3,4 @@ sphinxcontrib-napoleon
 numpy
 pyglet
 mock
+six
