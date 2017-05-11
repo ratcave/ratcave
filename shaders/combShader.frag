@@ -20,8 +20,16 @@ void main()
 
     //If lighting is turned off, just use the diffuse color and return. (Flat lighting)
     if (flat_shading > 0) {
-        final_color = vec4(diffuse, 1.0);
-        return;
+        if (textype == 1){
+            final_color = vec4(diffuse * texture2D(TextureMap, texCoord).rgb, 1.0);
+            return;
+        } else if (textype == 2) {
+            final_color = vec4(textureCube(CubeMap, eyeVec).rgb, 1.0);
+            return;
+        } else {
+             final_color = vec4(diffuse, 1.0);
+             return;
+        }
     }
 
     //Shade Cube Map and return, if needed
