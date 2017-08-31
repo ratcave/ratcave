@@ -1,9 +1,5 @@
-[![Build Status](https://travis-ci.org/neuroneuro15/fruitloop.svg?branch=master)](https://travis-ci.org/neuroneuro15/fruitloop)
-
-[![Coverage Status](https://coveralls.io/repos/github/neuroneuro15/fruitloop/badge.svg?branch=master)](https://coveralls.io/github/neuroneuro15/fruitloop?branch=master)
-
-# fruitloop
-Python OpenGL Graphics utility API for high-performance rendering of 3D Graphics. Compatible with Pyglet, Pygame, and Psychopy.
+# ratcave
+3D Graphics Engine running off Python, Psychopy, and Pyglet
 
 Full Documentation and Tutorials can be found at http://fruitloop.readthedocs.io/
 

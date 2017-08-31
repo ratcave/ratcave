@@ -2,10 +2,10 @@ from setuptools import setup, find_packages, Extension
 import numpy
 
 
-setup(name='fruitloop',
-      version='0.6b0',
-      url='https://www.github.com/neuroneuro15/fruitloop',
-      description='3D OpenGL Utilities for Easy 2D-to-3D Graphic Conversion.  Compatible with Pyglet, Pygame, and Psychopy.',
+setup(name='ratcave',
+      version='0.6',
+      url='https://www.github.com/neuroneuro15/ratcave',
+      description='3D Graphics Engine for CAVE VR setups',
       author='Nicholas A. Del Grosso',
       author_email='delgrosso.nick@gmail.com',
       license='MIT',
@@ -14,7 +14,7 @@ setup(name='fruitloop',
       package_data={'': ['../assets/*.'+el for el in ['png', 'obj', 'mtl']] +
                         ['../shaders/*'+el for el in ['vert', 'frag']]
                     },
-      install_requires=['pyglet', 'numpy'],
+      install_requires=['pyglet', 'numpy', 'wavefront_reader'],
       ext_modules=[Extension('_transformations', sources=['third_party/transformations.c'], include_dirs=[numpy.get_include()])],
       test_suite='tests',
       keywords='graphics 3D pyglet psychopy python virtual reality VR',

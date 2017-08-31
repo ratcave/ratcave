@@ -18,12 +18,12 @@ class TestMesh(unittest.TestCase):
 
         mesh = self.mesh
         for pos in [(4,5, 6), (5, 4, 1)]:
-            mesh.x, mesh.y, mesh.z = pos
-            self.assertEqual(mesh.position, pos)
+            mesh.position.x, mesh.position.y, mesh.position.z = pos
+            self.assertEqual(mesh.position.xyz, pos)
 
     def test_rotation_update(self):
 
         mesh = self.mesh
         for rot in [(4, 5, 6), (5, 4, 1)]:
-            mesh.rot_x, mesh.rot_y, mesh.rot_z = rot
-            self.assertEqual(mesh.rotation, rot)
+            mesh.rotation.x, mesh.rotation.y, mesh.rotation.z = rot
+            self.assertEqual(mesh.rotation.xyz, rot)

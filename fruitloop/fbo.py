@@ -49,6 +49,11 @@ class FBO(ugl.GlGenMixin, ugl.BindingContextMixin):
     def unbind(self):
         """Unbind the FBO."""
         # Unbind the FBO
+        if self.texture.mipmap:
+            with self.texture:
+                self.texture.generate_mipmap()
+
+
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
 
         # Restore the old viewport size

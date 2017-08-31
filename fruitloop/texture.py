@@ -1,21 +1,24 @@
+import itertools
 from.utils import gl as ugl
 import pyglet
 import pyglet.gl as gl
-from . import shader
+from .shader import HasUniforms
 
 
-class BaseTexture(object):
+class BaseTexture(HasUniforms):
 
     int_flag = 0
     tex_name = 'TextureMap'
     cube_name = 'CubeMap'
 
-    def __init__(self):
-        self.uniforms = shader.UniformCollection({
-            self.tex_name: shader.Uniform(self.tex_name, 0),
-            self.cube_name: shader.Uniform(self.cube_name, 0),
-            'textype': shader.Uniform('textype', self.int_flag),
-        })
+    def __init__(self, **kwargs):
+        super(BaseTexture, self).__init__(**kwargs)
+        self.reset_uniforms()
+
+    def reset_uniforms(self):
+        self.uniforms['textype'] = self.int_flag
+        self.uniforms[self.tex_name] = 0
+        self.uniforms[self.cube_name] = 0
 
     def __enter__(self):
         return self
@@ -31,19 +34,17 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     attachment_point = gl.GL_COLOR_ATTACHMENT0_EXT
     internal_fmt = gl.GL_RGBA
     pixel_fmt=gl.GL_RGBA
-    _all_slots = list(range(1, 25))[::-1]
+    _slot_counter = itertools.count(start=1)
     int_flag = 1
     bindfun = gl.glBindTexture
 
-    def __init__(self, id=None, width=1024, height=1024, data=None):
+    def __init__(self, id=None, width=1024, height=1024, data=None, mipmap=False, **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
+        super(Texture, self).__init__(**kwargs)
 
-        self._slot = self._all_slots.pop()
-        self.uniforms = shader.UniformCollection({
-            self.tex_name: shader.Uniform(self.tex_name, self._slot),
-            self.cube_name: shader.Uniform(self.cube_name, 0),
-            'textype': shader.Uniform('textype', self.int_flag),
-        })
+        self._slot = next(self._slot_counter)
+        self.uniforms[self.tex_name] = self._slot
+        self.mipmap = mipmap
 
         if id != None:
             self.id = id
@@ -53,8 +54,9 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
             self.width = width
             self.height = height
             self.bind()
-            self._apply_filter_settings()
             self._genTex2D()
+            self._apply_filter_settings()
+
 
         self.unbind()
 
@@ -71,20 +73,26 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.unbind()
         gl.glActiveTexture(gl.GL_TEXTURE0)
-
-    @staticmethod
-    def _generate_id():
-        return ugl.create_opengl_object(gl.glGenTextures)
+        pass
 
     def _genTex2D(self):
         """Creates an empty texture in OpenGL."""
         gl.glTexImage2D(self.target0, 0, self.internal_fmt, self.width, self.height, 0, self.pixel_fmt, gl.GL_UNSIGNED_BYTE, 0)
 
+    def generate_mipmap(self):
+        if self.mipmap:
+            gl.glGenerateMipmap(self.target)
+
+
     def _apply_filter_settings(self):
         """Applies some hard-coded texture filtering settings."""
         # TODO: Allow easy customization of filters
-        gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+        if self.mipmap:
+            gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR_MIPMAP_LINEAR)
+        else:
+            gl.glTexParameterf(self.target, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameterf(self.target, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
@@ -93,12 +101,13 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         gl.glFramebufferTexture2DEXT(gl.GL_FRAMEBUFFER_EXT, self.attachment_point, self.target0, self.id, 0)
 
     @classmethod
-    def from_image(cls, img_filename, **kwargs):
-        """Uses Pyglet's image.load function to generate a Texture from an image file."""
+    def from_image(cls, img_filename, mipmap=False, **kwargs):
+        """Uses Pyglet's image.load function to generate a Texture from an image file. If 'mipmap', then texture will
+        have mipmap layers calculated."""
         img = pyglet.image.load(img_filename)
-        tex = img.get_texture()
+        tex = img.get_mipmapped_texture() if mipmap else img.get_texture()
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
-        return cls(id=tex.id, data=tex, **kwargs)
+        return cls(id=tex.id, data=tex, mipmap=mipmap, **kwargs)
 
 
 class TextureCube(Texture):
@@ -111,12 +120,7 @@ class TextureCube(Texture):
         """the Color Cube Texture class."""
         # TODO: check that width == height!
         super(TextureCube, self).__init__(*args, **kwargs)
-
-        self.uniforms = shader.UniformCollection({
-            self.tex_name: shader.Uniform(self.tex_name, 0),
-            self.cube_name: shader.Uniform(self.cube_name, self._slot),
-            'textype': shader.Uniform('textype', self.int_flag),
-        })
+        self.uniforms[self.cube_name] = self._slot
 
     def _apply_filter_settings(self, *args, **kwargs):
         super(TextureCube, self)._apply_filter_settings()

@@ -1,4 +1,4 @@
-#version 330
+#version 150
 #extension GL_NV_shadow_samplers_cube : enable
 
 uniform int hasShadow, hasCubeMap, flat_shading, textype;
@@ -20,8 +20,16 @@ void main()
 
     //If lighting is turned off, just use the diffuse color and return. (Flat lighting)
     if (flat_shading > 0) {
-        final_color = vec4(diffuse, 1.0);
-        return;
+        if (textype == 1){
+            final_color = vec4(diffuse * texture2D(TextureMap, texCoord).rgb, 1.0);
+            return;
+        } else if (textype == 2) {
+            final_color = vec4(textureCube(CubeMap, eyeVec).rgb, 1.0);
+            return;
+        } else {
+             final_color = vec4(diffuse, 1.0);
+             return;
+        }
     }
 
     //Shade Cube Map and return, if needed
@@ -73,7 +81,8 @@ void main()
                  (1.5 * (specular_coeff * specular) +
                  (diffuse_coeff * diffuse) +
                  (ambient_coeff * ambient));
-    final_color = vec4(clamp(color, 0, 1), opacity);
+    final_color = vec4(clamp(color, 0, 1), 1.0);
+
 
 
  }
