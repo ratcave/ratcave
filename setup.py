@@ -2,9 +2,9 @@ from setuptools import setup, find_packages, Extension
 import numpy
 
 
-setup(name='ratcave',
+setup(name='fruitloop',
       version='0.6',
-      url='https://www.github.com/neuroneuro15/ratcave',
+      url='https://www.github.com/neuroneuro15/fruitloop',
       description='3D Graphics Engine for CAVE VR setups',
       author='Nicholas A. Del Grosso',
       author_email='delgrosso.nick@gmail.com',
