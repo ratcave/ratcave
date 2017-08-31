@@ -1,4 +1,4 @@
-# ratcave
+# fruitloop
 3D Graphics Engine running off Python, Psychopy, and Pyglet
 
 Full Documentation and Tutorials can be found at http://fruitloop.readthedocs.io/

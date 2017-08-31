@@ -117,7 +117,7 @@ Version using PsychoPy
 
 Alternatively, you can see the same example using a PsychoPy window::
 
-  import ratcave as rc
+  import fruitloop as rc
   from psychopy import visual, event
 
   # Create Window

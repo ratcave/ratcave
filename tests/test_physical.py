@@ -1,6 +1,6 @@
 from __future__ import print_function
 import unittest
-from ratcave import Physical
+from fruitloop import Physical
 import numpy as np
 
 

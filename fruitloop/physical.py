@@ -1,9 +1,9 @@
 import abc
 import numpy as np
 import _transformations as trans
-from .utils import coordinates as rotutils
-from .utils import SceneGraph, AutoRegisterObserver, Observable
-from .utils import mixins
+from fruitloop.utils import coordinates as rotutils
+from fruitloop.utils import SceneGraph, AutoRegisterObserver, Observable
+from fruitloop.utils import mixins
 
 class Physical(AutoRegisterObserver, Observable, mixins.PickleableMixin):
 
