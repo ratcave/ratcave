@@ -64,7 +64,10 @@ class UniformCollection(IterableUserDict, object):
             else:
                 sendfun = self._sendfuns[array.dtype.kind][len(array) - 1]  # Find correct glUniform function
                 sendfun(loc, *array)
-
+    #
+    # def update(self, other_dict):
+    #     for key, value in iteritems(other_dict):
+    #         self[key] = value
 
 class HasUniforms(object):
     """Interface for drawing."""

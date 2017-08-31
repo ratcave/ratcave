@@ -24,7 +24,7 @@ void main()
             final_color = vec4(diffuse * texture2D(TextureMap, texCoord).rgb, 1.0);
             return;
         } else if (textype == 2) {
-            final_color = vec4(textureCube(CubeMap, eyeVec).rgb, 1.0);
+            final_color = vec4(lightAmount + (diffuse * textureCube(CubeMap, eyeVec).rgb), 1.0);
             return;
         } else {
              final_color = vec4(diffuse, 1.0);
