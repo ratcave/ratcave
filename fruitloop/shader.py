@@ -26,6 +26,12 @@ class UniformCollection(IterableUserDict, object):
             self[key] = value
 
     def __setitem__(self, key, value):
+
+        name = key.encode('ascii') if hasattr(key, 'encode') else key
+        if name in self.data:
+            self.data[name][:] = value
+            return
+
         if isinstance(value, bool):
             value = int(value)
         if isinstance(value, np.ndarray):
@@ -34,8 +40,8 @@ class UniformCollection(IterableUserDict, object):
             uniform = value  # Don't copy the data if it's already a numpy array
         else:
             uniform = np.array([value]) if not hasattr(value, '__iter__') else np.array(value)
+
         uniform = uniform.view(UniformArray)  # Cast as a UniformArray for 'loc' to be set as an attribute later.
-        name = key.encode('ascii') if hasattr(key, 'encode') else key
         self.data[name] = uniform
 
     def send(self):
