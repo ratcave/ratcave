@@ -29,13 +29,13 @@ class UniformCollection(IterableUserDict, object):
         if isinstance(value, bool):
             value = int(value)
         if isinstance(value, np.ndarray):
-            if value.dtype != np.float32:
+            if 'f' in value.dtype.str and value.dtype != np.float32:
                 raise TypeError("Matrix Uniform Arrays must be 32-bit floats for rendering to work properly.")
             uniform = value  # Don't copy the data if it's already a numpy array
         else:
             uniform = np.array([value]) if not hasattr(value, '__iter__') else np.array(value)
         uniform = uniform.view(UniformArray)  # Cast as a UniformArray for 'loc' to be set as an attribute later.
-        name = key.encode('ascii')
+        name = key.encode('ascii') if hasattr(key, 'encode') else key
         self.data[name] = uniform
 
     def send(self):
