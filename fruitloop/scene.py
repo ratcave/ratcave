@@ -3,9 +3,9 @@ import pyglet.gl as gl
 from . import Camera, Light
 from .utils import gl as glutils
 from .texture import TextureCube
+from .utils import mixins
 
-
-class Scene(object):
+class Scene(mixins.NameLabelMixin):
 
     def __init__(self, meshes=None, camera=None, light=None, bgColor=(0.4, 0.4, 0.4),
                  gl_states=(gl.GL_DEPTH_TEST, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D, gl.GL_CULL_FACE), **kwargs):
@@ -18,6 +18,9 @@ class Scene(object):
         self.light = Light() if not light else light
         self.bgColor = bgColor
         self.gl_states = gl_states
+
+    def __repr__(self):
+        return "<Scene(name='{self.name}'), meshes={self.meshes}, light={self.light}, camera={self.camera}>".format(self=self)
 
     @property
     def meshes(self):

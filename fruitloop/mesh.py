@@ -83,6 +83,9 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
         self.gl_states = gl_states
         self.drawmode = drawmode
 
+    def __repr__(self):
+        return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
+
     def reset_uniforms(self):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()

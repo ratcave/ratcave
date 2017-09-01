@@ -39,7 +39,8 @@ void main()
 
     // Calculate Diffusion Intensity, and Subtract it out (only used for cubemaps)
     float lambertTerm0 = dot(normal, normalize(light_position - vVertex.xyz));
-    lightAmount = 1.; // - (diffuse_weight * lambertTerm0);  // Cancel out diffusion effects
+//    lightAmount = 1.; // - (diffuse_weight * lambertTerm0);  // Cancel out diffusion effects
+    lightAmount = - (diffuse_weight * lambertTerm0);  // Cancel out diffusion effects
 
     return;
   }

@@ -194,11 +194,14 @@ class PerspectiveProjection(ProjectionBase):
 
 class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin, mixins.ObservableVisibleMixin):
 
-    def __init__(self, projection=None, orientation0=(0, 0, -1), **kwargs):
+    def __init__(self, projection=None, orientation0=(0, 0, -1), name='', **kwargs):
         kwargs['orientation0'] = orientation0
         super(Camera, self).__init__(**kwargs)
         self.projection = PerspectiveProjection() if not projection else projection
         self.reset_uniforms()
+
+    def __repr__(self):
+        return "<Camera(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
     def update(self):
         super(Camera, self).update()
