@@ -14,6 +14,7 @@ before_script:
 - sh -e /etc/init.d/xvfb start
 - sleep 3
 install:
+- pip install numpy
 - pip install .
 - pip install -r requirements.txt
 - pip install coveralls
