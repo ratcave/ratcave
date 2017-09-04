@@ -2,6 +2,7 @@ import pyglet
 import fruitloop as fruit
 import math, time
 
+
 window = pyglet.window.Window(resizable=True)
 
 # Assemble the Virtual Scene
@@ -13,7 +14,7 @@ cube = obj_reader.get_mesh("Cube", position=(0, 0, 0), scale=0.2)
 cube.uniforms['diffuse'] = 1, 1, 0
 
 # virtual_scene = fruit.Scene(meshes=[sphere, cube], bgColor=(0., 0., 1.))
-virtual_scene = fruit.Scene(meshes=[], bgColor=(0., 0., 1.))
+virtual_scene = fruit.Scene(meshes=[cube, sphere], bgColor=(0., 0., 1.))
 virtual_scene.light.position.xyz = 0, 3, -1
 
 
@@ -56,7 +57,7 @@ def on_draw():
     with shader:
         with cube_fbo as fbo:
             virtual_scene.draw360_to_texture(fbo.texture)
-
+    with shader:
         projected_scene.draw()
 
 
