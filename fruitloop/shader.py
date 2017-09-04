@@ -27,9 +27,9 @@ class UniformCollection(IterableUserDict, object):
 
     def __setitem__(self, key, value):
 
-        name = key.encode('ascii') if hasattr(key, 'encode') else key
-        if name in self.data:
-            self.data[name][:] = value
+        # name = key.encode('ascii') if hasattr(key, 'encode') else key
+        if key in self.data:
+            self.data[key][:] = value
             return
 
         if isinstance(value, bool):
@@ -42,7 +42,7 @@ class UniformCollection(IterableUserDict, object):
             uniform = np.array([value]) if not hasattr(value, '__iter__') else np.array(value)
 
         uniform = uniform.view(UniformArray)  # Cast as a UniformArray for 'loc' to be set as an attribute later.
-        self.data[name] = uniform
+        self.data[key] = uniform
 
     def send(self):
 
@@ -56,7 +56,7 @@ class UniformCollection(IterableUserDict, object):
                 gl.glGetIntegerv(gl.GL_CURRENT_PROGRAM, byref(shader_id))
                 if shader_id.value == 0:
                     raise UnboundLocalError("Shader not bound to OpenGL context--uniform cannot be sent.")
-                array.loc = gl.glGetUniformLocation(shader_id.value, name)
+                array.loc = gl.glGetUniformLocation(shader_id.value, name.encode('ascii'))
                 loc = array.loc
 
             if array.ndim == 2:  # Assuming a 4x4 float32 matrix (common for graphics operations)

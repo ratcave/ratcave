@@ -37,8 +37,6 @@ obj_reader = fruit.WavefrontReader(fruit.resources.obj_primitives)
 torus = obj_reader.get_mesh('Torus', position=(0, 0, -2))
 torus.uniforms['diffuse'] = [.5, .0, .8]
 
-
-
 scene = fruit.Scene(meshes=[torus])
 
 # Constantly-Running mesh rotation, for fun
@@ -47,12 +45,8 @@ def update(dt):
 pyglet.clock.schedule(update)
 
 
-
-
 def update_color(dt):
-    torus.uniforms['diffuse'][0] = 0.5 * math.sin(time.clock()) + 1
-
-
+    torus.uniforms['diffuse'][0] = 0.5 * math.sin(time.clock() * 10) + .5
 pyglet.clock.schedule(update_color)
 
 
