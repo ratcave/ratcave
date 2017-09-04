@@ -1,29 +1,29 @@
-fruitloop.utils package
+ratcave.utils package
 =====================
 
 Submodules
 ----------
 
-fruitloop.utils.gl module
+ratcave.utils.gl module
 -----------------------
 
-.. automodule:: fruitloop.utils.gl
+.. automodule:: ratcave.utils.gl
     :members:
     :undoc-members:
     :show-inheritance:
 
-fruitloop.utils.orienting module
+ratcave.utils.orienting module
 ------------------------------
 
-.. automodule:: fruitloop.utils.orienting
+.. automodule:: ratcave.utils.orienting
     :members:
     :undoc-members:
     :show-inheritance:
 
-fruitloop.utils.timers module
+ratcave.utils.timers module
 ---------------------------
 
-.. automodule:: fruitloop.utils.timers
+.. automodule:: ratcave.utils.timers
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,7 +32,7 @@ fruitloop.utils.timers module
 Module contents
 ---------------
 
-.. automodule:: fruitloop.utils
+.. automodule:: ratcave.utils
     :members:
     :undoc-members:
     :show-inheritance:

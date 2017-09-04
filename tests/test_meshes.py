@@ -1,5 +1,5 @@
 import unittest
-from fruitloop import resources, WavefrontReader
+from ratcave import resources, WavefrontReader
 
 
 class TestMesh(unittest.TestCase):

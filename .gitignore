@@ -5,7 +5,7 @@ _build
 _templates_build
 build/*
 dist/*
-fruitloop.egg-info/*
+ratcave.egg-info/*
 .idea
 .cache
 *.egg-info

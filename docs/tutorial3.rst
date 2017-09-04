@@ -5,10 +5,10 @@ Tutorial 3: Custom GLSL Shaders, Sending Data to the Graphics Card
 
 To get the most out of our graphics, many newer graphics engines use programs running on the graphics card called
 "shaders" to specify how objects should be shown on-screen.  While teaching GLSL shaders is beyond the scope of this tutorial,
-and fruitloop allows you to completely skip writing shaders at all by supplying a few useful ones, you'll likely want to
+and ratcave allows you to completely skip writing shaders at all by supplying a few useful ones, you'll likely want to
 use a shader of your own.
 
-In this tutorial, you'll learn how to use fruitloop to:
+In this tutorial, you'll learn how to use ratcave to:
 
   - Compile a :py:class:`.Shader` object and use it in the :py:func:`.Scene.draw()` function.
   - Send data to the shader from Python as a :py:class:`.Uniform` variable.
@@ -19,19 +19,19 @@ In this tutorial, you'll learn how to use fruitloop to:
 Initial Script
 --------------
 
-Since the previous tutorials have already covered a lot of fruitloop methods, let's just start with the following script::
+Since the previous tutorials have already covered a lot of ratcave methods, let's just start with the following script::
 
     import pyglet
-    import fruitloop as fruit
+    import ratcave as rc
 
     # Create window and OpenGL context (always must come first!)
     window = pyglet.window.Window()
 
     # Load Meshes and put into a Scene
-    obj_reader = fruit.WavefrontReader(fruit.resources.obj_primitives)
+    obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
     torus = obj_reader.get_mesh('Torus', position=(0, 0, -2))
 
-    scene = fruit.Scene(meshes=[torus])
+    scene = rc.Scene(meshes=[torus])
 
     # Constantly-Running mesh rotation, for fun
     def update(dt):
@@ -54,7 +54,7 @@ This code should display a rotating torus on the window.
 Creating a Custom GLSL Shader
 -----------------------------
 
-Now, one thing fruitloop does automatically is use it's built-in **genShader** :py:class:`.Shader`, if none is specified.  This is
+Now, one thing ratcave does automatically is use it's built-in **genShader** :py:class:`.Shader`, if none is specified.  This is
 to make it easier to get started.  Let's replace it with our own custom shader program, which simply positions the mesh in 3D space.
 
 Shader programs come in two types.  **Vertex Shaders** tell the graphics card where a vertex will appear on your screen.
@@ -92,7 +92,7 @@ These can get quite complex, but we'll use a fairly simple one here, and just ma
 
 Now, to make the :py:class:`.Shader` ::
 
-    shader = fruit.Shader(vert=vert_shader, frag=frag_shader)
+    shader = rc.Shader(vert=vert_shader, frag=frag_shader)
 
 Using the shader during drawing is done in a shader keyword argument in :py:func:`.Scene.draw()`::
 
@@ -101,7 +101,7 @@ Using the shader during drawing is done in a shader keyword argument in :py:func
 Here is what the code should look like now::
 
     import pyglet
-    import fruitloop as fruit
+    import ratcave as rc
 
     vert_shader = """
     #version 330
@@ -130,17 +130,17 @@ Here is what the code should look like now::
     window = pyglet.window.Window()
 
     # Load Meshes and put into a Scene
-    obj_reader = fruit.WavefrontReader(fruit.resources.obj_primitives)
+    obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
     torus = obj_reader.get_mesh('Torus', position=(0, 0, -2))
 
-    scene = fruit.Scene(meshes=[torus])
+    scene = rc.Scene(meshes=[torus])
 
     # Constantly-Running mesh rotation, for fun
     def update(dt):
         torus.rot_y += 20. * dt
     pyglet.clock.schedule(update)
 
-    shader = fruit.Shader(vert=vert_shader, frag=frag_shader)
+    shader = rc.Shader(vert=vert_shader, frag=frag_shader)
 
     # Draw Function
     @window.event
@@ -168,7 +168,7 @@ In the python code, modify the diffuse key in the :py:func:`Mesh.uniforms` attri
 
     torus.uniforms['diffuse'] = [.2, .8, .8]
 
-.. note:: All fruitloop objects come with some default uniforms, to make setting up easier and to make naming schemas more consistent.  This shouldn't restrict you, though--new uniforms are automatically initialized when you add them dictionary-style, like **torus.uniforms['my_uniform'] = 3.0**!
+.. note:: All ratcave objects come with some default uniforms, to make setting up easier and to make naming schemas more consistent.  This shouldn't restrict you, though--new uniforms are automatically initialized when you add them dictionary-style, like **torus.uniforms['my_uniform'] = 3.0**!
 
 If you run the code now, you should now see a cyan rotating torus.  Let's make it a little more dynamic, shall we? ::
 
@@ -188,7 +188,7 @@ Summary
 Here's the updated code::
 
     import pyglet
-    import fruitloop as fruit
+    import ratcave as rc
     import time
     import math
 
@@ -220,18 +220,18 @@ Here's the updated code::
     window = pyglet.window.Window()
 
     # Load Meshes and put into a Scene
-    obj_reader = fruit.WavefrontReader(fruit.resources.obj_primitives)
+    obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
     torus = obj_reader.get_mesh('Torus', position=(0, 0, -2))
     torus.uniforms['diffuse'] = [.2, .8, .8]
 
-    scene = fruit.Scene(meshes=[torus])
+    scene = rc.Scene(meshes=[torus])
 
     # Constantly-Running mesh rotation, for fun
     def update(dt):
         torus.rot_y += 20. * dt
     pyglet.clock.schedule(update)
 
-    shader = fruit.Shader(vert=vert_shader, frag=frag_shader)
+    shader = rc.Shader(vert=vert_shader, frag=frag_shader)
 
     def update_color(dt):
         torus.uniforms['diffuse'][0] = 0.5 * math.sin(time.clock()) + 1

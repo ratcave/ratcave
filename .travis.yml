@@ -17,7 +17,7 @@ install:
 - pip install .
 - pip install -r requirements.txt
 - pip install coveralls
-script: coverage run --source=fruitloop setup.py test
+script: coverage run --source=ratcave setup.py test
 after_success: coveralls
 deploy:
   provider: pypi
@@ -26,4 +26,4 @@ deploy:
     secure: Wn4jfpBXWuYninz0Ks4CmTUlaUDYkvEOlEVD53WPDlr93I8nEC1Ki6nvoo9819aSbVRKsOzOXh1XL5RlrNBZoBhJlkqF3pTgjfD05nDVgI1YROBIYydSHMw6tSeWY/E8HC0rChYxVHABNajkbS5ikR3Jsv9MPRC7vqlfFzuwwZbgap/6WUXSqwKgc43374p64oJRA0k4EMVWuvEhZ/4PzWA8c0v+fWTvaUGIWbc4x9taYonfGTqJjq4l5OCXnyQpIkZNwRAa6KqaIxTSyGc+4WGM3GgJ2XKN6Sbx4sp5yirS6ApULrg8b8T5DO0JXRAbrc2/5nmVd9q39Xl/ca/rwBuluB6j3Y4i+sAHb2sBeZmpDpgiITiqjzZhpofjsy6f2hlT0Pa3b7ONd1QP6VQlb54D+Xlw12zI1ovHHSF3raVvm0+epPkmyLqkO1PM/oTC/dF43rIv5VpFKcb2ojdpL5dBd+F3F+4mgyUgWGupKWXl5nwnwc33kiSdRLQ/3wDLIosexmKiKTYV4asyNRCdyUB0q/Jy01qdk1EG5upiXt+gp37mEeycriQ46n6NDJI+vtBma7glfS09dXsW/OALNIoqntF4RV/BpqTymDJVMleXMT/U7JtoSxf8JIGB6CiOEMiZf33MePbxN26vFTS1UCPjAqyHIC6WujAmXq7M0So=
   on:
     distributions: sdist bdist_wheel
-    repo: neuroneuro15/fruitloop
+    repo: neuroneuro15/ratcave

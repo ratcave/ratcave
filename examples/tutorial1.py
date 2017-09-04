@@ -1,5 +1,5 @@
 import pyglet
-import fruitloop as fruit
+import ratcave as rc
 
 
 
@@ -14,17 +14,17 @@ def update(dt):
 pyglet.clock.schedule(update)
 
 # Insert filename into WavefrontReader.
-obj_filename = fruit.resources.obj_primitives
-obj_reader = fruit.WavefrontReader(obj_filename)
+obj_filename = rc.resources.obj_primitives
+obj_reader = rc.WavefrontReader(obj_filename)
 
 # Create Mesh
 monkey = obj_reader.get_mesh("Monkey")
 monkey.position.xyz = 0, 0, -2
 
 # Create Scene
-scene = fruit.Scene(meshes=[monkey])
+scene = rc.Scene(meshes=[monkey])
 
-shader = fruit.Shader.from_file(*fruit.resources.genShader)
+shader = rc.Shader.from_file(*rc.resources.genShader)
 @window.event
 def on_draw():
     with shader:

@@ -1,7 +1,7 @@
-fruitloop
+ratcave
 =======
 
 .. toctree::
    :maxdepth: 4
 
-   fruitloop
+   ratcave

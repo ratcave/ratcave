@@ -1,5 +1,5 @@
 import pyglet
-import fruitloop as fruit
+import ratcave as rc
 import time
 import math
 
@@ -27,17 +27,17 @@ frag_shader = """
  }
  """
 
-shader = fruit.Shader(vert=vert_shader, frag=frag_shader)
+shader = rc.Shader(vert=vert_shader, frag=frag_shader)
 
 # Create window and OpenGL context (always must come first!)
 window = pyglet.window.Window()
 
 # Load Meshes and put into a Scene
-obj_reader = fruit.WavefrontReader(fruit.resources.obj_primitives)
+obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
 torus = obj_reader.get_mesh('Torus', position=(0, 0, -2))
 torus.uniforms['diffuse'] = [.5, .0, .8]
 
-scene = fruit.Scene(meshes=[torus])
+scene = rc.Scene(meshes=[torus])
 
 # Constantly-Running mesh rotation, for fun
 def update(dt):

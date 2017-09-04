@@ -11,13 +11,13 @@ While this is difficult to show without having an actual tracking system, we'll 
 
 .. warning:: This tutorial assumes knowledge gained from the previous tutorials.  If you are just getting started, it's recommended to start from Tutorial 1!
 
-Import Pyglet and fruitloop, and Start the Window and OpenGL Context
+Import Pyglet and ratcave, and Start the Window and OpenGL Context
 ------------------------------------------------------------------
 
 At the beginning of the script::
 
     import pyglet
-    import fruitloop as fruit
+    import ratcave as rc
 
     window = pyglet.window.Window(resizable=True)
 
@@ -30,7 +30,7 @@ Create the Virtual Scene
 
 Let's say that our virtual scene contains a red sphere and a cyan cube::
 
-    obj_reader = fruit.WavefrontReader(fruit.resources.obj_primitives)
+    obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
     sphere = obj_reader.get_mesh("Sphere", position=(0, 0, 2), scale=0.2)
     sphere.uniforms['diffuse'] = 1, 0, 0
 
@@ -38,7 +38,7 @@ Let's say that our virtual scene contains a red sphere and a cyan cube::
     cube.uniforms['diffuse'] = 1, 1, 0
 
     # Put inside a Scene
-    virtual_scene = fruit.Scene(meshes=[sphere, cube])
+    virtual_scene = rc.Scene(meshes=[sphere, cube])
 
 Note that we have one object at the origin (0, 0, 0).  Since our light is also at 0,0,0 by default, this may affect how things appear.  Let's move the scene's light::
 
@@ -52,7 +52,7 @@ The Projected Scene is what is actually sent to the display.  It will contain th
     monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1), scale=0.8)
     screen = obj_reader.get_mesh("Plane", position=(0, 0, 1), rotation=(1.5, 180, 0))
 
-    projected_scene = fruit.Scene(meshes=[monkey, screen], bgColor=(1., 1., 1.))
+    projected_scene = rc.Scene(meshes=[monkey, screen], bgColor=(1., 1., 1.))
     projected_scene.light.position = virtual_scene.light.position
 
 To ensure that the cubemapped texture appears on the screen, the :py:func:`Mesh.cubemap` flag needs to be set to True::
@@ -73,7 +73,7 @@ For this algorithm to work, then, two of the :py:class:`.Camera`'s properties mu
 
 Altering the camera to be useful for cubemapping is straightforward::
 
-    cube_camera = fruit.Camera(fov_y=90, aspect=1.)
+    cube_camera = rc.Camera(fov_y=90, aspect=1.)
     virtual_scene.camera = cube_camera
 
 The Projector Camera
@@ -82,7 +82,7 @@ The Projector Camera
 In order to do CAVE VR, the camera you use to render the screen must exactly match not only the position and rotation of your video projector relative to the screen, but also the lens characteristics as well.
 This requires some calibration and measuring on your part, which will differ based on your setup and hardware.  Since this is just a demo, let's just arbitrarily place the camera above the scene, looking down::
 
-    projected_scene.camera = fruit.Camera(position=(0, 4, 0), rotation=(-90, 0, 0), z_far=6)
+    projected_scene.camera = rc.Camera(position=(0, 4, 0), rotation=(-90, 0, 0), z_far=6)
 
 The aspect of the camera should, ideally, match that of the window.  Let's do that here, using Pyglet's on_resize event handler so that it will happen automatically, even when the screen is resized::
 
@@ -96,14 +96,14 @@ Create the OpenGL FrameBuffer and Cube Texture
 
 So far, we've always rendered our Scenes straight to the monitor.  However, we can also render to a texture!  This lets us do all kinds of image postprocessing effects, but here we'll just use it to update a cube texture, so the screen always has the latest VR image::
 
-    cube_texture = fruit.texture.TextureCube()  # this is the actual cube texture
-    cube_fbo = fruit.FBO(cube_texture)
+    cube_texture = rc.texture.TextureCube()  # this is the actual cube texture
+    cube_fbo = rc.FBO(cube_texture)
 
 All that's left is to apply the texture the screen::
 
     screen.texture = cube_texture
 
-.. warning:: The built-in shader that comes with fruitloop requires the subject's position to be sent to it throught the **playerPos** uniform.  This may be remedied in future releases, or can be changed in your own custom shaders.  To do this, use: screen.uniforms['playerPos'] = virtual_scene.camera.position
+.. warning:: The built-in shader that comes with ratcave requires the subject's position to be sent to it throught the **playerPos** uniform.  This may be remedied in future releases, or can be changed in your own custom shaders.  To do this, use: screen.uniforms['playerPos'] = virtual_scene.camera.position
 
 Move the Subject
 ----------------
@@ -139,24 +139,24 @@ Summary
 Here's the full code::
 
     import pyglet
-    import fruitloop as fruit
+    import ratcave as rc
     import math, time
 
     window = pyglet.window.Window(resizable=True)
 
 
     # Assemble the Virtual Scene
-    obj_reader = fruit.WavefrontReader(fruit.resources.obj_primitives)
+    obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
     sphere = obj_reader.get_mesh("Sphere", position=(0, 0, 2), scale=0.2)
     sphere.uniforms['diffuse'] = 1, 0, 0
 
     cube = obj_reader.get_mesh("Cube", position=(0, 0, 0), scale=0.2)
     cube.uniforms['diffuse'] = 1, 1, 0
 
-    virtual_scene = fruit.Scene(meshes=[sphere, cube])
+    virtual_scene = rc.Scene(meshes=[sphere, cube])
     virtual_scene.light.position = 0, 3, -1
 
-    cube_camera = fruit.Camera(fov_y=90, aspect=1.)
+    cube_camera = rc.Camera(fov_y=90, aspect=1.)
     virtual_scene.camera = cube_camera
 
     # Assemble the Projected Scene
@@ -164,13 +164,13 @@ Here's the full code::
     screen = obj_reader.get_mesh("Plane", position=(0, 0, 1), rotation=(1.5, 180, 0))
     screen.cubemap = True
 
-    projected_scene = fruit.Scene(meshes=[monkey, screen, sphere, cube], bgColor=(1., 1., 1.))
+    projected_scene = rc.Scene(meshes=[monkey, screen, sphere, cube], bgColor=(1., 1., 1.))
     projected_scene.light.position = virtual_scene.light.position
-    projected_scene.camera = fruit.Camera(position=(0, 4, 0), rotation=(-90, 0, 0), z_far=6)
+    projected_scene.camera = rc.Camera(position=(0, 4, 0), rotation=(-90, 0, 0), z_far=6)
 
     # Create Framebuffer and Textures
-    cube_texture = fruit.texture.TextureCube()  # this is the actual cube texture
-    cube_fbo = fruit.FBO(cube_texture)
+    cube_texture = rc.texture.TextureCube()  # this is the actual cube texture
+    cube_fbo = rc.FBO(cube_texture)
     screen.texture = cube_texture
 
 
@@ -202,24 +202,24 @@ PsychoPy Version
 Here's the same scenario, done in PsychoPy::
 
     from psychopy import visual, event
-    import fruitloop as fruit
+    import ratcave as rc
     import math, time
 
 
     window = visual.Window()
 
     # Assemble the Virtual Scene
-    obj_reader = fruit.WavefrontReader(fruit.resources.obj_primitives)
+    obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
     sphere = obj_reader.get_mesh("Sphere", position=(0, 0, 2), scale=0.2)
     sphere.uniforms['diffuse'] = 1, 0, 0
 
     cube = obj_reader.get_mesh("Cube", position=(0, 0, 0), scale=0.2)
     cube.uniforms['diffuse'] = 1, 1, 0
 
-    virtual_scene = fruit.Scene(meshes=[sphere, cube])
+    virtual_scene = rc.Scene(meshes=[sphere, cube])
     virtual_scene.light.position = 0, 3, -1
 
-    cube_camera = fruit.Camera(fov_y=90, aspect=1.)
+    cube_camera = rc.Camera(fov_y=90, aspect=1.)
     virtual_scene.camera = cube_camera
 
     # Assemble the Projected Scene
@@ -227,13 +227,13 @@ Here's the same scenario, done in PsychoPy::
     screen = obj_reader.get_mesh("Plane", position=(0, 0, 1), rotation=(1.5, 180, 0))
     screen.cubemap = True
 
-    projected_scene = fruit.Scene(meshes=[monkey, screen, sphere, cube], bgColor=(1., 1., 1.))
+    projected_scene = rc.Scene(meshes=[monkey, screen, sphere, cube], bgColor=(1., 1., 1.))
     projected_scene.light.position = virtual_scene.light.position
-    projected_scene.camera = fruit.Camera(position=(0, 4, 0), rotation=(-90, 0, 0), z_far=6)
+    projected_scene.camera = rc.Camera(position=(0, 4, 0), rotation=(-90, 0, 0), z_far=6)
 
     # Create Framebuffer and Textures
-    cube_texture = fruit.texture.TextureCube()  # this is the actual cube texture
-    cube_fbo = fruit.FBO(cube_texture)
+    cube_texture = rc.texture.TextureCube()  # this is the actual cube texture
+    cube_fbo = rc.FBO(cube_texture)
     screen.texture = cube_texture
 
     # Main Loop

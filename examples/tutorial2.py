@@ -1,6 +1,6 @@
 import pyglet
 from pyglet.window import key
-import fruitloop as fruit
+import ratcave as rc
 
 # Create Window and Add Keyboard State Handler to it's Event Loop
 window = pyglet.window.Window()
@@ -8,15 +8,15 @@ keys = key.KeyStateHandler()
 window.push_handlers(keys)
 
 # Insert filename into WavefrontReader.
-obj_filename = fruit.resources.obj_primitives
-obj_reader = fruit.WavefrontReader(obj_filename)
+obj_filename = rc.resources.obj_primitives
+obj_reader = rc.WavefrontReader(obj_filename)
 
 # Create Mesh
 monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1.5), scale=.6)
 torus = obj_reader.get_mesh("Torus", position=(-1, 0, -1.5), scale=.4)
 
 # Create Scene
-scene = fruit.Scene(meshes=[monkey, torus])
+scene = rc.Scene(meshes=[monkey, torus])
 scene.bgColor = 1, 0, 0
 
 
@@ -40,7 +40,7 @@ def move_camera(dt):
 pyglet.clock.schedule(move_camera)
 
 
-shader = fruit.Shader.from_file(*fruit.resources.genShader)
+shader = rc.Shader.from_file(*rc.resources.genShader)
 
 @window.event
 def on_draw():
