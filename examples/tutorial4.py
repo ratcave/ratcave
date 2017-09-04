@@ -12,7 +12,8 @@ sphere.uniforms['diffuse'] = 1, 0, 0
 cube = obj_reader.get_mesh("Cube", position=(0, 0, 0), scale=0.2)
 cube.uniforms['diffuse'] = 1, 1, 0
 
-virtual_scene = fruit.Scene(meshes=[sphere, cube], bgColor=(0., 0., 1.))
+# virtual_scene = fruit.Scene(meshes=[sphere, cube], bgColor=(0., 0., 1.))
+virtual_scene = fruit.Scene(meshes=[], bgColor=(0., 0., 1.))
 virtual_scene.light.position.xyz = 0, 3, -1
 
 
@@ -23,7 +24,7 @@ virtual_scene.camera = cube_camera
 monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1), scale=0.8)
 screen = obj_reader.get_mesh("Plane", position=(0, 0, 1), rotation=(1.5, 180, 0))
 
-projected_scene = fruit.Scene(meshes=[monkey, screen, sphere, cube], bgColor=(1., 1., 1.))
+projected_scene = fruit.Scene(meshes=[monkey, screen, sphere, cube], bgColor=(1., .5, 1.))
 projected_scene.light.position = virtual_scene.light.position
 projected_scene.camera = fruit.Camera(position=(0, 4, 0), rotation=(-90, 0, 0))
 projected_scene.camera.projection.z_far = 6
@@ -47,8 +48,6 @@ def update(dt):
     monkey.position.x = math.sin(1.3 * clock)
     virtual_scene.camera.position.xyz = monkey.position.xyz
     screen.uniforms['playerPos'] = virtual_scene.camera.position.xyz
-
-
 pyglet.clock.schedule(update)
 
 
