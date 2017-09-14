@@ -1,5 +1,15 @@
 from setuptools import setup, find_packages, Extension
-import numpy
+try:
+    import numpy
+except ImportError:
+    print("Numpy must be installed before running setup.py.")
+    response = input("Attempt to automatically install numpy using pip? (y/n)")
+    if 'y' in response.lower():
+        import subprocess
+        subprocess.run(["pip", "install", "numpy"])
+        import numpy
+    else:
+        raise ImportError("Numpy required before installation.")
 
 
 setup(name='ratcave',
