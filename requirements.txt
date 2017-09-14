@@ -5,3 +5,4 @@ pyglet
 mock
 six
 future
+pytest
