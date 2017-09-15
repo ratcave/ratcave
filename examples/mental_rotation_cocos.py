@@ -38,7 +38,10 @@ class HelloWorld(cocos.layer.Layer):
         self.keys_pressed.add(key)
 
     def on_key_release(self, key, mod):
-        self.keys_pressed.remove(key)
+        try:
+            self.keys_pressed.remove(key)
+        except KeyError:
+            pass
 
     def check_keystate(self, dt):
         player, keys = self.player, self.keys_pressed
@@ -53,13 +56,31 @@ class HelloWorld(cocos.layer.Layer):
             player.y -= dist
 
 
+class IntroMenu(cocos.layer.Layer):
+
+    is_event_handler = True
+
+    def __init__(self, *args, **kwargs):
+        super(self.__class__, self).__init__(*args, **kwargs)
+
+        text = """Press Space to Begin."""
+        label = cocos.text.Label(text)
+        self.add(label)
+
+    def on_key_press(self, pressed, mod):
+        if pressed == key.SPACE:
+            print('Space Pressed.')
+            cocos.director.director.replace(main_scene)
 
 
 cocos.director.director.init()
-hello_layer = HelloWorld()
 
+hello_layer = HelloWorld()
 main_scene = cocos.scene.Scene(hello_layer)
 
+intro_layer = IntroMenu()
+intro_scene = cocos.scene.Scene(intro_layer)
+
 if __name__ == '__main__':
-    cocos.director.director.run(main_scene)
+    cocos.director.director.run(intro_scene)
 
