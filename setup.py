@@ -1,12 +1,16 @@
+import sys
 from setuptools import setup, find_packages, Extension
 try:
     import numpy
 except ImportError:
     print("Numpy must be installed before running setup.py.")
+    if sys.version_info.major == 2:
+        def input(*args, **kwargs):
+            return raw_input(*args, **kwargs)
     response = input("Attempt to automatically install numpy using pip? (y/n)")
     if 'y' in response.lower():
         import subprocess
-        subprocess.run(["pip", "install", "numpy"])
+        subprocess.call(["pip", "install", "numpy"])
         import numpy
     else:
         raise ImportError("Numpy required before installation.")
