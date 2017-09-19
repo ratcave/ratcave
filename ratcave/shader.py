@@ -48,16 +48,18 @@ class UniformCollection(IterableUserDict, object):
 
         for name, array in iteritems(self):
 
+            shader_id = c_int(0)
+            gl.glGetIntegerv(gl.GL_CURRENT_PROGRAM, byref(shader_id))
+            if shader_id.value == 0:
+                raise UnboundLocalError("Shader not bound to OpenGL context--uniform cannot be sent.")
+
             # Attach a shader location value to the array, for quick memory lookup. (gl calls are expensive, for some reason)
             try:
-                loc = array.loc
-            except AttributeError:
-                shader_id = c_int(0)
-                gl.glGetIntegerv(gl.GL_CURRENT_PROGRAM, byref(shader_id))
-                if shader_id.value == 0:
-                    raise UnboundLocalError("Shader not bound to OpenGL context--uniform cannot be sent.")
-                array.loc = gl.glGetUniformLocation(shader_id.value, name.encode('ascii'))
-                loc = array.loc
+                loc, shader_id_for_array = array.loc
+                if shader_id.value != shader_id_for_array:
+                    raise Exception('Uniform location bound to a different shader')
+            except (AttributeError, Exception) as e:
+                array.loc = (gl.glGetUniformLocation(shader_id.value, name.encode('ascii')), shader_id.value)
 
             if array.ndim == 2:  # Assuming a 4x4 float32 matrix (common for graphics operations)
                 try:
@@ -65,11 +67,11 @@ class UniformCollection(IterableUserDict, object):
                 except AttributeError:
                     array.pointer = array.ctypes.data_as(POINTER(c_float * 16)).contents
                     pointer = array.pointer
-                gl.glUniformMatrix4fv(loc, 1, True, pointer)
+                gl.glUniformMatrix4fv(array.loc[0], 1, True, pointer)
 
             else:
                 sendfun = self._sendfuns[array.dtype.kind][len(array) - 1]  # Find correct glUniform function
-                sendfun(loc, *array)
+                sendfun(array.loc[0], *array)
     #
     # def update(self, other_dict):
     #     for key, value in iteritems(other_dict):
