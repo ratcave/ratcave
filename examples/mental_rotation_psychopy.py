@@ -1,38 +1,43 @@
 import sys
-import pyglet
-from psychopy import visual, event
+from psychopy import visual
 from pyglet.window import key
+import ratcave as rc
 
-win = visual.Window(color='black')
+win = visual.Window(color='black', waitBlanking=False)
+shader = rc.Shader.from_file(*rc.resources.genShader)
+keys = key.KeyStateHandler()
+win.winHandle.push_handlers(keys)
 
 player = visual.Rect(win, fillColor='yellow', lineColor='black',
                      width=.2, height=.2 * float(win.size[0]) / float(win.size[1]),
                      )
+player_3d = rc.WavefrontReader(rc.resources.obj_primitives).get_mesh('Cube', scale=.1, position=(0, 0, -1))
+player_3d.uniforms['diffuse'] = 1., 1., 0.
 
-@win.winHandle.event
-def on_draw():
-    win.winHandle.clear()
-    player.ori += 1
-    player.draw()
+scene = rc.Scene(meshes=[player_3d])
 
-keys = key.KeyStateHandler()
-win.winHandle.push_handlers(keys)
-
-def detect_keys(dt):
-    print(dt, keys)
-    speed = .5
+speed = .5
+while True:
+    dt = .016
     dist = speed * dt
+
+    # Check Keyboard
     if key.ESCAPE in keys:
         win.close()
         sys.exit()
     if keys[key.LEFT]:
-        player.pos[0] -= dist
+        player_3d.position.x -= dist
     if keys[key.RIGHT]:
-        player.pos[0] += dist
+        player_3d.position.x += dist
     if keys[key.UP]:
-        player.pos[1] += dist
+        player_3d.position.y += dist
     if keys[key.DOWN]:
-        player.pos[1] -= dist
-pyglet.clock.schedule(detect_keys)
+        player_3d.position.y -= dist
 
-pyglet.app.run()
+    player_3d.rotation.z += 30 * dt
+
+    # Draw
+    with shader:
+        scene.draw()
+    win.flip()
+
