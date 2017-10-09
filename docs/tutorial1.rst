@@ -60,7 +60,7 @@ Loading a Mesh from the WavefrontReader and Positioning it
 Loading a mesh can be done through the :py:meth:`.WavefrontReader.get_mesh` method.  By default, the mesh will have its position in the same location as in its .obj file, but this can be easily changed.  Because the camera is in the -z direction by default per OpenGL convention, let's set it in front of the camera::
 
   monkey = obj_reader.get_mesh("Monkey")
-  monkey.position = 0, 0, -2  # x, y, z
+  monkey.position.xyz = 0, 0, -2
 
 Creating a Scene
 ----------------
@@ -85,32 +85,34 @@ Summary
 
 That's it!  Here's the final script, in one place.  This script wll be modified in the next tutorial to animate the scene.::
 
-  import pyglet
-  import ratcave as rc
+    import pyglet
+    import ratcave as rc
 
-  # Create Window
-  window = pyglet.window.Window()
+    # Create Window
+    window = pyglet.window.Window()
 
-  def update(dt):
-      pass
-  pyglet.clock.schedule(update)
+    def update(dt):
+        pass
+    pyglet.clock.schedule(update)
 
-  # Insert filename into WavefrontReader.
-  obj_filename = rc.resources.obj_primitives
-  obj_reader = rc.WavefrontReader(obj_filename)
+    # Insert filename into WavefrontReader.
+    obj_filename = rc.resources.obj_primitives
+    obj_reader = rc.WavefrontReader(obj_filename)
 
-  # Create Mesh
-  monkey = obj_reader.get_mesh("Monkey")
-  monkey.position = 0, 0, -2
+    # Create Mesh
+    monkey = obj_reader.get_mesh("Monkey")
+    monkey.position.xyz = 0, 0, -2
 
-  # Create Scene
-  scene = rc.Scene(meshes=[monkey])
+    # Create Scene
+    scene = rc.Scene(meshes=[monkey])
 
-  @window.event
-  def on_draw():
-      scene.draw()
+    shader = rc.Shader.from_file(*rc.resources.genShader)
+    @window.event
+    def on_draw():
+        with shader:
+            scene.draw()
 
-  pyglet.app.run()
+    pyglet.app.run()
 
 Version using PsychoPy
 ----------------------
