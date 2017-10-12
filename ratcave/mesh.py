@@ -37,8 +37,12 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
 
 class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mixins.ObservableVisibleMixin):
 
+    triangles = gl.GL_TRIANGLES
+    points = gl.GL_POINTS
+
+
     def __init__(self, arrays, texture=None, mean_center=True,
-                 gl_states=(), drawmode=gl.GL_TRIANGLES, **kwargs):
+                 gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, dynamic=False, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -82,6 +86,8 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
         self.drawmode = drawmode
+        self.point_size = point_size
+        self.dynamic = dynamic
 
     def __repr__(self):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
@@ -135,8 +141,11 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
     def _fill_vao(self):
         """Put array location in VAO for shader in same order as arrays given to Mesh."""
         with self.vao:
+            self.vbos = []
             for loc, verts in enumerate(self.arrays):
-                self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
+                vbo = ugl.VBO(verts)
+                self.vbos.append(vbo)
+                self.vao.assign_vertex_attrib_location(vbo, loc)
 
     def draw(self):
         if not self.vao:
@@ -144,7 +153,13 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
             self._fill_vao()
 
         self.update()
+
         if self.visible:
+            if self.dynamic:
+                for vbo in self.vbos:
+                    vbo._buffer_subdata()
+            if self.drawmode == gl.GL_POINTS:
+                gl.glPointSize(self.point_size)
             with ugl.enable_states(self.gl_states):
                 # with self.texture, self.vao as vao:
                 with self.vao as vao, self.texture:
