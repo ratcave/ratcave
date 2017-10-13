@@ -15,7 +15,7 @@ from .utils import mixins
 from . import physical, shader
 from . import texture as texture_module
 import pyglet.gl as gl
-
+from copy import deepcopy
 
 # Meshes
 def gen_fullscreen_quad(name='FullScreenQuad'):
@@ -69,12 +69,14 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
 
         # Mean-center vertices and move position to vertex mean.
         vertex_mean = self.arrays[0][self.array_indices, :].mean(axis=0)
+
         if mean_center:
             self.arrays[0][:] -= vertex_mean
         if 'position' in kwargs:
             self.position.xyz = kwargs['position']
         elif mean_center:
             self.position.xyz = vertex_mean
+        self._mean_center = mean_center
         # self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
 
         # Change vertices from an Nx3 to an Nx4 array by appending ones.  This makes some calculations more efficient.
@@ -89,8 +91,18 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
         self.point_size = point_size
         self.dynamic = dynamic
 
+
+
     def __repr__(self):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
+
+    def copy(self):
+        mesh = Mesh(arrays=deepcopy([arr[:, :-1].copy() for arr in self.arrays]), texture=self.texture, mean_center=deepcopy(self._mean_center),
+                    position=self.position.xyz, rotation=self.rotation.to_euler('deg').xyz, scale=self.scale.x,
+                    drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic,
+                    gl_states=deepcopy(self.gl_states))
+        return mesh
+        # self.__class__(arrays=type(self.arrays)([arr.copy() for arr in self.arrays]), gl_states=self.gl_states)
 
     def reset_uniforms(self):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
