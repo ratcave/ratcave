@@ -111,11 +111,28 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
     @property
     def vertices(self):
         """Mesh vertices, centered around 0,0,0"""
-        return self.arrays[0].view()
+        return self.arrays[0][:, :3].view()
 
     @vertices.setter
     def vertices(self, value):
-        self.arrays[0][:] = value
+        self.arrays[0][:, :3] = value
+
+    @property
+    def normals(self):
+        """Mesh normals array."""
+        return self.arrays[1][:, :3].view()
+
+    @normals.setter
+    def normals(self, value):
+        self.arrays[1][:, :3] = value
+
+    @property
+    def texcoords(self):
+        return self.arrays[2][:, :2].view()
+
+    @texcoords.setter
+    def texcoords(self, value):
+        self.arrays[2][:, :2] = value
 
     @property
     def vertices_local(self):
