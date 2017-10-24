@@ -51,10 +51,12 @@ pyglet.clock.schedule(update)
 @window.event
 def on_draw():
     with shader:
-        with cube_fbo as fbo:
-            virtual_scene.draw360_to_texture(fbo.texture)
-    with shader:
-        projected_scene.draw()
+        virtual_scene.draw()
+    # with shader:
+    #     with cube_fbo as fbo:
+    #         virtual_scene.draw360_to_texture(fbo.texture)
+    # with shader:
+    #     projected_scene.draw()
 
 
 pyglet.app.run()
