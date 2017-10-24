@@ -129,7 +129,6 @@ All that's left is for the scenes to be drawn. The virtual_scene should be drawn
         with shader:
             with cube_fbo as fbo:
                 virtual_scene.draw360_to_texture(fbo.texture)
-        with shader:
             projected_scene.draw()
 
 
@@ -193,7 +192,6 @@ Here's the full code::
         with shader:
             with cube_fbo as fbo:
                 virtual_scene.draw360_to_texture(fbo.texture)
-        with shader:
             projected_scene.draw()
 
 
