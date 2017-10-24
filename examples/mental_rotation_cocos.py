@@ -1,9 +1,9 @@
 import pyglet
 from pyglet.window import key
 from pyglet.image import SolidColorImagePattern
-
 import cocos
-from cocos.actions import *
+import ratcave as rc
+
 
 class Player(cocos.sprite.Sprite):
 
@@ -15,10 +15,48 @@ class Player(cocos.sprite.Sprite):
         super(self.__class__, self).__init__(img, *args, **kwargs)
 
         self.speed = speed
-        pyglet.clock.schedule(self.update)
+        self.schedule(self.update)
 
     def update(self, dt):
         self.rotation += 30 * dt
+
+
+
+
+class Player3D:
+
+    def __init__(self, speed=10, x=0, y=0, z=-1):
+        self.mesh = rc.WavefrontReader(rc.resources.obj_primitives).get_mesh('Cube', scale=.1, position=(x, y, z))
+        self.mesh.uniforms['diffuse'] = 1, 1., 0.
+        self.speed = speed
+        pyglet.clock.schedule(self.update)
+
+    @property
+    def x(self):
+        return self.mesh.position.x
+
+    @x.setter
+    def x(self, value):
+        self.mesh.position.x = value
+
+    @property
+    def y(self):
+        return self.mesh.position.y
+
+    @y.setter
+    def y(self, value):
+        self.mesh.position.y = value
+
+    @property
+    def rotation(self):
+        return self.mesh.rotation.z
+
+    @rotation.setter
+    def rotation(self, value):
+        self.mesh.rotation.z = value
+
+    def update(self, dt):
+        self.rotation += -30 * dt
 
 
 class HelloWorld(cocos.layer.Layer):
@@ -31,8 +69,12 @@ class HelloWorld(cocos.layer.Layer):
         self.player = Player()
         self.add(self.player)
 
+        self.player_3d = Player3D(x=0, y=0, speed=3)
+        self.game_scene = rc.Scene(meshes=[self.player_3d.mesh])
+        self.shader = rc.Shader.from_file(*rc.resources.genShader)
+
         self.keys_pressed = set()#
-        pyglet.clock.schedule(self.check_keystate)
+        self.schedule(self.check_keystate)
 
     def on_key_press(self, key, mod):
         self.keys_pressed.add(key)
@@ -44,7 +86,7 @@ class HelloWorld(cocos.layer.Layer):
             pass
 
     def check_keystate(self, dt):
-        player, keys = self.player, self.keys_pressed
+        player, keys = self.player_3d, self.keys_pressed
         dist = player.speed * dt
         if key.RIGHT in keys:
             player.x += dist
@@ -55,6 +97,9 @@ class HelloWorld(cocos.layer.Layer):
         if key.DOWN in keys:
             player.y -= dist
 
+    def draw(self):
+        with self.shader:
+            self.game_scene.draw()
 
 class IntroMenu(cocos.layer.Layer):
 
@@ -73,7 +118,9 @@ class IntroMenu(cocos.layer.Layer):
             cocos.director.director.replace(main_scene)
 
 
+
 cocos.director.director.init()
+
 
 hello_layer = HelloWorld()
 main_scene = cocos.scene.Scene(hello_layer)
@@ -82,5 +129,7 @@ intro_layer = IntroMenu()
 intro_scene = cocos.scene.Scene(intro_layer)
 
 if __name__ == '__main__':
+    print([el for el in dir(cocos.director.director) if not '_' in el[0]])
+
     cocos.director.director.run(intro_scene)
 
