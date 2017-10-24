@@ -24,8 +24,6 @@ scene.bgColor = 1, 0, 0
 def rotate_meshes(dt):
     monkey.rotation.y += 15 * dt  # dt is the time between frames
     torus.rotation.x += 80 * dt
-
-
 pyglet.clock.schedule(rotate_meshes)
 
 
@@ -35,8 +33,6 @@ def move_camera(dt):
         scene.camera.position.x -= camera_speed * dt
     if keys[key.RIGHT]:
         scene.camera.position.x += camera_speed * dt
-
-
 pyglet.clock.schedule(move_camera)
 
 

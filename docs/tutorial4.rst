@@ -20,6 +20,7 @@ At the beginning of the script::
     import ratcave as rc
 
     window = pyglet.window.Window(resizable=True)
+    shader = rc.Shader.from_file(*rc.resources.genShader)
 
 At the end of the script::
 
@@ -54,10 +55,9 @@ The Projected Scene is what is actually sent to the display.  It will contain th
 
     projected_scene = rc.Scene(meshes=[monkey, screen], bgColor=(1., 1., 1.))
     projected_scene.light.position = virtual_scene.light.position
+    projected_scene.camera = rc.Camera(position=(0, 4, 0), rotation=(-90, 0, 0))
+    projected_scene.camera.projection.z_far = 6
 
-To ensure that the cubemapped texture appears on the screen, the :py:func:`Mesh.cubemap` flag needs to be set to True::
-
-    screen.cubemap = True
 
 Setting Your Cameras
 --------------------
@@ -73,7 +73,7 @@ For this algorithm to work, then, two of the :py:class:`.Camera`'s properties mu
 
 Altering the camera to be useful for cubemapping is straightforward::
 
-    cube_camera = rc.Camera(fov_y=90, aspect=1.)
+    cube_camera = rc.Camera(projection=rc.PerspectiveProjection(fov_y=90, aspect=1.))
     virtual_scene.camera = cube_camera
 
 The Projector Camera
@@ -110,15 +110,14 @@ Move the Subject
 
 Let's have the Monkey move left-to-right, just to illustrate what cubemapping does::
 
-    import math, time
+    clock = 0.
     def update(dt):
-        monkey.x = math.sin(.3 * time.clock())
-        virtual_scene.camera.position = monkey.position
-        screen.uniforms['playerPos'] = virtual_scene.camera.position
+        global clock
+        clock += dt
+        monkey.position.x = math.sin(1.3 * clock)
+        virtual_scene.camera.position.xyz = monkey.position.xyz
+        screen.uniforms['playerPos'] = virtual_scene.camera.position.xyz
     pyglet.clock.schedule(update)
-
-.. note:: The uniforms currently don't update automatically, and should be explicitly changed.
-
 
 
 Draw the Scenes
@@ -126,11 +125,13 @@ Draw the Scenes
 
 All that's left is for the scenes to be drawn. The virtual_scene should be drawn to the :py:Class:`.FBO`, and the projected_scene to the window.  To perform the rotations correctly and in the right order, a convenient :py:func:`Scene.draw360_to_texture` method has been supplied::
 
-  @window.event
-  def on_draw():
-    with cube_fbo:
-        virtual_scene.draw360_to_texture(cube_texture)
-    projected_scene.draw()
+    @window.event
+    def on_draw():
+        with shader:
+            with cube_fbo as fbo:
+                virtual_scene.draw360_to_texture(fbo.texture)
+        with shader:
+            projected_scene.draw()
 
 
 Summary
@@ -142,8 +143,8 @@ Here's the full code::
     import ratcave as rc
     import math, time
 
-    window = pyglet.window.Window(resizable=True)
 
+    window = pyglet.window.Window(resizable=True)
 
     # Assemble the Virtual Scene
     obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
@@ -153,44 +154,52 @@ Here's the full code::
     cube = obj_reader.get_mesh("Cube", position=(0, 0, 0), scale=0.2)
     cube.uniforms['diffuse'] = 1, 1, 0
 
-    virtual_scene = rc.Scene(meshes=[sphere, cube])
-    virtual_scene.light.position = 0, 3, -1
+    # virtual_scene = rc.Scene(meshes=[sphere, cube], bgColor=(0., 0., 1.))
+    virtual_scene = rc.Scene(meshes=[cube, sphere], bgColor=(0., 0., 1.))
+    virtual_scene.light.position.xyz = 0, 3, -1
 
-    cube_camera = rc.Camera(fov_y=90, aspect=1.)
+
+    cube_camera = rc.Camera(projection=rc.PerspectiveProjection(fov_y=90, aspect=1.))
     virtual_scene.camera = cube_camera
 
     # Assemble the Projected Scene
     monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1), scale=0.8)
     screen = obj_reader.get_mesh("Plane", position=(0, 0, 1), rotation=(1.5, 180, 0))
-    screen.cubemap = True
 
-    projected_scene = rc.Scene(meshes=[monkey, screen, sphere, cube], bgColor=(1., 1., 1.))
+    projected_scene = rc.Scene(meshes=[monkey, screen, sphere, cube], bgColor=(1., .5, 1.))
     projected_scene.light.position = virtual_scene.light.position
-    projected_scene.camera = rc.Camera(position=(0, 4, 0), rotation=(-90, 0, 0), z_far=6)
+    projected_scene.camera = rc.Camera(position=(0, 4, 0), rotation=(-90, 0, 0))
+    projected_scene.camera.projection.z_far = 6
 
     # Create Framebuffer and Textures
-    cube_texture = rc.texture.TextureCube()  # this is the actual cube texture
-    cube_fbo = rc.FBO(cube_texture)
+    cube_texture = rc.texture.TextureCube(width=1024, height=1024)  # this is the actual cube texture
+    cube_fbo = rc.FBO(texture=cube_texture)
     screen.texture = cube_texture
 
+    shader = rc.Shader.from_file(*rc.resources.genShader)
 
     @window.event
     def on_resize(width, height):
         projected_scene.camera.aspect = width / float(height)
 
 
+    clock = 0.
     def update(dt):
-        monkey.x = math.sin(.3 * time.clock())
-        virtual_scene.camera.position = monkey.position
-        screen.uniforms['playerPos'] = virtual_scene.camera.position
+        global clock
+        clock += dt
+        monkey.position.x = math.sin(1.3 * clock)
+        virtual_scene.camera.position.xyz = monkey.position.xyz
+        screen.uniforms['playerPos'] = virtual_scene.camera.position.xyz
     pyglet.clock.schedule(update)
 
 
     @window.event
     def on_draw():
-        with cube_fbo:
-            virtual_scene.draw360_to_texture(cube_texture)
-        projected_scene.draw()
+        with shader:
+            with cube_fbo as fbo:
+                virtual_scene.draw360_to_texture(fbo.texture)
+        with shader:
+            projected_scene.draw()
 
 
     pyglet.app.run()
