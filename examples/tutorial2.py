@@ -18,7 +18,7 @@ torus = obj_reader.get_mesh("Torus", position=(-1, 0, -1.5), scale=.4)
 # Create Scene
 scene = rc.Scene(meshes=[monkey, torus])
 scene.bgColor = 1, 0, 0
-
+.
 
 # Functions to Run in Event Loop
 def rotate_meshes(dt):
