@@ -37,10 +37,6 @@ screen.texture = cube_texture
 
 shader = rc.Shader.from_file(*rc.resources.genShader)
 
-@window.event
-def on_resize(width, height):
-    projected_scene.camera.aspect = width / float(height)
-
 
 clock = 0.
 def update(dt):
@@ -57,7 +53,6 @@ def on_draw():
     with shader:
         with cube_fbo as fbo:
             virtual_scene.draw360_to_texture(fbo.texture)
-    with shader:
         projected_scene.draw()
 
 

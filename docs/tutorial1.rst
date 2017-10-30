@@ -51,7 +51,7 @@ To load a 3D object, let's read in a .obj file! The built-in :py:class:`Wavefron
   obj_reader = rc.WavefrontReader(obj_filename)
 
   # Check which meshes can be found inside the Wavefront file, and extract it into a Mesh object for rendering.
-  print(obj_reader.mesh_names)
+  print(obj_reader.bodies.keys())
   >>> ['Torus', 'Sphere', 'Monkey', 'Cube']
 
 Loading a Mesh from the WavefrontReader and Positioning it
@@ -72,11 +72,13 @@ Scenes consist of meshes, lights, and a camera--everything we need to view and p
 Drawing the Scene
 -----------------
 
-To draw the scene, simply call the Scene.draw() method in your draw loop! In Pyglet, this looks like this::
+To draw the scene, we need a 3D shader (discussed in more detail in the next tutorial).  Luckily, ratcave provides one to start with!  Simply call the Scene.draw() method in your draw loop! In Pyglet, this looks like this::
 
-  @window.event
-  def on_draw():
-     scene.draw()
+    shader = rc.Shader.from_file(*rc.resources.genShader)
+    @window.event
+    def on_draw():
+        with shader:
+            scene.draw()
 
   pyglet.app.run()
 
@@ -124,6 +126,7 @@ Alternatively, you can see the same example using a PsychoPy window::
 
   # Create Window
   window = visual.Window()
+  shader = rc.Shader.from_file(*rc.resources.genShader)
 
   # Insert filename into WavefrontReader.
   obj_filename = rc.resources.obj_primitives
@@ -131,13 +134,14 @@ Alternatively, you can see the same example using a PsychoPy window::
 
   # Create Mesh
   monkey = obj_reader.get_mesh("Monkey")
-  monkey.position = 0, 0, -2
+  monkey.position.xyz = 0, 0, -2
 
   # Create Scene
   scene = rc.Scene(meshes=[monkey])
 
   while 'escape' not in event.getKeys():
-      scene.draw()
+      with shader:
+          scene.draw()
       window.flip()
 
   window.close()
