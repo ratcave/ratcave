@@ -6,3 +6,5 @@ mock
 six
 future
 pytest
+wavefront_reader
+sphinx
