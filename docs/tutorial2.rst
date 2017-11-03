@@ -23,8 +23,8 @@ Moving a Mesh
 Now, we'll animate the Meshes by changing their rotation attributes in the update function::
 
   def rotate_meshes(dt):
-      monkey.rot_y += 15 * dt  # dt is the time between frames
-      torus.rot_x += 80 * dt
+      monkey.rotation.y += 15 * dt  # dt is the time between frames
+      torus.rotation.x += 80 * dt
   pyglet.clock.schedule(rotate_meshes)
 
 
