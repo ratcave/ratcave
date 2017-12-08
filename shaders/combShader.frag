@@ -82,6 +82,6 @@ void main()
                  (1.5 * (specular_coeff * specular) +
                  (diffuse_coeff * diffuse) +
                  (ambient_coeff * ambient));
-    final_color = vec4(clamp(color, 0, 1), 0.5);
+    final_color = vec4(clamp(color, 0, 1), 1.0);
 
  }
