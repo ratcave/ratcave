@@ -76,7 +76,24 @@ class Scene(mixins.NameLabelMixin):
             for mesh in self.meshes:
                 mesh.draw()
 
-    def draw360_to_texture(self, cubetexture):
+    def draw_anaglyph(self, clear=True, inter_eye_distance=.08):
+
+        cam = self.camera
+        orig_cam_position = cam.uniforms['view_matrix'][0, 3]
+        gl.glColorMask(True, False, False, True)
+        cam.uniforms['view_matrix'][0, 3] += inter_eye_distance / 2.
+        self.draw(clear=clear)
+
+        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+        gl.glColorMask(False, True, True, True)
+        cam.uniforms['view_matrix'][0, 3] -= inter_eye_distance
+        self.draw(clear=clear)
+
+        gl.glColorMask(True, True, True, True)
+        cam.uniforms['view_matrix'][0, 3] = orig_cam_position
+
+
+    def draw360_to_texture(self, cubetexture, is_anaglyph=False, **kwargs):
         """
         Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light, and
         applies it to each face of cubetexture, which should be currently bound to an FBO.
@@ -91,7 +108,10 @@ class Scene(mixins.NameLabelMixin):
         for face, rotation in enumerate([[180, -90, 0], [180, 90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  #first 2 switched
             self.camera.rotation.xyz = rotation
             cubetexture.attach_to_fbo(face)
-            self.draw(clear=True)
+            if is_anaglyph:
+                self.draw_anaglyph(**kwargs)
+            else:
+                self.draw(**kwargs)
         self.camera.rotation = old_rotation
 
 
