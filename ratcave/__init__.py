@@ -16,6 +16,7 @@ from .utils.gl import POINTS, LINE_LOOP, LINES, TRIANGLES
 from .utils.coordinates import RotationEulerDegrees, RotationQuaternion, RotationEulerRadians, Translation, Scale
 from .materials import Material
 from .collision import CylinderCollisionChecker, SphereCollisionChecker
+from . import experimental
 
 
 __all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'WavefrontReader', 'resources']

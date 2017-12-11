@@ -108,11 +108,5 @@ class Scene(mixins.NameLabelMixin):
         for face, rotation in enumerate([[180, -90, 0], [180, 90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):  #first 2 switched
             self.camera.rotation.xyz = rotation
             cubetexture.attach_to_fbo(face)
-            if is_anaglyph:
-                self.draw_anaglyph(**kwargs)
-            else:
-                self.draw(**kwargs)
+            self.draw(**kwargs)
         self.camera.rotation = old_rotation
-
-
-
