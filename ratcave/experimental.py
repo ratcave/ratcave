@@ -1,10 +1,21 @@
 import pyglet.gl as gl
 
 
-def draw_vr_anaglyph(cube_fbo, vr_scene, active_scene, eye_poses=(.01, -.01)):
+def draw_vr_anaglyph(cube_fbo, vr_scene, active_scene, eye_poses=(.035, -.035)):
     """
     Experimental anaglyph drawing function for VR system with red/blue glasses, used in Sirota lab.
-    (note: assumes shader uses playerPos like ratcave's default shader.)
+    Draws a virtual scene in red and blue, from subject's (heda trackers) perspective in active scene.
+
+    Note: assumes shader uses playerPos like ratcave's default shader
+
+    Args:
+        cube_fbo: texture frameBuffer object.
+        vr_scene: virtual scene object
+        active_scene: active scene object
+        eye_poses: the eye positions
+
+    Returns:
+
     """
     color_masks = [(True, False, False, True), (False, True, True, True)]
     cam = vr_scene.camera
