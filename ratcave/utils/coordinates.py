@@ -275,8 +275,12 @@ def cross_product_matrix(vec):
 
 
 def rotation_matrix_between_vectors(from_vec, to_vec):
-    """Returns a rotation matrix to rotate from 3d vector "from_vec" to 3d vector "to_vec"."""
+    """
+    Returns a rotation matrix to rotate from 3d vector "from_vec" to 3d vector "to_vec".
+    Equation from https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+    """
     a, b = (trans.unit_vector(vec) for vec in (from_vec, to_vec))
+
     v = np.cross(a, b)
     cos = np.dot(a, b)
     if cos == -1.:

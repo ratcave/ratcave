@@ -33,7 +33,7 @@ def update(dt):
     if not turn % 1:
         theta = random(n_points) * np.pi * 2
         verts = np.vstack((np.sin(theta) * width, (random(n_points) - .5) * height, np.cos(theta) * width)).T
-        cylinder.arrays[0][:, 0:3] = verts
+        cylinder.vertices = verts
 
     # print(cylinder.arrays[0][0, :])
     cylinder.rotation.z += 100 * dt

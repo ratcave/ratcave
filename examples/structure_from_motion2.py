@@ -3,7 +3,7 @@ import ratcave as rc
 import numpy as np
 from numpy.random import random
 from copy import copy, deepcopy
-n_points = 10000
+n_points = 100000
 width, height = 0.2, 0.5
 theta = random(n_points) * np.pi * 2
 verts = np.vstack((np.sin(theta) * width, (random(n_points) - .5) * height, np.cos(theta) * width)).T
