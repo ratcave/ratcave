@@ -203,6 +203,13 @@ class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin, mixins.Observabl
     def __repr__(self):
         return "<Camera(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
+    def __enter__(self):
+        self.uniforms.send()
+        return self
+
+    def __exit__(self, *args):
+        pass
+
     def update(self):
         super(Camera, self).update()
         self.projection.update()
