@@ -189,11 +189,10 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
                     vbo._buffer_subdata()
             if self.drawmode == gl.GL_POINTS:
                 gl.glPointSize(self.point_size)
-            with ugl.enable_states(self.gl_states):
-                # with self.texture, self.vao as vao:
-                with self.vao as vao, self.texture:
-                    self.uniforms.send()
-                    vao.draw(mode=self.drawmode)
+
+            with self.vao as vao, self.texture:
+                self.uniforms.send()
+                vao.draw(mode=self.drawmode)
 
 
 

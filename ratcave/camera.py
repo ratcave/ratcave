@@ -235,3 +235,5 @@ class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin, mixins.Observabl
     def projection_matrix(self):
         return self.projection.projection_matrix
 
+
+default_camera = Camera()

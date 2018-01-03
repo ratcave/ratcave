@@ -21,3 +21,6 @@ class Light(PhysicalGraph, HasUniforms, mixins.NameLabelMixin, mixins.Observable
 
     def reset_uniforms(self):
         self.uniforms['light_position'] = self.model_matrix_global[:3, 3]
+
+
+default_light = Light()
