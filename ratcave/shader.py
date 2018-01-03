@@ -104,20 +104,23 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
           - geom (str): The geometry shader program
         """
         self.id = gl.glCreateProgram()  # create the program handle
+        self.is_linked = False
  
         # create the vertex, fragment, and geometry shaders
         self.createShader(vert, gl.GL_VERTEX_SHADER)
         self.createShader(frag, gl.GL_FRAGMENT_SHADER)
         if geom:
             self.createShader(geom, gl.GL_GEOMETRY_SHADER_EXT)
- 
-        # attempt to link the program
-        self.link()
+
+    def bind(self):
+        if not self.is_linked:
+            self.link()
+        super(self.__class__, self).bind()
 
     @classmethod
-    def from_file(cls, vert_filename, frag_filename):
-        vert_program = open(vert_filename).read()
-        frag_program = open(frag_filename).read()
+    def from_file(cls, vert, frag):
+        vert_program = open(vert).read()
+        frag_program = open(frag).read()
         return cls(vert=vert_program, frag=frag_program)
 
 

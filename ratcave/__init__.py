@@ -2,6 +2,7 @@
 
 from . import utils
 from . import resources
+from .resources import default_shader
 from .camera import Camera, PerspectiveProjection, OrthoProjection, default_camera
 from .fbo import FBO
 from .light import Light

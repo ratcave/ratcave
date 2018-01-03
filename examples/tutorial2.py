@@ -40,11 +40,9 @@ def move_camera(dt):
 pyglet.clock.schedule(move_camera)
 
 
-shader = rc.Shader.from_file(*rc.resources.genShader)
-
 @window.event
 def on_draw():
-    with shader:
+    with rc.default_shader:
         scene.draw()
 
 
