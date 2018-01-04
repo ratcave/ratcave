@@ -13,7 +13,7 @@ Viewport = namedtuple('Viewport', 'x y width height')
 class ProjectionBase(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, z_near=0.1, z_far=4.5, aspect=1.25, **kwargs):
+    def __init__(self, z_near=0.1, z_far=12., aspect=1.25, **kwargs):
         super(ProjectionBase, self).__init__(**kwargs)
         self.projection_matrix = np.identity(4, dtype=np.float32)
         self._z_near = z_near
