@@ -1,5 +1,3 @@
-from .observers import Observable
-from ..shader import HasUniforms
 import pickle
 
 class NameLabelMixin(object):
