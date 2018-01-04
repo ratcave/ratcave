@@ -94,7 +94,7 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
 
     bindfun = gl.glUseProgram
 
-    def __init__(self, vert='', frag='', geom=''):
+    def __init__(self, vert='', frag='', geom='', lazy=False):
         """
         GLSL Shader program object for rendering in OpenGL.
 
@@ -105,23 +105,36 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
         """
         self.id = gl.glCreateProgram()  # create the program handle
         self.is_linked = False
- 
+        self.is_compiled = False
+        self.vert = vert
+        self.frag = frag
+        self.geom = geom
+        self.lazy = lazy
+
+        if not self.lazy:
+            self.compile()
+
+
+    def compile(self):
         # create the vertex, fragment, and geometry shaders
-        self.createShader(vert, gl.GL_VERTEX_SHADER)
-        self.createShader(frag, gl.GL_FRAGMENT_SHADER)
-        if geom:
-            self.createShader(geom, gl.GL_GEOMETRY_SHADER_EXT)
+        self.createShader(self.vert, gl.GL_VERTEX_SHADER)
+        self.createShader(self.frag, gl.GL_FRAGMENT_SHADER)
+        if self.geom:
+            self.createShader(self.geom, gl.GL_GEOMETRY_SHADER_EXT)
+        self.is_compiled = True
 
     def bind(self):
         if not self.is_linked:
+            if not self.is_compiled:
+                self.compile()
             self.link()
         super(self.__class__, self).bind()
 
     @classmethod
-    def from_file(cls, vert, frag):
+    def from_file(cls, vert, frag, **kwargs):
         vert_program = open(vert).read()
         frag_program = open(frag).read()
-        return cls(vert=vert_program, frag=frag_program)
+        return cls(vert=vert_program, frag=frag_program, **kwargs)
 
 
     def createShader(self, strings, shadertype):
@@ -162,3 +175,5 @@ class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
             buffer = create_string_buffer(link_status.value)  # create a buffer for the log
             gl.glGetProgramInfoLog(self.id, link_status, None, buffer)  # retrieve the log text
             print(buffer.value)  # print the log to the console
+
+        self.is_linked = True
