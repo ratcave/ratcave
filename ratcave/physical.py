@@ -4,8 +4,9 @@ import numpy as np
 import pyglet.gl as gl
 
 from . import coordinates
-from .utils import SceneGraph, AutoRegisterObserver, Observable
+from .utils import AutoRegisterObserver, Observable
 from .utils import mixins
+from .scenegraph import SceneGraph
 
 
 class Physical(AutoRegisterObserver, Observable, mixins.PickleableMixin):
