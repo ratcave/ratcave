@@ -6,7 +6,13 @@ layout(location = 1) in vec3 normalPosition;
 layout(location = 2) in vec2 uvTexturePosition;
 
 uniform vec3 light_position, playerPos;
-uniform mat4 projection_matrix, view_matrix, model_matrix, normal_matrix;
+uniform mat4 model_matrix, normal_matrix;
+uniform mat4 view_matrix = mat4(1.0);
+uniform mat4 projection_matrix = mat4(vec4(1.38564,  0.,  0.,  0.),
+                                      vec4(0.,  1.73205,  0.,  0.),
+                                      vec4(0., 0., -1.0454545, -1. ),
+                                      vec4(0., 0., -0.20454545, 0.)
+                                      );
 uniform mat4 shadow_projection_matrix, shadow_view_matrix;
 
 out float lightAmount;

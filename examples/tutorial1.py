@@ -14,7 +14,7 @@ monkey.position.xyz = 0, 0, -2
 
 @window.event
 def on_draw():
-    with rc.default_shader, rc.default_states, rc.default_camera:
+    with rc.default_shader, rc.default_states:
         monkey.draw()
 
 
