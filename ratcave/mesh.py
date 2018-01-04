@@ -182,8 +182,6 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
             self.vao = ugl.VAO(indices=self.array_indices)
             self._fill_vao()
 
-        self.update()
-
         if self.visible:
             if self.dynamic:
                 for vbo in self.vbos:

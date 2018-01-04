@@ -210,8 +210,8 @@ class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin):
     def __exit__(self, *args):
         pass
 
-    def update(self):
-        super(Camera, self).update()
+    def on_change(self):
+        PhysicalGraph.on_change(self)
         self.projection.update()
 
     @property
