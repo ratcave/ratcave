@@ -36,10 +36,6 @@ cube_fbo = rc.FBO(texture=cube_texture)
 screen.texture = cube_texture
 
 
-@window.event
-def on_resize(width, height):
-    projected_scene.camera.aspect = width / float(height)
-
 
 clock = 0.
 def update(dt):

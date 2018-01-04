@@ -84,6 +84,4 @@ void main()
                  (ambient_coeff * ambient));
     final_color = vec4(clamp(color, 0, 1), 1.0);
 
-
-
  }
