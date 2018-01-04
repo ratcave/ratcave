@@ -51,7 +51,12 @@ class UniformCollection(IterableUserDict, object):
             shader_id = c_int(0)
             gl.glGetIntegerv(gl.GL_CURRENT_PROGRAM, byref(shader_id))
             if shader_id.value == 0:
-                raise UnboundLocalError("Shader not bound to OpenGL context--uniform cannot be sent.")
+                raise UnboundLocalError("""Shader not bound to OpenGL context--uniform cannot be sent.
+                ------------ Tip -------------
+                with ratcave.default_shader:
+                    mesh.draw()
+                ------------------------------
+                """)
 
             # Attach a shader location value to the array, for quick memory lookup. (gl calls are expensive, for some reason)
             try:
