@@ -227,8 +227,13 @@ class Translation(Coordinates):
 
 class Scale(Coordinates):
 
+    def __init__(self, *args, **kwargs):
+        vals = args * 3 if len(args) == 1 else args
+        assert len(vals) == 3, "Must be xyz coordinates"
+        super(self.__class__, self).__init__(*vals, **kwargs)
+
     def to_matrix(self):
-        return trans.scale_matrix(self._array[0])
+        return np.diag((self._array[0], self._array[1], self._array[2], 1.))
 
     @property
     def x(self):
@@ -260,11 +265,7 @@ class Scale(Coordinates):
 
     @xyz.setter
     def xyz(self, value):
-        if hasattr(value, '__iter__'):
-            assert value[0] == value[1] == value[2], "Scale doesn't yet support differing dimension values."
-            self[0] = value[0]
-        else:
-            self[0] = value
+        self[:] = value
 
 
 def cross_product_matrix(vec):
