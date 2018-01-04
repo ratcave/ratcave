@@ -25,15 +25,16 @@ obj_grid3D = path.join(resource_path, 'grid3D.obj')
 # Shaders
 shader_path = path.join(path.split(__file__)[0], '..', 'shaders')
 
-# General, Normal Shader
-ShaderFiles = namedtuple('ShaderFiles', 'vert frag')
+# General, Normal Shaders
+default_shader = Shader.from_file(vert=path.join(shader_path, 'combShader.vert'),
+                                  frag=path.join(shader_path, 'combShader.frag'),
+                                  lazy=True)
 
-genShader = ShaderFiles(vert=path.join(shader_path, 'combShader.vert'),
-                             frag=path.join(shader_path, 'combShader.frag'))
+shadow_shader = Shader.from_file(vert=path.join(shader_path, 'shadowShader.vert'),
+                                frag=path.join(shader_path, 'shadowShader.frag'),
+                                 lazy=True)
 
-shadowShader = ShaderFiles(vert=path.join(shader_path, 'shadowShader.vert'),
-                                frag=path.join(shader_path, 'shadowShader.frag'))
-
-deferredShader = ShaderFiles(vert=path.join(shader_path, 'basicDeferred.vert'),
-                                  frag=path.join(shader_path, 'basicDeferred.frag'))
+deferred_shader = Shader.from_file(vert=path.join(shader_path, 'basicDeferred.vert'),
+                                  frag=path.join(shader_path, 'basicDeferred.frag'),
+                                   lazy=True)
 

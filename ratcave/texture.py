@@ -26,6 +26,13 @@ class BaseTexture(HasUniforms):
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
+    @property
+    def max_texture_limit(self):
+        """The maximum number of textures available for this graphic card's fragment shader."""
+        max_unit_array = (gl.GLint * 1)()
+        gl.glGetIntegerv(gl.GL_MAX_TEXTURE_IMAGE_UNITS, max_unit_array)
+        return max_unit_array[0]
+
 
 class Texture(BaseTexture, ugl.BindTargetMixin):
 
@@ -43,6 +50,8 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         super(Texture, self).__init__(**kwargs)
 
         self._slot = next(self._slot_counter)
+        if self._slot >= self.max_texture_limit:
+            raise MemoryError("More Textures have been created than your graphics Hardware can handle.")
         self.uniforms[self.tex_name] = self._slot
         self.mipmap = mipmap
 

@@ -1,7 +1,7 @@
 import numpy as np
 import _transformations as trans
 from abc import ABCMeta, abstractmethod
-from .observers import IterObservable
+from ratcave.utils.observers import IterObservable
 
 
 class Coordinates(IterObservable):
@@ -227,8 +227,13 @@ class Translation(Coordinates):
 
 class Scale(Coordinates):
 
+    def __init__(self, *args, **kwargs):
+        vals = args * 3 if len(args) == 1 else args
+        assert len(vals) == 3, "Must be xyz coordinates"
+        super(self.__class__, self).__init__(*vals, **kwargs)
+
     def to_matrix(self):
-        return trans.scale_matrix(self._array[0])
+        return np.diag((self._array[0], self._array[1], self._array[2], 1.))
 
     @property
     def x(self):
@@ -240,31 +245,27 @@ class Scale(Coordinates):
 
     @property
     def y(self):
-        return self[0]
+        return self[1]
 
     @y.setter
     def y(self, value):
-        self[0] = value
+        self[1] = value
 
     @property
     def z(self):
-        return self[0]
+        return self[2]
 
     @z.setter
     def z(self, value):
-        self[0] = value
+        self[2] = value
 
     @property
     def xyz(self):
-        return self[0]
+        return self[:]
 
     @xyz.setter
     def xyz(self, value):
-        if hasattr(value, '__iter__'):
-            assert value[0] == value[1] == value[2], "Scale doesn't yet support differing dimension values."
-            self[0] = value[0]
-        else:
-            self[0] = value
+        self[:] = value
 
 
 def cross_product_matrix(vec):
@@ -275,8 +276,12 @@ def cross_product_matrix(vec):
 
 
 def rotation_matrix_between_vectors(from_vec, to_vec):
-    """Returns a rotation matrix to rotate from 3d vector "from_vec" to 3d vector "to_vec"."""
+    """
+    Returns a rotation matrix to rotate from 3d vector "from_vec" to 3d vector "to_vec".
+    Equation from https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+    """
     a, b = (trans.unit_vector(vec) for vec in (from_vec, to_vec))
+
     v = np.cross(a, b)
     cos = np.dot(a, b)
     if cos == -1.:

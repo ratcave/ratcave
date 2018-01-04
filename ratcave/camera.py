@@ -13,7 +13,7 @@ Viewport = namedtuple('Viewport', 'x y width height')
 class ProjectionBase(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, z_near=0.02, z_far=10., aspect=1.25, **kwargs):
+    def __init__(self, z_near=0.1, z_far=12., aspect=1.25, **kwargs):
         super(ProjectionBase, self).__init__(**kwargs)
         self.projection_matrix = np.identity(4, dtype=np.float32)
         self._z_near = z_near
@@ -203,6 +203,13 @@ class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin, mixins.Observabl
     def __repr__(self):
         return "<Camera(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
+    def __enter__(self):
+        self.uniforms.send()
+        return self
+
+    def __exit__(self, *args):
+        pass
+
     def update(self):
         super(Camera, self).update()
         self.projection.update()
@@ -228,3 +235,5 @@ class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin, mixins.Observabl
     def projection_matrix(self):
         return self.projection.projection_matrix
 
+
+default_camera = Camera()

@@ -1,9 +1,13 @@
-import abc
-import numpy as np
 import _transformations as trans
-from ratcave.utils import coordinates as rotutils
-from ratcave.utils import SceneGraph, AutoRegisterObserver, Observable
-from ratcave.utils import mixins
+
+import numpy as np
+import pyglet.gl as gl
+
+from . import coordinates
+from .utils import AutoRegisterObserver, Observable
+from .utils import mixins
+from .scenegraph import SceneGraph
+
 
 class Physical(AutoRegisterObserver, Observable, mixins.PickleableMixin):
 
@@ -19,9 +23,9 @@ class Physical(AutoRegisterObserver, Observable, mixins.PickleableMixin):
         super(Physical, self).__init__(**kwargs)
 
         self.orientation0 = np.array(orientation0, dtype=np.float32)
-        self.rotation = rotutils.RotationEulerDegrees(*rotation)
-        self.position = rotutils.Translation(*position)
-        self.scale = rotutils.Scale(scale)
+        self.rotation = coordinates.RotationEulerDegrees(*rotation)
+        self.position = coordinates.Translation(*position)
+        self.scale = coordinates.Scale(scale)
 
         self._model_matrix = np.identity(4, dtype=np.float32)
         self._normal_matrix = np.identity(4, dtype=np.float32)
@@ -76,9 +80,21 @@ class Physical(AutoRegisterObserver, Observable, mixins.PickleableMixin):
 
     @orientation.setter
     def orientation(self, vec):
-        # From algorithm at http://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d/897677#897677
-        rot_mat = rotutils.rotation_matrix_between_vectors(self.orientation0, vec)
-        self.rotation = self.rotation.from_matrix(rot_mat)
+        mat = (gl.GLfloat * 16)()
+        gl.glPushMatrix()
+        gl.glLoadIdentity()
+        gl.gluLookAt(0., 0., 0., vec[0], vec[1], vec[2], 0, 1, 0)
+        gl.glGetFloatv(gl.GL_MODELVIEW_MATRIX, mat)
+        gl.glPopMatrix()
+        mat = np.array(mat).reshape(4, 4)
+        # rot_mat = rotutils.rotation_matrix_between_vectors(self.orientation0, vec)
+        self.rotation = self.rotation.from_matrix(mat[:3, :3])
+
+    def look_at(self, x, y, z):
+        """Rotate so orientation is toward (x, y, z) coordinates."""
+
+        new_ori = x - self.position.x, y - self.position.y, z - self.position.z
+        self.orientation = new_ori / np.linalg.norm(new_ori)
 
     def update(self):
         """Calculate model, normal, and view matrices from position, rotation, and scale data."""

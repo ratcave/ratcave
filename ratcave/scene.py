@@ -4,6 +4,7 @@ from . import Camera, Light
 from .utils import gl as glutils
 from .texture import TextureCube
 from .utils import mixins
+from .gl_states import GLStateManager
 
 class Scene(mixins.NameLabelMixin):
 
@@ -17,7 +18,7 @@ class Scene(mixins.NameLabelMixin):
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
         self.bgColor = bgColor
-        self.gl_states = gl_states
+        self.gl_states = GLStateManager(gl_states)
 
     def __repr__(self):
         return "<Scene(name='{self.name}'), meshes={self.meshes}, light={self.light}, camera={self.camera}>".format(self=self)
@@ -66,7 +67,7 @@ class Scene(mixins.NameLabelMixin):
         if clear:
             self.clear()
 
-        with glutils.enable_states(self.gl_states):
+        with self.gl_states:
 
             self.camera.update()
             self.camera.uniforms.send()

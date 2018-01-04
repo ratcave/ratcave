@@ -2,7 +2,6 @@
 
 import pyglet.gl as gl
 from ctypes import byref
-import contextlib
 import numpy as np
 
 POINTS = gl.GL_POINTS
@@ -21,17 +20,6 @@ def create_opengl_object(gl_gen_function, n=1):
         return handle.value  # Return handle value
 
 
-@contextlib.contextmanager
-def enable_states(gl_states):
-    """Context Manager that calls glEnable and glDisable on a list of gl states."""
-    for state in gl_states:
-        gl.glEnable(state)
-    yield
-    for state in gl_states:
-        gl.glDisable(state)
-
-
-
 def vec(floatlist, newtype='float'):
         """ Makes GLfloat or GLuint vector containing float or uint args.
         By default, newtype is 'float', but can be set to 'int' to make
@@ -41,6 +29,7 @@ def vec(floatlist, newtype='float'):
             return (gl.GLfloat * len(floatlist))(*list(floatlist))
         elif 'int' in newtype:
             return (gl.GLuint * len(floatlist))(*list(floatlist))
+
 
 class GlGenMixin(object):
 
@@ -176,6 +165,10 @@ class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
     def _buffer_data(self):
         with self:
             gl.glBufferData(self.target, 4 * self.ndarray.size, vec(self.ndarray.ravel()), gl.GL_STATIC_DRAW)
+
+    def _buffer_subdata(self):
+        with self:
+            gl.glBufferSubData(self.target, 0, 4 * self.ndarray.size, vec(self.ndarray.ravel()))
 
 
 class ElementArrayBuffer(VBO):

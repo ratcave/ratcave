@@ -15,7 +15,7 @@ from .utils import mixins
 from . import physical, shader
 from . import texture as texture_module
 import pyglet.gl as gl
-
+from copy import deepcopy
 
 # Meshes
 def gen_fullscreen_quad(name='FullScreenQuad'):
@@ -37,8 +37,12 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
 
 class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mixins.ObservableVisibleMixin):
 
+    triangles = gl.GL_TRIANGLES
+    points = gl.GL_POINTS
+
+
     def __init__(self, arrays, texture=None, mean_center=True,
-                 gl_states=(), drawmode=gl.GL_TRIANGLES, **kwargs):
+                 gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, dynamic=False, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -65,12 +69,14 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
 
         # Mean-center vertices and move position to vertex mean.
         vertex_mean = self.arrays[0][self.array_indices, :].mean(axis=0)
+
         if mean_center:
             self.arrays[0][:] -= vertex_mean
         if 'position' in kwargs:
             self.position.xyz = kwargs['position']
         elif mean_center:
             self.position.xyz = vertex_mean
+        self._mean_center = mean_center
         # self.position.xyz = vertex_mean if not 'position' in kwargs else kwargs['position']
 
         # Change vertices from an Nx3 to an Nx4 array by appending ones.  This makes some calculations more efficient.
@@ -82,9 +88,21 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
         self.drawmode = drawmode
+        self.point_size = point_size
+        self.dynamic = dynamic
+
+
 
     def __repr__(self):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
+
+    def copy(self):
+        mesh = Mesh(arrays=deepcopy([arr[:, :-1].copy() for arr in self.arrays]), texture=self.texture, mean_center=deepcopy(self._mean_center),
+                    position=self.position.xyz, rotation=self.rotation.to_euler('deg').xyz, scale=self.scale.x,
+                    drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic,
+                    gl_states=deepcopy(self.gl_states))
+        return mesh
+        # self.__class__(arrays=type(self.arrays)([arr.copy() for arr in self.arrays]), gl_states=self.gl_states)
 
     def reset_uniforms(self):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
@@ -101,7 +119,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
 
     @property
     def normals(self):
-        """Mesh vertices, centered around 0,0,0"""
+        """Mesh normals array."""
         return self.arrays[1][:, :3].view()
 
     @normals.setter
@@ -110,7 +128,6 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
 
     @property
     def texcoords(self):
-        """Mesh vertices, centered around 0,0,0"""
         return self.arrays[2][:, :2].view()
 
     @texcoords.setter
@@ -153,8 +170,11 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
     def _fill_vao(self):
         """Put array location in VAO for shader in same order as arrays given to Mesh."""
         with self.vao:
+            self.vbos = []
             for loc, verts in enumerate(self.arrays):
-                self.vao.assign_vertex_attrib_location(ugl.VBO(verts), loc)
+                vbo = ugl.VBO(verts)
+                self.vbos.append(vbo)
+                self.vao.assign_vertex_attrib_location(vbo, loc)
 
     def draw(self):
         if not self.vao:
@@ -162,12 +182,17 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
             self._fill_vao()
 
         self.update()
+
         if self.visible:
-            with ugl.enable_states(self.gl_states):
-                # with self.texture, self.vao as vao:
-                with self.vao as vao, self.texture:
-                    self.uniforms.send()
-                    vao.draw(mode=self.drawmode)
+            if self.dynamic:
+                for vbo in self.vbos:
+                    vbo._buffer_subdata()
+            if self.drawmode == gl.GL_POINTS:
+                gl.glPointSize(self.point_size)
+
+            with self.vao as vao, self.texture:
+                self.uniforms.send()
+                vao.draw(mode=self.drawmode)
 
 
 

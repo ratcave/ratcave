@@ -35,7 +35,6 @@ cube_texture = rc.texture.TextureCube(width=1024, height=1024)  # this is the ac
 cube_fbo = rc.FBO(texture=cube_texture)
 screen.texture = cube_texture
 
-shader = rc.Shader.from_file(*rc.resources.genShader)
 
 
 clock = 0.
@@ -50,7 +49,7 @@ pyglet.clock.schedule(update)
 
 @window.event
 def on_draw():
-    with shader:
+    with rc.default_shader:
         with cube_fbo as fbo:
             virtual_scene.draw360_to_texture(fbo.texture)
         projected_scene.draw()
