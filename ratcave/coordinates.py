@@ -1,7 +1,7 @@
 import numpy as np
 import _transformations as trans
 from abc import ABCMeta, abstractmethod
-from .observers import IterObservable
+from ratcave.utils.observers import IterObservable
 
 
 class Coordinates(IterObservable):

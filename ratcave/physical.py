@@ -1,10 +1,12 @@
-import abc
+import _transformations as trans
+
 import numpy as np
 import pyglet.gl as gl
-import _transformations as trans
-from ratcave.utils import coordinates as rotutils
-from ratcave.utils import SceneGraph, AutoRegisterObserver, Observable
-from ratcave.utils import mixins
+
+from . import coordinates
+from .utils import SceneGraph, AutoRegisterObserver, Observable
+from .utils import mixins
+
 
 class Physical(AutoRegisterObserver, Observable, mixins.PickleableMixin):
 
@@ -20,9 +22,9 @@ class Physical(AutoRegisterObserver, Observable, mixins.PickleableMixin):
         super(Physical, self).__init__(**kwargs)
 
         self.orientation0 = np.array(orientation0, dtype=np.float32)
-        self.rotation = rotutils.RotationEulerDegrees(*rotation)
-        self.position = rotutils.Translation(*position)
-        self.scale = rotutils.Scale(scale)
+        self.rotation = coordinates.RotationEulerDegrees(*rotation)
+        self.position = coordinates.Translation(*position)
+        self.scale = coordinates.Scale(scale)
 
         self._model_matrix = np.identity(4, dtype=np.float32)
         self._normal_matrix = np.identity(4, dtype=np.float32)
