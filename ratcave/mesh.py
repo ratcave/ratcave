@@ -161,11 +161,11 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
         self.uniforms.update(tex.uniforms)
 
     @classmethod
-    def from_incomplete_data(cls, vertices, normals=None, texcoords=None, name=None, **kwargs):
+    def from_incomplete_data(cls, vertices, normals=(), texcoords=(), name=None, **kwargs):
         """Return a Mesh with (vertices, normals, texcoords) as arrays, in that order.
            Useful for when you want a standardized array location format across different amounts of info in each mesh."""
-        normals = normals if type(normals) != type(None) else vertutils.calculate_normals(vertices)
-        texcoords = texcoords if type(texcoords) != type(None) else np.zeros((vertices.shape[0], 2), dtype=np.float32)
+        normals = normals if hasattr(texcoords, '__iter__') and len(normals) else vertutils.calculate_normals(vertices)
+        texcoords = texcoords if hasattr(texcoords, '__iter__') and len(texcoords) else np.zeros((vertices.shape[0], 2), dtype=np.float32)
         return cls(name=name, arrays=(vertices, normals, texcoords), **kwargs)
 
     def _fill_vao(self):
