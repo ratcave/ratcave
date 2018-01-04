@@ -15,6 +15,7 @@ from .shader import Shader, UniformCollection
 from .texture import Texture, TextureCube
 from .scenegraph import SceneGraph
 from .utils.gl import POINTS, LINE_LOOP, LINES, TRIANGLES
+from . import experimental
 from .wavefront import WavefrontReader
 
 __all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'WavefrontReader', 'resources']
