@@ -35,14 +35,14 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
         pass
 
 
-class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mixins.ObservableVisibleMixin):
+class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
 
     triangles = gl.GL_TRIANGLES
     points = gl.GL_POINTS
 
 
     def __init__(self, arrays, texture=None, mean_center=True,
-                 gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, dynamic=False, **kwargs):
+                 gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, dynamic=False, visible=True, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -90,6 +90,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin, mi
         self.drawmode = drawmode
         self.point_size = point_size
         self.dynamic = dynamic
+        self.visible = visible
 
 
 

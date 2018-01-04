@@ -21,8 +21,9 @@ class Coordinates(IterObservable):
             return self._array[item]
 
     def __setitem__(self, idx, value):
-        super(Coordinates, self).__setitem__(idx, value)
         self._array[idx] = value
+        super(Coordinates, self).__setitem__(idx, value)
+
 
     # Note: Index counts backwards from end of array to increase compatibility with Quaternions.
     @property
