@@ -245,23 +245,23 @@ class Scale(Coordinates):
 
     @property
     def y(self):
-        return self[0]
+        return self[1]
 
     @y.setter
     def y(self, value):
-        self[0] = value
+        self[1] = value
 
     @property
     def z(self):
-        return self[0]
+        return self[2]
 
     @z.setter
     def z(self, value):
-        self[0] = value
+        self[2] = value
 
     @property
     def xyz(self):
-        return self[0]
+        return self[:]
 
     @xyz.setter
     def xyz(self, value):
