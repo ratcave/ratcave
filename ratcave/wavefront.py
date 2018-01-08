@@ -45,7 +45,7 @@ class WavefrontReader(object):
                     if key == 'map_Kd':
                         if not value in self.textures:
                             self.textures[value] = Texture.from_image(value)
-                        mesh.texture = self.textures[value]
+                        mesh.textures.append(self.textures[value])
                     else:
                         setattr(mesh, key, value)
                 elif hasattr(value, '__len__'):  # iterable materials

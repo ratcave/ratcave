@@ -41,7 +41,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
     points = gl.GL_POINTS
 
 
-    def __init__(self, arrays, texture=None, mean_center=True,
+    def __init__(self, arrays, textures=(), mean_center=True,
                  gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, dynamic=False, visible=True, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
@@ -84,7 +84,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
         arrays[0] = np.append(self.arrays[0], np.ones((self.arrays[0].shape[0], 1), dtype=np.float32), axis=1)
         self.arrays = tuple(arrays)
 
-        self.texture = texture
+        self.textures = list(textures)
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
         self.drawmode = drawmode
@@ -98,7 +98,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
     def copy(self):
-        mesh = Mesh(arrays=deepcopy([arr[:, :-1].copy() for arr in self.arrays]), texture=self.texture, mean_center=deepcopy(self._mean_center),
+        mesh = Mesh(arrays=deepcopy([arr[:, :-1].copy() for arr in self.arrays]), texture=self.textures, mean_center=deepcopy(self._mean_center),
                     position=self.position.xyz, rotation=self.rotation.to_euler('deg').xyz, scale=self.scale.x,
                     drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic,
                     gl_states=deepcopy(self.gl_states))
@@ -148,15 +148,11 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
 
     @property
     def texture(self):
-        return self._texture
+        raise DeprecationWarning("Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
 
     @texture.setter
     def texture(self, value):
-        tex = Texture.from_image(value) if isinstance(value, str) else value
-        if type(tex) != type(None) and not isinstance(tex, Texture):
-            raise TypeError("Mesh.texture must be a Texture instance.")
-        self.uniforms['has_texture'] = True if tex else False
-        self._texture = tex
+        raise DeprecationWarning("Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
 
     @classmethod
     def from_incomplete_data(cls, vertices, normals=(), texcoords=(), name=None, **kwargs):
@@ -188,15 +184,15 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
             if self.drawmode == gl.GL_POINTS:
                 gl.glPointSize(self.point_size)
 
-            if self.texture:
-                self.texture.bind()
+            for texture in self.textures:
+                texture.bind()
 
             with self.vao as vao:
                 self.uniforms.send()
                 vao.draw(mode=self.drawmode)
 
-            if self.texture:
-                self.texture.unbind()
+            for texture in self.textures:
+                texture.unbind()
 
 
 

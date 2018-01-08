@@ -33,7 +33,7 @@ projected_scene.camera.projection.z_far = 6
 # Create Framebuffer and Textures
 cube_texture = rc.texture.TextureCube(width=1024, height=1024)  # this is the actual cube texture
 cube_fbo = rc.FBO(texture=cube_texture)
-screen.texture = cube_texture
+screen.textures.append(cube_texture)
 
 
 

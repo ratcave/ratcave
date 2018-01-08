@@ -15,7 +15,7 @@ monkey.position.xyz = 0, 0, -4
 monkey.scale.xyz = .25
 monkey.point_size = .1
 # monkey.uniforms['hasShadow'] = True
-monkey.texture = rc.resources.img_colorgrid
+monkey.textures.append(rc.Texture.from_image(rc.resources.img_colorgrid))
 # monkey.uniforms['flat_shading'] = True
 
 
