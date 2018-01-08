@@ -13,7 +13,7 @@ from .utils import gl as ugl
 from .utils import vertices as vertutils
 from .utils import mixins
 from . import physical, shader
-from . import texture as texture_module
+from .texture import Texture
 import pyglet.gl as gl
 from copy import deepcopy
 
@@ -152,7 +152,9 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
 
     @texture.setter
     def texture(self, value):
-        tex = texture_module.Texture.from_image(value) if isinstance(value, str) else value
+        tex = Texture.from_image(value) if isinstance(value, str) else value
+        if not isinstance(tex, Texture):
+            raise TypeError("Mesh.texture must be a Texture instance.")
         self.uniforms['has_texture'] = True if tex else False
         self._texture = tex
 
