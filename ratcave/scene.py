@@ -101,7 +101,8 @@ class Scene(mixins.NameLabelMixin):
         """
 
         assert self.camera.projection.aspect == 1. and self.camera.projection.fov_y == 90  # todo: fix aspect property, which currently reads from viewport.
-        assert type(cubetexture) == TextureCube, "Must render to TextureCube"
+        if not isinstance(cubetexture, TextureCube):
+            raise ValueError("Must render to TextureCube")
 
         # for face, rotation in enumerate([[180, 90, 0], [180, -90, 0], [90, 0, 0], [-90, 0, 0], [180, 0, 0], [0, 0, 180]]):
         old_rotation = self.camera.rotation
