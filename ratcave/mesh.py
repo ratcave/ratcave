@@ -153,7 +153,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
     @texture.setter
     def texture(self, value):
         tex = Texture.from_image(value) if isinstance(value, str) else value
-        if not isinstance(tex, Texture):
+        if type(tex) != type(None) and not isinstance(tex, Texture):
             raise TypeError("Mesh.texture must be a Texture instance.")
         self.uniforms['has_texture'] = True if tex else False
         self._texture = tex

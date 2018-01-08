@@ -13,21 +13,17 @@ class Texture(HasUniforms, ugl.BindTargetMixin):
     internal_fmt = gl.GL_RGBA
     pixel_fmt=gl.GL_RGBA
     _slot_counter = itertools.count(start=1)
-    int_flag = 1
     bindfun = gl.glBindTexture
 
-    tex_name = 'TextureMap'
-    cube_name = 'CubeMap'
-
-    def __init__(self, id=None, width=1024, height=1024, data=None, mipmap=False, **kwargs):
+    def __init__(self, id=None, name='TextureMap', width=1024, height=1024, data=None, mipmap=False, flag=1, **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
         super(Texture, self).__init__(**kwargs)
-        self.reset_uniforms()
 
         self._slot = next(self._slot_counter)
         if self._slot >= self.max_texture_limit:
             raise MemoryError("More Textures have been created than your graphics Hardware can handle.")
-        self.uniforms[self.tex_name] = self._slot
+        self.name = name
+        self.uniforms['texture_flag'] = flag
         self.mipmap = mipmap
 
         if id != None:
@@ -43,23 +39,27 @@ class Texture(HasUniforms, ugl.BindTargetMixin):
 
         self.unbind()
 
-    def __bool__(self):
-        return bool(self.int_flag)
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, name):
+        self.__name = name
+        # del self.uniforms[name]
+        self.uniforms[name] = self._slot
 
     def bind(self):
         gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
-        super(self.__class__, self).bind()
-
-        self.uniforms.send()
+        super(Texture, self).bind()
+        try:
+            self.uniforms.send()
+        except UnboundLocalError:  # TODO: Find a way to make binding and uniform-sending simple without requiring a bound shader.
+            pass
 
     def unbind(self):
-        super(self.__class__, self).unbind()
+        super(Texture, self).unbind()
         gl.glActiveTexture(gl.GL_TEXTURE0)
-
-    def reset_uniforms(self):
-        self.uniforms['textype'] = self.int_flag
-        self.uniforms[self.tex_name] = 0
-        self.uniforms[self.cube_name] = 0
 
     @property
     def slot(self):
@@ -114,18 +114,19 @@ class Texture(HasUniforms, ugl.BindTargetMixin):
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
         return cls(id=tex.id, data=tex, mipmap=mipmap, **kwargs)
 
+    def reset_uniforms(self):
+        pass
 
 class TextureCube(Texture):
 
     target = gl.GL_TEXTURE_CUBE_MAP
     target0 = gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X
-    int_flag = 2
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, name='CubeMap', flag=2, *args, **kwargs):
         """the Color Cube Texture class."""
-        # TODO: check that width == height!
-        super(TextureCube, self).__init__(*args, **kwargs)
-        self.uniforms[self.cube_name] = self._slot
+        super(TextureCube, self).__init__(name=name, flag=flag, *args, **kwargs)
+        if self.height != self.width:
+            raise ValueError("TextureCube's height and width must match each other.")
 
     def _apply_filter_settings(self, *args, **kwargs):
         super(TextureCube, self)._apply_filter_settings()
