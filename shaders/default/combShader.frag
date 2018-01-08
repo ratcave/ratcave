@@ -1,7 +1,7 @@
 #version 150
 #extension GL_NV_shadow_samplers_cube : enable
 
-uniform int hasShadow, flat_shading, texture_flag, has_texture;
+uniform int hasShadow, flat_shading, TextureMap_isBound, CubeMap_isBound;
 uniform float spec_weight, opacity;
 uniform vec3 camera_position, light_position;
 uniform vec3 diffuse, specular, ambient;
@@ -20,28 +20,23 @@ void main()
 
     //If lighting is turned off, just use the diffuse color and return. (Flat lighting)
     if (flat_shading > 0) {
-        if (has_texture > 0) {
-            if (texture_flag == 1){
+            if (TextureMap_isBound > 0){
                 final_color = vec4(diffuse * texture2D(TextureMap, texCoord).rgb, 1.0);
                 return;
-            } else if (texture_flag == 2) {
+            } else if (CubeMap_isBound > 0) {
                 final_color = vec4(lightAmount + (diffuse * textureCube(CubeMap, eyeVec).rgb), 1.0);
                 return;
             } else {
                  final_color = vec4(diffuse, 1.0);
                  return;
             }
-        }
-
     }
 
     //Shade Cube Map and return, if needed
-    if (has_texture > 0){
-        if (texture_flag == 2) {
+    if (CubeMap_isBound > 0){
             final_color = textureCube(CubeMap, eyeVec);// * lightAmount;
             final_color[3] = 1.0;
             return;
-        }
     }
 
     // Ambient Lighting
@@ -49,10 +44,8 @@ void main()
 
     // UV Texture
     vec3 texture_coeff = vec3(1.0);
-    if (has_texture > 0){
-        if (texture_flag == 1) {
-            texture_coeff = texture2D(TextureMap, texCoord).rgb;
-        }
+    if (TextureMap_isBound > 0){
+        texture_coeff = texture2D(TextureMap, texCoord).rgb;
     }
 
     //// Phong Model

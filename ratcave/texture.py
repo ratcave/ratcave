@@ -52,12 +52,18 @@ class Texture(HasUniforms, ugl.BindTargetMixin):
     def bind(self):
         gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
         super(Texture, self).bind()
+        self.uniforms['{}_isBound'.format(self.name)] = True
         try:
             self.uniforms.send()
         except UnboundLocalError:  # TODO: Find a way to make binding and uniform-sending simple without requiring a bound shader.
             pass
 
     def unbind(self):
+        self.uniforms['{}_isBound'.format(self.name)] = False
+        try:
+            self.uniforms.send()
+        except UnboundLocalError:  # TODO: Find a way to make binding and uniform-sending simple without requiring a bound shader.
+            pass
         super(Texture, self).unbind()
         gl.glActiveTexture(gl.GL_TEXTURE0)
 
