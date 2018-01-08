@@ -84,7 +84,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
         arrays[0] = np.append(self.arrays[0], np.ones((self.arrays[0].shape[0], 1), dtype=np.float32), axis=1)
         self.arrays = tuple(arrays)
 
-        self.texture = texture if texture else texture_module.BaseTexture()
+        self.texture = texture
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
         self.drawmode = drawmode
@@ -108,6 +108,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
     def reset_uniforms(self):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
+        self.uniforms['has_texture'] = False
 
     @property
     def vertices(self):
@@ -151,14 +152,9 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
 
     @texture.setter
     def texture(self, value):
-        if isinstance(value, str):
-            tex = texture_module.Texture.from_image(value)
-        elif isinstance(value, texture_module.BaseTexture):
-            tex = value
-        else:
-            raise TypeError("Texture must be given a filename or a ratcave.Texture instance.")
+        tex = texture_module.Texture.from_image(value) if isinstance(value, str) else value
+        self.uniforms['has_texture'] = True if tex else False
         self._texture = tex
-        self.uniforms.update(tex.uniforms)
 
     @classmethod
     def from_incomplete_data(cls, vertices, normals=(), texcoords=(), name=None, **kwargs):
@@ -186,12 +182,19 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
             if self.dynamic:
                 for vbo in self.vbos:
                     vbo._buffer_subdata()
+
             if self.drawmode == gl.GL_POINTS:
                 gl.glPointSize(self.point_size)
 
-            with self.vao as vao, self.texture:
+            if self.texture:
+                self.texture.bind()
+
+            with self.vao as vao:
                 self.uniforms.send()
                 vao.draw(mode=self.drawmode)
+
+            if self.texture:
+                self.texture.unbind()
 
 
 

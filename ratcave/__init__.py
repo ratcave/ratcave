@@ -12,7 +12,7 @@ from .physical import Physical, PhysicalGraph
 from .resources import default_shader
 from .scene import Scene
 from .shader import Shader, UniformCollection
-from .texture import Texture, TextureCube
+from .texture import Texture, TextureCube, DepthTexture
 from .scenegraph import SceneGraph
 from .utils.gl import POINTS, LINE_LOOP, LINES, TRIANGLES
 from . import experimental

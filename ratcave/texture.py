@@ -5,36 +5,7 @@ import pyglet.gl as gl
 from .shader import HasUniforms
 
 
-class BaseTexture(HasUniforms):
-
-    int_flag = 0
-    tex_name = 'TextureMap'
-    cube_name = 'CubeMap'
-
-    def __init__(self, **kwargs):
-        super(BaseTexture, self).__init__(**kwargs)
-        self.reset_uniforms()
-
-    def reset_uniforms(self):
-        self.uniforms['textype'] = self.int_flag
-        self.uniforms[self.tex_name] = 0
-        self.uniforms[self.cube_name] = 0
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    @property
-    def max_texture_limit(self):
-        """The maximum number of textures available for this graphic card's fragment shader."""
-        max_unit_array = (gl.GLint * 1)()
-        gl.glGetIntegerv(gl.GL_MAX_TEXTURE_IMAGE_UNITS, max_unit_array)
-        return max_unit_array[0]
-
-
-class Texture(BaseTexture, ugl.BindTargetMixin):
+class Texture(HasUniforms, ugl.BindTargetMixin):
 
     target = gl.GL_TEXTURE_2D
     target0 = gl.GL_TEXTURE_2D
@@ -45,9 +16,13 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
     int_flag = 1
     bindfun = gl.glBindTexture
 
+    tex_name = 'TextureMap'
+    cube_name = 'CubeMap'
+
     def __init__(self, id=None, width=1024, height=1024, data=None, mipmap=False, **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
         super(Texture, self).__init__(**kwargs)
+        self.reset_uniforms()
 
         self._slot = next(self._slot_counter)
         if self._slot >= self.max_texture_limit:
@@ -66,8 +41,25 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
             self._genTex2D()
             self._apply_filter_settings()
 
-
         self.unbind()
+
+    def __bool__(self):
+        return bool(self.int_flag)
+
+    def bind(self):
+        gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
+        super(self.__class__, self).bind()
+
+        self.uniforms.send()
+
+    def unbind(self):
+        super(self.__class__, self).unbind()
+        gl.glActiveTexture(gl.GL_TEXTURE0)
+
+    def reset_uniforms(self):
+        self.uniforms['textype'] = self.int_flag
+        self.uniforms[self.tex_name] = 0
+        self.uniforms[self.cube_name] = 0
 
     @property
     def slot(self):
@@ -75,14 +67,18 @@ class Texture(BaseTexture, ugl.BindTargetMixin):
         return self._slot
 
     def __enter__(self):
-        gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
         self.bind()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.unbind()
-        gl.glActiveTexture(gl.GL_TEXTURE0)
-        pass
+
+    @property
+    def max_texture_limit(self):
+        """The maximum number of textures available for this graphic card's fragment shader."""
+        max_unit_array = (gl.GLint * 1)()
+        gl.glGetIntegerv(gl.GL_MAX_TEXTURE_IMAGE_UNITS, max_unit_array)
+        return max_unit_array[0]
 
     def _genTex2D(self):
         """Creates an empty texture in OpenGL."""
