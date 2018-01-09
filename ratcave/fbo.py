@@ -1,6 +1,6 @@
 
 from .utils import gl as ugl
-from . import texture as tex
+from .texture import DepthTexture, RenderBuffer
 
 import pyglet.gl as gl
 
@@ -16,7 +16,7 @@ class FBO(ugl.GlGenMixin, ugl.BindingContextMixin):
         super(FBO, self).__init__(*args, **kwargs)
         self._old_viewport_size = (gl.GLint * 4)()
         self.texture = texture
-        self.renderbuffer = tex.RenderBuffer(texture.width, texture.height) if not isinstance(texture, tex.DepthTexture) else None
+        self.renderbuffer = RenderBuffer(texture.width, texture.height) if not isinstance(texture, DepthTexture) else None
 
         with self: #, self.texture:  # TODO: Figure out whether texture should also be bound here.
 
@@ -25,7 +25,7 @@ class FBO(ugl.GlGenMixin, ugl.BindingContextMixin):
                 texture.attach_to_fbo()
 
             # Set Draw and Read locations for the FBO (currently, just turn it off if not doing any color stuff)
-            if isinstance(texture, tex.DepthTexture):
+            if isinstance(texture, DepthTexture):
                 gl.glDrawBuffer(gl.GL_NONE)  # No color in this buffer
                 gl.glReadBuffer(gl.GL_NONE)
 
