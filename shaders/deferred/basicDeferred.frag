@@ -1,4 +1,4 @@
-#version 400
+#version 150
 
 uniform sampler2D TextureMap;
 uniform vec2 frameBufSize;

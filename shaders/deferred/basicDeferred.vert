@@ -1,4 +1,6 @@
-#version 330
+#version 150
+#extension GL_ARB_explicit_attrib_location : enable
+
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 2) in vec2 uvTexturePosition;
