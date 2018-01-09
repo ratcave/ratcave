@@ -162,6 +162,10 @@ class DepthTexture(Texture):
         """the Color Cube Texture class."""
         super(DepthTexture, self).__init__(name=name, *args, **kwargs)
 
+    def _apply_filter_settings(self):
+        super(DepthTexture, self)._apply_filter_settings()
+        gl.glTexParameterf(self.target, gl.GL_TEXTURE_COMPARE_MODE, gl.GL_COMPARE_REF_TO_TEXTURE)
+
 
 class GrayscaleTexture(Texture):
     internal_fmt = gl.GL_R8

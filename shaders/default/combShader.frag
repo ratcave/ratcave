@@ -5,7 +5,8 @@ uniform int flat_shading, TextureMap_isBound, CubeMap_isBound, DepthMap_isBound;
 uniform float spec_weight, opacity;
 uniform vec3 camera_position, light_position;
 uniform vec3 diffuse, specular, ambient;
-uniform sampler2D DepthMap, TextureMap;
+uniform sampler2D TextureMap;
+uniform sampler2DShadow DepthMap;
 uniform samplerCube CubeMap;
 
 in float lightAmount;
@@ -66,15 +67,11 @@ void main()
     // Depth-Map Shadows
     float shadow_coeff = 1.;
     if (DepthMap_isBound > 0){
-//        final_color = vec4(1., 1., 0., 1.);
-//        return;
         if (ShadowCoord.w > 0.0){
             vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w;
-            float distanceFromLight = texture2D(DepthMap, shadowCoordinateWdivide.xy).z;
-
-            if ( distanceFromLight < shadowCoordinateWdivide.z - .0001) { // to prevent "shadow acne" caused from precision errors
-                shadow_coeff = 0.65;
-            }
+            shadowCoordinateWdivide.z -= .0001; // to prevent "shadow acne" caused from precision errors
+            float distanceFromLight = texture(DepthMap, shadowCoordinateWdivide.xyz);
+            shadow_coeff = 0.65 + (0.35 * distanceFromLight);
         }
     }
 
