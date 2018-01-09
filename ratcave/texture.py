@@ -15,7 +15,7 @@ class Texture(HasUniforms, ugl.BindTargetMixin):
     _slot_counter = itertools.count(start=1)
     bindfun = gl.glBindTexture
 
-    def __init__(self, id=None, name='TextureMap', width=1024, height=1024, data=None, mipmap=False, flag=1, **kwargs):
+    def __init__(self, id=None, name='TextureMap', width=1024, height=1024, data=None, mipmap=False, **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
         super(Texture, self).__init__(**kwargs)
 
@@ -23,7 +23,6 @@ class Texture(HasUniforms, ugl.BindTargetMixin):
         if self._slot >= self.max_texture_limit:
             raise MemoryError("More Textures have been created than your graphics Hardware can handle.")
         self.name = name
-        self.uniforms['texture_flag'] = flag
         self.mipmap = mipmap
 
         if id != None:
@@ -128,9 +127,9 @@ class TextureCube(Texture):
     target = gl.GL_TEXTURE_CUBE_MAP
     target0 = gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X
 
-    def __init__(self, name='CubeMap', flag=2, *args, **kwargs):
+    def __init__(self, name='CubeMap', *args, **kwargs):
         """the Color Cube Texture class."""
-        super(TextureCube, self).__init__(name=name, flag=flag, *args, **kwargs)
+        super(TextureCube, self).__init__(name=name, *args, **kwargs)
         if self.height != self.width:
             raise ValueError("TextureCube's height and width must match each other.")
 
