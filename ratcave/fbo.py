@@ -18,11 +18,12 @@ class FBO(ugl.GlGenMixin, ugl.BindingContextMixin):
         self.texture = texture
         self.renderbuffer = RenderBuffer(texture.width, texture.height) if not isinstance(texture, DepthTexture) else None
 
-        with self: #, self.texture:  # TODO: Figure out whether texture should also be bound here.
+        with self:
 
             # Attach the textures to the FBO
-            for texture in [self.texture, self.renderbuffer] if self.renderbuffer else [self.texture]:
-                texture.attach_to_fbo()
+            self.texture.attach_to_fbo()
+            if self.renderbuffer:
+                self.renderbuffer.attach_to_fbo()
 
             # Set Draw and Read locations for the FBO (currently, just turn it off if not doing any color stuff)
             if isinstance(texture, DepthTexture):
