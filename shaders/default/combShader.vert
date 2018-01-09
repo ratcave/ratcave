@@ -13,7 +13,7 @@ uniform mat4 projection_matrix = mat4(vec4(1.38564062,  0.,  0.,  0.),
                                       vec4(0., 0., -1.01680672, -1. ),
                                       vec4(0., 0., -0.20168068, 0.)
                                       );
-uniform mat4 shadow_projection_matrix, shadow_view_matrix;
+uniform mat4 light_projection_matrix, light_view_matrix;
 
 out float lightAmount;
 out vec2 texCoord;
@@ -41,7 +41,7 @@ void main()
 	eyeVec = vVertex.xyz - playerPos;
   
   	//Calculate Shadow Coordinate
-  	ShadowCoord = (texture_bias * shadow_projection_matrix * shadow_view_matrix * vVertex);
+  	ShadowCoord = (texture_bias * light_projection_matrix * light_view_matrix * vVertex);
 
     // Calculate Diffusion Intensity, and Subtract it out (only used for cubemaps)
     float lambertTerm0 = dot(normal, normalize(light_position - vVertex.xyz));

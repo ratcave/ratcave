@@ -1,12 +1,12 @@
-from .physical import PhysicalGraph
 from .shader import HasUniforms
 from .utils import mixins
+from .camera import Camera
 
-
-class Light(PhysicalGraph, HasUniforms, mixins.NameLabelMixin):
+class Light(Camera, HasUniforms, mixins.NameLabelMixin):
 
     def __init__(self, **kwargs):
         super(Light, self).__init__(**kwargs)
+        # self.projection.fov_y = 130
         self.reset_uniforms()
 
     def __repr__(self):
@@ -21,6 +21,8 @@ class Light(PhysicalGraph, HasUniforms, mixins.NameLabelMixin):
 
     def reset_uniforms(self):
         self.uniforms['light_position'] = self.model_matrix_global[:3, 3]
+        self.uniforms['light_projection_matrix'] = self.projection_matrix.view()
+        self.uniforms['light_view_matrix'] = self.view_matrix.view()
 
 
 default_light = Light()

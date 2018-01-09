@@ -158,6 +158,10 @@ class DepthTexture(Texture):
     pixel_fmt = gl.GL_DEPTH_COMPONENT
     attachment_point = gl.GL_DEPTH_ATTACHMENT_EXT
 
+    def __init__(self, name='DepthMap', *args, **kwargs):
+        """the Color Cube Texture class."""
+        super(DepthTexture, self).__init__(name=name, *args, **kwargs)
+
 
 class GrayscaleTexture(Texture):
     internal_fmt = gl.GL_R8
