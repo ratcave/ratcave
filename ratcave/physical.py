@@ -30,6 +30,7 @@ class Physical(AutoRegisterObserver, mixins.PickleableMixin):
         self._model_matrix = np.identity(4, dtype=np.float32)
         self._normal_matrix = np.identity(4, dtype=np.float32)
         self._view_matrix = np.identity(4, dtype=np.float32)
+        self.update()
 
     @property
     def model_matrix(self):
@@ -98,10 +99,11 @@ class PhysicalGraph(Physical, SceneGraph):
 
     def __init__(self, **kwargs):
         """Object with xyz position and rotation properties that are relative to its parent."""
-        super(PhysicalGraph, self).__init__(**kwargs)
         self._model_matrix_global = np.identity(4, dtype=np.float32)
         self._normal_matrix_global = np.identity(4, dtype=np.float32)
         self._view_matrix_global = np.identity(4, dtype=np.float32)
+        super(PhysicalGraph, self).__init__(**kwargs)
+
 
     @property
     def model_matrix_global(self):
