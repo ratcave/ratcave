@@ -26,7 +26,7 @@ setup(name='ratcave',
       packages=find_packages(exclude=['docs']),
       include_package_data=True,
       package_data={'': ['../assets/*.'+el for el in ['png', 'obj', 'mtl']] +
-                        ['../shaders/*'+el for el in ['vert', 'frag']]
+                        ['../shaders/*/*'+el for el in ['vert', 'frag']]
                     },
       install_requires=['pyglet', 'numpy', 'wavefront_reader', 'future', 'six'],
       ext_modules=[Extension('_transformations', sources=['third_party/transformations.c'], include_dirs=[numpy.get_include()])],
