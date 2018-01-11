@@ -43,7 +43,6 @@ class BindingContextMixin(object):
     """Mixin that calls self.bind() and self.unbind() when used in a context manager."""
 
     def __enter__(self):
-
         self.bind()
         return self
 
@@ -130,19 +129,19 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
 
     def _draw_elements(self, mode=gl.GL_TRIANGLES):
         with self.element_array_buffer as el_array:
-            gl.glDrawElements(mode, el_array.ndarray.shape[0],
+            gl.glDrawElements(mode, el_array.data.shape[0],
                               gl.GL_UNSIGNED_INT, 0)
 
     def assign_vertex_attrib_location(self, vbo, location):
         """Load data into a vbo"""
         with vbo:
             if self.n_verts:
-                assert vbo.ndarray.shape[0] == self.n_verts
+                assert vbo.data.shape[0] == self.n_verts
             else:
-                self.n_verts = vbo.ndarray.shape[0]
+                self.n_verts = vbo.data.shape[0]
 
             # vbo.buffer_data()
-            gl.glVertexAttribPointer(location, vbo.ndarray.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+            gl.glVertexAttribPointer(location, vbo.data.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
             gl.glEnableVertexAttribArray(location)
 
     def draw(self, mode=gl.GL_TRIANGLES):
@@ -154,31 +153,28 @@ class VBO(BindingContextMixin, BindTargetMixin):
     target = gl.GL_ARRAY_BUFFER
     bindfun = gl.glBindBuffer
 
-    def __init__(self, ndarray, *args, **kwargs):
+    def __init__(self, data, *args, **kwargs):
         super(VBO, self).__init__(*args, **kwargs)
         self.id = create_opengl_object(gl.glGenBuffers)
-        self.ndarray = ndarray
+        self.data = data
         self._buffer_data()
 
     def _buffer_data(self):
         with self:
-            gl.glBufferData(self.target, 4 * self.ndarray.size, vec(self.ndarray.ravel()), gl.GL_STATIC_DRAW)
+            gl.glBufferData(self.target, 4 * self.data.size, vec(self.data.ravel()), gl.GL_STATIC_DRAW)
 
     def _buffer_subdata(self):
         with self:
-            gl.glBufferSubData(self.target, 0, 4 * self.ndarray.size, vec(self.ndarray.ravel()))
+            gl.glBufferSubData(self.target, 0, 4 * self.data.size, vec(self.data.ravel()))
 
 
 class ElementArrayBuffer(VBO):
 
     target = gl.GL_ELEMENT_ARRAY_BUFFER
 
-    def __init__(self, *args, **kwargs):
-        super(ElementArrayBuffer, self).__init__(*args, **kwargs)
-
     def _buffer_data(self):
         with self:
-            gl.glBufferData(self.target, 4 * self.ndarray.size, vec(self.ndarray.ravel(), int), gl.GL_STATIC_DRAW)
+            gl.glBufferData(self.target, 4 * self.data.size, vec(self.data.ravel(), int), gl.GL_STATIC_DRAW)
 
 
 def setpriority(pid=None,priority=1):
