@@ -7,17 +7,17 @@
     This module contains the Mesh, MeshData, and Material classes.
     This documentation was auto-generated from the mesh.py file.
 """
-import abc
+
 import numpy as np
-from .utils import gl as ugl
 from .utils import vertices as vertutils
 from .utils import mixins
 from . import physical, shader
 from .texture import Texture
+from .vertex import VAO, VBO
 import pyglet.gl as gl
 from copy import deepcopy
 
-# Meshes
+
 def gen_fullscreen_quad(name='FullScreenQuad'):
     verts = np.array([[-1, -1, -.5], [-1, 1, -.5], [1, 1, -.5], [-1, -1, -.5], [1, 1, -.5], [1, -1, -.5]], dtype=np.float32)
     normals=np.array([[0, 0, 1]] * 6, dtype=np.float32)
@@ -167,13 +167,13 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
         with self.vao:
             self.vbos = []
             for loc, verts in enumerate(self.arrays):
-                vbo = ugl.VBO(verts)
+                vbo = VBO(verts)
                 self.vbos.append(vbo)
                 self.vao.assign_vertex_attrib_location(vbo, loc)
 
     def draw(self):
         if not self.vao:
-            self.vao = ugl.VAO(indices=self.array_indices)
+            self.vao = VAO(indices=self.array_indices)
             self._fill_vao()
 
         if self.visible:
