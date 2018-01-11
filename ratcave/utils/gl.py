@@ -38,15 +38,6 @@ def vec(data, dtype=float):
         return (gl_dtype * len(data))(*list(data))
 
 
-class GlGenMixin(object):
-
-    genfun = None
-
-    def __init__(self, *args, **kwargs):
-        super(GlGenMixin, self).__init__(*args, **kwargs)
-        self.id = create_opengl_object(self.genfun)
-
-
 
 class BindingContextMixin(object):
     """Mixin that calls self.bind() and self.unbind() when used in a context manager."""
@@ -94,9 +85,8 @@ class BindNoTargetMixin(BindTargetMixin):
         cls._bound = None
 
 
-class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
+class VAO(BindingContextMixin, BindNoTargetMixin):
 
-    genfun = gl.glGenVertexArrays
     bindfun = gl.glBindVertexArray
 
     def __init__(self, indices=None, **kwargs):
@@ -114,6 +104,7 @@ class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
 
         # Create Vertex Array Object and Bind it
         super(VAO, self).__init__(**kwargs)
+        self.id = create_opengl_object(gl.glGenVertexArrays)
         self.n_verts = None
 
         self.drawfun = self._draw_arrays
@@ -158,14 +149,14 @@ class VAO(GlGenMixin, BindingContextMixin, BindNoTargetMixin):
         self.drawfun(mode)
 
 
-class VBO(GlGenMixin, BindingContextMixin, BindTargetMixin):
+class VBO(BindingContextMixin, BindTargetMixin):
 
-    genfun = gl.glGenBuffers
     target = gl.GL_ARRAY_BUFFER
     bindfun = gl.glBindBuffer
 
     def __init__(self, ndarray, *args, **kwargs):
         super(VBO, self).__init__(*args, **kwargs)
+        self.id = create_opengl_object(gl.glGenBuffers)
         self.ndarray = ndarray
         self._buffer_data()
 

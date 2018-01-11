@@ -5,15 +5,15 @@ from .texture import DepthTexture, RenderBuffer
 import pyglet.gl as gl
 
 
-class FBO(ugl.GlGenMixin, ugl.BindingContextMixin):
+class FBO(ugl.BindingContextMixin):
 
-    genfun = gl.glGenFramebuffersEXT
     target = gl.GL_FRAMEBUFFER_EXT
 
     def __init__(self, texture, *args, **kwargs):
         """A Framebuffer object, which when bound redirects draws to its texture.  This is useful for deferred rendering."""
 
         super(FBO, self).__init__(*args, **kwargs)
+        self.id = ugl.create_opengl_object(gl.glGenFramebuffersEXT)
         self._old_viewport_size = (gl.GLint * 4)()
         self.texture = texture
         self.renderbuffer = RenderBuffer(texture.width, texture.height) if not isinstance(texture, DepthTexture) else None
