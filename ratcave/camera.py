@@ -5,7 +5,7 @@ import pyglet.gl as gl
 from collections import namedtuple
 import warnings
 from .shader import HasUniforms
-from .utils import mixins
+from .utils import NameLabelMixin
 
 Viewport = namedtuple('Viewport', 'x y width height')
 
@@ -192,7 +192,7 @@ class PerspectiveProjection(ProjectionBase):
 
 
 
-class Camera(PhysicalGraph, HasUniforms, mixins.NameLabelMixin):
+class Camera(PhysicalGraph, HasUniforms, NameLabelMixin):
 
     def __init__(self, projection=None, orientation0=(0, 0, -1), name='', **kwargs):
         kwargs['orientation0'] = orientation0

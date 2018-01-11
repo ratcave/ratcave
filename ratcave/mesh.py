@@ -10,7 +10,7 @@
 
 import numpy as np
 from .utils import vertices as vertutils
-from .utils import mixins
+from .utils import NameLabelMixin
 from . import physical, shader
 from .texture import Texture
 from .vertex import VAO, VBO
@@ -35,7 +35,7 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
         pass
 
 
-class Mesh(shader.HasUniforms, physical.PhysicalGraph, mixins.NameLabelMixin):
+class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
 
     triangles = gl.GL_TRIANGLES
     points = gl.GL_POINTS

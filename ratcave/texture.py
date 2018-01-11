@@ -1,11 +1,11 @@
 import itertools
-from.utils import gl as ugl
+from .utils import BindTargetMixin, BindingContextMixin, create_opengl_object
 import pyglet
 import pyglet.gl as gl
 from .shader import HasUniforms
 
 
-class Texture(HasUniforms, ugl.BindTargetMixin):
+class Texture(HasUniforms, BindTargetMixin):
 
     target = gl.GL_TEXTURE_2D
     target0 = gl.GL_TEXTURE_2D
@@ -29,7 +29,7 @@ class Texture(HasUniforms, ugl.BindTargetMixin):
             self.id = id
             self.data = data  # This is used for anything that might be garbage collected (i.e. pyglet textures)
         else:
-            self.id = ugl.create_opengl_object(gl.glGenTextures)
+            self.id = create_opengl_object(gl.glGenTextures)
             self.width = width
             self.height = height
             self.bind()
@@ -177,7 +177,7 @@ class GrayscaleTextureCube(TextureCube):
     pixel_fmt = gl.GL_RED
 
 
-class RenderBuffer(ugl.BindingContextMixin, ugl.BindTargetMixin):
+class RenderBuffer(BindingContextMixin, BindTargetMixin):
 
     target = gl.GL_RENDERBUFFER_EXT
     attachment_point = gl.GL_DEPTH_ATTACHMENT
@@ -186,7 +186,7 @@ class RenderBuffer(ugl.BindingContextMixin, ugl.BindTargetMixin):
 
     def __init__(self, width, height):
 
-        self.id = ugl.create_opengl_object(gl.glGenRenderbuffersEXT)
+        self.id = create_opengl_object(gl.glGenRenderbuffersEXT)
         self.width = width
         self.height = height
         self.bind()

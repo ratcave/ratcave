@@ -2,9 +2,9 @@ import abc
 from pyglet import gl
 from ctypes import byref, create_string_buffer, c_char, c_char_p, c_int, c_float, c_double, cast, pointer, POINTER
 import numpy as np
-from .utils import gl as ugl
+from .utils import BindingContextMixin, BindNoTargetMixin
 try:
-    from UserDict import IterableUserDict# Python 2
+    from UserDict import IterableUserDict  # Python 2
 except ImportError:
     from collections import UserDict as IterableUserDict  # Python 3
 from six import iteritems
@@ -95,7 +95,7 @@ class HasUniforms(object):
         pass
 
 
-class Shader(ugl.BindingContextMixin, ugl.BindNoTargetMixin):
+class Shader(BindingContextMixin, BindNoTargetMixin):
 
     bindfun = gl.glUseProgram
 

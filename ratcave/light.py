@@ -1,8 +1,9 @@
 from .shader import HasUniforms
 from .utils import mixins
 from .camera import Camera
+from .utils import NameLabelMixin
 
-class Light(Camera, HasUniforms, mixins.NameLabelMixin):
+class Light(Camera, HasUniforms, NameLabelMixin):
 
     def __init__(self, **kwargs):
         super(Light, self).__init__(**kwargs)

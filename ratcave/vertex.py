@@ -1,6 +1,6 @@
 import numpy as np
 import pyglet.gl as gl
-from .utils.gl import BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
+from .utils import BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
 
 
 class VAO(BindingContextMixin, BindNoTargetMixin):

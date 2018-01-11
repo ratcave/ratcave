@@ -94,7 +94,7 @@ class Scene(mixins.NameLabelMixin):
         cam.uniforms['view_matrix'][0, 3] = orig_cam_position
 
 
-    def draw360_to_texture(self, cubetexture, is_anaglyph=False, **kwargs):
+    def draw360_to_texture(self, cubetexture, **kwargs):
         """
         Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light, and
         applies it to each face of cubetexture, which should be currently bound to an FBO.
