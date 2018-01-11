@@ -25,7 +25,10 @@ class Physical(AutoRegisterObserver):
         self.orientation0 = np.array(orientation0, dtype=np.float32)
         self.rotation = coordinates.RotationEulerDegrees(*rotation)
         self.position = coordinates.Translation(*position)
-        self.scale = coordinates.Scale(scale)
+        if hasattr(scale, '__iter__'):
+            self.scale = coordinates.Scale(*scale)
+        else:
+            self.scale = coordinates.Scale(scale)
 
         self._model_matrix = np.identity(4, dtype=np.float32)
         self._normal_matrix = np.identity(4, dtype=np.float32)

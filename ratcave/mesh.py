@@ -91,6 +91,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
         self.point_size = point_size
         self.dynamic = dynamic
         self.visible = visible
+        self.vbos = []
 
 
 
@@ -98,17 +99,14 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
     def copy(self):
-        mesh = Mesh(arrays=deepcopy([arr[:, :-1].copy() for arr in self.arrays]), texture=self.textures, mean_center=deepcopy(self._mean_center),
-                    position=self.position.xyz, rotation=self.rotation.to_euler('deg').xyz, scale=self.scale.x,
-                    drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic,
+        return Mesh(arrays=deepcopy([arr.copy() for arr in self.arrays]), texture=self.textures, mean_center=deepcopy(self._mean_center),
+                    position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]), scale=self.scale.xyz,
+                    drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic, visible=self.visible,
                     gl_states=deepcopy(self.gl_states))
-        return mesh
-        # self.__class__(arrays=type(self.arrays)([arr.copy() for arr in self.arrays]), gl_states=self.gl_states)
 
     def reset_uniforms(self):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
-        self.uniforms['has_texture'] = False
 
     @property
     def vertices(self):

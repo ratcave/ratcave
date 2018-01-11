@@ -17,7 +17,16 @@ class ProjectionBase(object):
         self.projection_matrix = np.identity(4, dtype=np.float32)
         self._z_near = z_near
         self._z_far = z_far
-        self.aspect = aspect
+        self._aspect = aspect
+
+    @property
+    def aspect(self):
+        return self._aspect
+
+    @aspect.setter
+    def aspect(self, value):
+        self._aspect = value
+        self._update_projection_matrix()
 
     @property
     def z_near(self):
