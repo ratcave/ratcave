@@ -20,15 +20,22 @@ def create_opengl_object(gl_gen_function, n=1):
         return handle.value  # Return handle value
 
 
-def vec(floatlist, newtype='float'):
+def vec(data, dtype=float):
         """ Makes GLfloat or GLuint vector containing float or uint args.
         By default, newtype is 'float', but can be set to 'int' to make
         uint list. """
+        gl_types = {float: gl.GLfloat, int: gl.GLuint}
+        try:
+            gl_dtype = gl_types[dtype]
+        except KeyError:
+            raise TypeError('dtype not recognized.  Recognized types are int and float')
 
-        if 'float' in newtype:
-            return (gl.GLfloat * len(floatlist))(*list(floatlist))
-        elif 'int' in newtype:
-            return (gl.GLuint * len(floatlist))(*list(floatlist))
+        if gl_dtype == gl.GLuint:
+            for el in data:
+                if el < 0:
+                    raise ValueError("integer ratcave.vec arrays are unsigned--negative values are not supported.")
+
+        return (gl_dtype * len(data))(*list(data))
 
 
 class GlGenMixin(object):
@@ -180,7 +187,7 @@ class ElementArrayBuffer(VBO):
 
     def _buffer_data(self):
         with self:
-            gl.glBufferData(self.target, 4 * self.ndarray.size, vec(self.ndarray.ravel(), 'int'), gl.GL_STATIC_DRAW)
+            gl.glBufferData(self.target, 4 * self.ndarray.size, vec(self.ndarray.ravel(), int), gl.GL_STATIC_DRAW)
 
 
 def setpriority(pid=None,priority=1):
