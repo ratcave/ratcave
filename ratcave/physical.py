@@ -9,7 +9,7 @@ from .utils import mixins
 from .scenegraph import SceneGraph
 
 
-class Physical(AutoRegisterObserver, mixins.PickleableMixin):
+class Physical(AutoRegisterObserver):
 
     def __init__(self, position=(0., 0., 0.), rotation=(0., 0., 0.), scale=1., orientation0=(1., 0., 0.),
                  **kwargs):

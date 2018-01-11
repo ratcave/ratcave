@@ -1,9 +1,8 @@
 import abc
 import numpy as np
-from .physical import Physical, PhysicalGraph
+from .physical import PhysicalGraph
 import pyglet.gl as gl
 from collections import namedtuple
-import warnings
 from .shader import HasUniforms
 from .utils import NameLabelMixin
 
