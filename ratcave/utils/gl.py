@@ -35,7 +35,7 @@ def vec(data, dtype=float):
                 if el < 0:
                     raise ValueError("integer ratcave.vec arrays are unsigned--negative values are not supported.")
 
-        return (gl_dtype * len(data))(*list(data))
+        return (gl_dtype * len(data))(*data)
 
 
 
