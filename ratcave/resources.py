@@ -26,10 +26,11 @@ obj_grid3D = path.join(resource_path, 'grid3D.obj')
 shader_path = path.join(path.split(__file__)[0], '..', 'shaders')
 
 for dirname in os.listdir(shader_path):
-    vertname = glob(path.join(shader_path, dirname, '*.vert'))[0]
-    fragname = glob(path.join(shader_path, dirname, '*.frag'))[0]
-    globals()[dirname + '_shader'] = Shader.from_file(vert=path.join(shader_path, vertname),
-                                                      frag=path.join(shader_path, fragname),
-                                                      lazy=True)
+    if path.isdir(path.join(shader_path, dirname)):
+        vertname = glob(path.join(shader_path, dirname, '*.vert'))[0]
+        fragname = glob(path.join(shader_path, dirname, '*.frag'))[0]
+        globals()[dirname + '_shader'] = Shader.from_file(vert=path.join(shader_path, vertname),
+                                                          frag=path.join(shader_path, fragname),
+                                                          lazy=True)
 
 
