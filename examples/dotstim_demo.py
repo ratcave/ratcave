@@ -14,14 +14,13 @@ cylinder.uniforms['diffuse'] = 1., 1., 1.
 cylinder.uniforms['flat_shading'] = True
 
 scene = rc.Scene(meshes=[cylinder], bgColor=(0., 0, 0))
-shader = rc.Shader.from_file(*rc.resources.genShader)
 scene.camera.projection = rc.OrthoProjection()
 
 win = pyglet.window.Window()
 
 @win.event
 def on_draw():
-    with shader:
+    with rc.default_shader:
         scene.draw()
 
 

@@ -8,14 +8,12 @@ width, height = 0.2, 0.5
 theta = random(n_points) * np.pi * 2
 verts = np.vstack((np.sin(theta) * width, (random(n_points) - .5) * height, np.cos(theta) * width)).T
 
-cylinder = rc.Mesh.from_incomplete_data(verts, position=(0, 0, -2), mean_center=False,
-                                        drawmode=rc.Mesh.points, point_size=.02)
+cylinder = rc.Mesh.from_incomplete_data(verts, position=(0, 0, -2), mean_center=False, drawmode=rc.POINTS, point_size=.02)
 cylinder.uniforms['diffuse'] = 1., 1., 1.
 cylinder.uniforms['flat_shading'] = True
 cylinder.rotation.x = 20
 
 scene = rc.Scene(meshes=[cylinder], bgColor=(0., 0, 0))
-shader = rc.Shader.from_file(*rc.resources.genShader)
 scene.camera.projection = rc.OrthoProjection()
 
 win = pyglet.window.Window(fullscreen=True)
@@ -23,7 +21,7 @@ fps_label = pyglet.window.FPSDisplay(window=win)
 
 @win.event
 def on_draw():
-    with shader:
+    with rc.default_shader:
         scene.draw()
     fps_label.draw()
 
