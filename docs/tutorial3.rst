@@ -27,8 +27,6 @@ Since the previous tutorials have already covered a lot of ratcave methods, let'
     # Create window and OpenGL context (always must come first!)
     window = pyglet.window.Window()
 
-    shader = rc.Shader.from_file(*rc.resources.genShader)
-
     # Load Meshes and put into a Scene
     obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
     torus = obj_reader.get_mesh('Torus', position=(0, 0, -2))
@@ -44,7 +42,8 @@ Since the previous tutorials have already covered a lot of ratcave methods, let'
     # Draw Function
     @window.event
     def on_draw():
-        scene.draw()
+        with rc.default_shader:
+            scene.draw()
 
     # Pyglet's event loop run function
     pyglet.app.run()
@@ -128,6 +127,8 @@ Here is what the code should look like now::
     }
     """
 
+    shader = rc.Shader(vert=vert_shader, frag=frag_shader)
+
     # Create window and OpenGL context (always must come first!)
     window = pyglet.window.Window()
 
@@ -142,12 +143,12 @@ Here is what the code should look like now::
         torus.rot_y += 20. * dt
     pyglet.clock.schedule(update)
 
-    shader = rc.Shader(vert=vert_shader, frag=frag_shader)
 
     # Draw Function
     @window.event
     def on_draw():
-        scene.draw(shader=shader)
+        with shader:
+            scene.draw()
 
     # Pyglet's event loop run function
     pyglet.app.run()

@@ -20,11 +20,9 @@ monkey.position.xyz = 0, 0, -2
 # Create Scene
 scene = rc.Scene(meshes=[monkey])
 
-
 @window.event
 def on_draw():
     with rc.default_shader:
         scene.draw()
-
 
 pyglet.app.run()

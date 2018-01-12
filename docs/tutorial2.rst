@@ -101,11 +101,9 @@ Here's the full code for Tutorial 2::
     pyglet.clock.schedule(move_camera)
 
 
-    shader = rc.Shader.from_file(*rc.resources.genShader)
-
     @window.event
     def on_draw():
-        with shader:
+        with rc.default_shader:
             scene.draw()
 
 
@@ -158,5 +156,6 @@ Here's the same scenario, done in PsychoPy::
         torus.rot_x += 80 * dt
 
         # Draw Scene and Flip to Window
-        scene.draw()
+        with rc.default_shader:
+            scene.draw()
         window.flip()

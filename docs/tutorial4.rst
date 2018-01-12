@@ -100,9 +100,9 @@ So far, we've always rendered our Scenes straight to the monitor.  However, we c
 
 All that's left is to apply the texture the screen::
 
-    screen.texture = cube_texture
+    screen.textures.append(cube_texture)
 
-.. warning:: The built-in shader that comes with ratcave requires the subject's position to be sent to it throught the **playerPos** uniform.  This may be remedied in future releases, or can be changed in your own custom shaders.  To do this, use: screen.uniforms['playerPos'] = virtual_scene.camera.position
+.. warning:: The built-in shader that comes with ratcave requires the subject's position to be sent to it through the **playerPos** uniform.  This may be remedied in future releases, or can be changed in your own custom shaders.  To do this, use: screen.uniforms['playerPos'] = virtual_scene.camera.position
 
 Move the Subject
 ----------------
@@ -126,7 +126,7 @@ All that's left is for the scenes to be drawn. The virtual_scene should be drawn
 
     @window.event
     def on_draw():
-        with shader:
+        with rc.default_shader:
             with cube_fbo as fbo:
                 virtual_scene.draw360_to_texture(fbo.texture)
             projected_scene.draw()
@@ -172,9 +172,7 @@ Here's the full code::
     # Create Framebuffer and Textures
     cube_texture = rc.texture.TextureCube(width=1024, height=1024)  # this is the actual cube texture
     cube_fbo = rc.FBO(texture=cube_texture)
-    screen.texture = cube_texture
-
-    shader = rc.Shader.from_file(*rc.resources.genShader)
+    screen.textures.append(cube_texture)
 
 
     clock = 0.
@@ -190,7 +188,7 @@ Here's the full code::
     @window.event
     def on_draw():
         with shader:
-            with cube_fbo as fbo:
+            with cube_fbo as fbo, rc.default_shader:
                 virtual_scene.draw360_to_texture(fbo.texture)
             projected_scene.draw()
 

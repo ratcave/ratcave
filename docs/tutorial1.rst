@@ -74,10 +74,9 @@ Drawing the Scene
 
 To draw the scene, we need a 3D shader (discussed in more detail in the next tutorial).  Luckily, ratcave provides one to start with!  Simply call the Scene.draw() method in your draw loop! In Pyglet, this looks like this::
 
-    shader = rc.Shader.from_file(*rc.resources.genShader)
     @window.event
     def on_draw():
-        with shader:
+        with rc.default_shader:
             scene.draw()
 
   pyglet.app.run()
@@ -87,34 +86,34 @@ Summary
 
 That's it!  Here's the final script, in one place.  This script wll be modified in the next tutorial to animate the scene.::
 
-    import pyglet
-    import ratcave as rc
+  import pyglet
+  import ratcave as rc
 
-    # Create Window
-    window = pyglet.window.Window()
 
-    def update(dt):
-        pass
-    pyglet.clock.schedule(update)
+  # Create Window
+  window = pyglet.window.Window()
 
-    # Insert filename into WavefrontReader.
-    obj_filename = rc.resources.obj_primitives
-    obj_reader = rc.WavefrontReader(obj_filename)
+  def update(dt):
+      pass
+  pyglet.clock.schedule(update)
 
-    # Create Mesh
-    monkey = obj_reader.get_mesh("Monkey")
-    monkey.position.xyz = 0, 0, -2
+  # Insert filename into WavefrontReader.
+  obj_filename = rc.resources.obj_primitives
+  obj_reader = rc.WavefrontReader(obj_filename)
 
-    # Create Scene
-    scene = rc.Scene(meshes=[monkey])
+  # Create Mesh
+  monkey = obj_reader.get_mesh("Monkey")
+  monkey.position.xyz = 0, 0, -2
 
-    shader = rc.Shader.from_file(*rc.resources.genShader)
-    @window.event
-    def on_draw():
-        with shader:
-            scene.draw()
+  # Create Scene
+  scene = rc.Scene(meshes=[monkey])
 
-    pyglet.app.run()
+  @window.event
+  def on_draw():
+      with rc.default_shader:
+          scene.draw()
+
+  pyglet.app.run()
 
 Version using PsychoPy
 ----------------------
@@ -126,7 +125,6 @@ Alternatively, you can see the same example using a PsychoPy window::
 
   # Create Window
   window = visual.Window()
-  shader = rc.Shader.from_file(*rc.resources.genShader)
 
   # Insert filename into WavefrontReader.
   obj_filename = rc.resources.obj_primitives
@@ -140,7 +138,7 @@ Alternatively, you can see the same example using a PsychoPy window::
   scene = rc.Scene(meshes=[monkey])
 
   while 'escape' not in event.getKeys():
-      with shader:
+      with rc.default_shader:
           scene.draw()
       window.flip()
 
