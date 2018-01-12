@@ -18,4 +18,7 @@ from .utils.gl import POINTS, LINE_LOOP, LINES, TRIANGLES
 from . import experimental
 from .wavefront import WavefrontReader
 
+
+import pkg_resources
+__version__ = pkg_resources.get_distribution('ratcave').version
 __all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'WavefrontReader', 'resources']
