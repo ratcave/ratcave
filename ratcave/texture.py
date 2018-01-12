@@ -50,26 +50,27 @@ class Texture(HasUniforms, BindTargetMixin):
             print('replaced name')
 
         self.uniforms[name] = self._slot
-        self.uniforms[name + '_isBound'] = self._bound
+        self.uniforms[name + '_isBound'] = False
         self._name = name
 
 
     def bind(self):
         gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
         super(Texture, self).bind()
-        self.uniforms['{}_isBound'.format(self.name)] = self._bound
+        self.uniforms['{}_isBound'.format(self.name)] = True
         try:
             self.uniforms.send()
         except UnboundLocalError:  # TODO: Find a way to make binding and uniform-sending simple without requiring a bound shader.
             pass
 
     def unbind(self):
+        super(Texture, self).unbind()
+        self.uniforms['{}_isBound'.format(self.name)] = False
         try:
             self.uniforms.send()
         except UnboundLocalError:  # TODO: Find a way to make binding and uniform-sending simple without requiring a bound shader.
             pass
-        super(Texture, self).unbind()
-        self.uniforms['{}_isBound'.format(self.name)] = self._bound
+
         gl.glActiveTexture(gl.GL_TEXTURE0)
 
     @property

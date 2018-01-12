@@ -52,3 +52,5 @@ def test_texture_default_uniform_names(tex, cubetex, depthtex):
     assert 'Changed_isBound' in newtex.uniforms
     assert 'NewMap' not in newtex.uniforms
     assert 'NewMap_isBound' not in newtex.uniforms
+
+
