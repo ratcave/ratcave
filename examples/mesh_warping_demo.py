@@ -12,27 +12,17 @@ def lerp(vecA, vecB, time):
     return (vecA * time) + (vecB * (1.0 - time))
 
 reader = rc.WavefrontReader(rc.resources.obj_primitives)
-print(reader.bodies.keys())
 mesh = reader.get_mesh('MonkeySmooth', position=(0, 0, -2), scale=.2, dynamic=True)
-# mesh.drawmode = rc.Mesh.points
-# mesh.point_size = 2
-# mesh.uniforms['flat_shading'] = True
-# mesh.uniforms['spec_weight'] = 1.
-# mesh.uniforms['diffuse'] = (0.0,) * 3
-# mesh.uniforms['ambient'] = (0.2,) * 3
-print(mesh.arrays[0].shape)
 
 scene = rc.Scene(meshes=[mesh], bgColor=(0.5, 0, 0))
-shader = rc.Shader.from_file(*rc.resources.genShader)
 scene.camera.projection = rc.OrthoProjection()
-
-
 
 win = pyglet.window.Window()
 fps_label = pyglet.window.FPSDisplay(window=win)
+
 @win.event
 def on_draw():
-    with shader:
+    with rc.default_shader:
         scene.draw()
     fps_label.draw()
 
@@ -48,8 +38,6 @@ def animation_sequence(mesh, nframes=50):
         mesh.arrays[0][:, :3] = vv
         mesh.arrays[1][:, :3] = nn
         yield
-
-
 
 
 anim = animation_sequence(mesh)
