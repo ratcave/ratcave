@@ -1,23 +1,8 @@
-import sys
 from setuptools import setup, find_packages, Extension
-try:
-    import numpy
-except ImportError:
-    print("Numpy must be installed before running setup.py.")
-    if sys.version_info.major == 2:
-        def input(*args, **kwargs):
-            return raw_input(*args, **kwargs)
-    response = input("Attempt to automatically install numpy using pip? (y/n)")
-    if 'y' in response.lower():
-        import subprocess
-        subprocess.call(["pip", "install", "numpy"])
-        import numpy
-    else:
-        raise ImportError("Numpy required before installation.")
 
 
 setup(name='ratcave',
-      version='0.7',
+      version='0.7rc1',
       url='https://www.github.com/neuroneuro15/ratcave',
       description='3D Graphics Engine for CAVE VR setups',
       author='Nicholas A. Del Grosso',
@@ -30,7 +15,7 @@ setup(name='ratcave',
                     },
       install_requires=['pyglet', 'numpy', 'wavefront_reader', 'future', 'six'],
       ext_modules=[Extension('_transformations', sources=['third_party/transformations.c'], include_dirs=[numpy.get_include()])],
-      setup_requires=['pytest-runner'],
+      setup_requires=['numpy', 'pytest-runner'],
       tests_require = ['pytest'],
       keywords='graphics 3D pyglet psychopy python virtual reality VR',
       classifiers=[
