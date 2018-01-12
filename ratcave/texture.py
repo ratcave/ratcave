@@ -129,9 +129,13 @@ class TextureCube(Texture):
 
     def __init__(self, name='CubeMap', *args, **kwargs):
         """the Color Cube Texture class."""
-        super(TextureCube, self).__init__(name=name, *args, **kwargs)
-        if self.height != self.width:
-            raise ValueError("TextureCube's height and width must match each other.")
+        try:
+            super(TextureCube, self).__init__(name=name, *args, **kwargs)
+        except gl.lib.GLException as exception:
+            if self.height != self.width:
+                raise ValueError("TextureCube's height and width must match each other.")
+            else:
+                raise exception
 
     def _apply_filter_settings(self, *args, **kwargs):
         super(TextureCube, self)._apply_filter_settings()
