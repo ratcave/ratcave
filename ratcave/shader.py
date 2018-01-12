@@ -23,7 +23,9 @@ class UniformCollection(IterableUserDict, object):
     def __init__(self, **kwargs):
         super(UniformCollection, self).__init__()
         for key, value in iteritems(kwargs):
-            self[key] = value
+            self.data[key] = value
+
+
 
     def __setitem__(self, key, value):
 
@@ -43,6 +45,9 @@ class UniformCollection(IterableUserDict, object):
 
         uniform = uniform.view(UniformArray)  # Cast as a UniformArray for 'loc' to be set as an attribute later.
         self.data[key] = uniform
+
+    def __delitem__(self, key):
+        del self.data[key]
 
     def send(self):
 
