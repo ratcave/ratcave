@@ -99,7 +99,7 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
     def copy(self):
-        return Mesh(arrays=deepcopy([arr.copy() for arr in self.arrays]), texture=self.textures, mean_center=deepcopy(self._mean_center),
+        return Mesh(arrays=deepcopy([arr.copy() for arr in [self.vertices, self.normals, self.texcoords]]), texture=self.textures, mean_center=deepcopy(self._mean_center),
                     position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]), scale=self.scale.xyz,
                     drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic, visible=self.visible,
                     gl_states=deepcopy(self.gl_states))
