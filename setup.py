@@ -1,4 +1,8 @@
 from setuptools import setup, find_packages, Extension
+try:
+    import numpy
+except ImportError:
+    raise ImportError("numpy not found.  Please install numpy (e.g. 'pip install numpy') before installing ratcave.")
 
 
 setup(name='ratcave',
