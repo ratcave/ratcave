@@ -13,7 +13,7 @@ class Scene(mixins.NameLabelMixin):
         """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
         super(Scene, self).__init__(**kwargs)
 
-        self.meshes = list(meshes)
+        self.meshes = meshes
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
         self.bgColor = bgColor
