@@ -1,10 +1,9 @@
 import pyglet.gl as gl
-
 from . import Camera, Light
-from .utils import gl as glutils
 from .texture import TextureCube
 from .utils import mixins
 from .gl_states import GLStateManager
+
 
 class Scene(mixins.NameLabelMixin):
 
