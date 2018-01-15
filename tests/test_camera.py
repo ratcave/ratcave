@@ -52,3 +52,23 @@ def test_camera_has_all_uniforms():
     cam = Camera()
     for name in ['projection_matrix', 'model_matrix', 'view_matrix', 'camera_position']:
         assert name in cam.uniforms
+
+
+def test_projection_attributes_change_cameras_projection_matrix_uniform():
+    cam = Camera()
+    for proj in [(), PerspectiveProjection(), PerspectiveProjection()]:
+        if isinstance(proj, int):
+            cam, proj = Camera(name='Early'), PerspectiveProjection()
+            cam.projection = proj
+        elif proj:
+            cam = Camera(projection=proj)
+        old_projmat = cam.projection_matrix.copy()
+        old_pm_uni = cam.uniforms['projection_matrix'].copy()
+        assert np.all(old_projmat == old_pm_uni)
+        cam.projection.aspect = np.random.random()
+        assert np.any(cam.projection_matrix != old_projmat)
+        assert np.any(cam.uniforms['projection_matrix'] != old_pm_uni)
+        assert np.all(cam.projection_matrix == cam.uniforms['projection_matrix'])
+        assert np.all(cam.projection.projection_matrix == cam.projection_matrix)
+        assert np.all(cam.uniforms['projection_matrix'] == cam.projection.projection_matrix)
+
