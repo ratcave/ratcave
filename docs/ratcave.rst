@@ -26,14 +26,6 @@ ratcave.mesh module
     :show-inheritance:
 
 
-ratcave.resources module
-------------------------
-
-.. automodule:: ratcave.resources
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 ratcave.scene module
 --------------------
 
