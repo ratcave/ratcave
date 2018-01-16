@@ -1,6 +1,8 @@
 from ratcave import Camera, PerspectiveProjection, OrthoProjection
 import pytest
 import numpy as np
+import pyglet
+
 
 def test_camera_physical_attributes():
     cam = Camera()
@@ -82,3 +84,13 @@ def test_projection_attributes_change_cameras_projection_matrix_uniform():
         assert np.all(cam.projection.projection_matrix == cam.projection_matrix)
         assert np.all(cam.uniforms['projection_matrix'] == cam.projection.projection_matrix)
 
+
+def test_viewport():
+    win = pyglet.window.Window(width=500, height=550)
+    assert win.width == 500
+    assert win.height == 550
+    proj = PerspectiveProjection()
+    viewport = proj.viewport
+    assert viewport.width == win.width
+    assert viewport.height == win.height
+    win.close()
