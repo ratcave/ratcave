@@ -1,7 +1,12 @@
 from __future__ import absolute_import
 
 from .coordinates import RotationEulerDegrees, RotationQuaternion, RotationEulerRadians, Translation, Scale
-from . import resources
+
+try:
+    from . import resources
+    from .resources import default_shader, default_camera, default_light
+except ImportError:
+    pass
 from . import utils
 from .camera import Camera, PerspectiveProjection, OrthoProjection
 from .collision import CylinderCollisionChecker, SphereCollisionChecker
@@ -11,7 +16,6 @@ from .light import Light
 from .materials import Material
 from .mesh import Mesh, EmptyEntity, gen_fullscreen_quad
 from .physical import Physical, PhysicalGraph
-from .resources import default_shader, default_camera, default_light
 from .scene import Scene
 from .shader import Shader, UniformCollection
 from .texture import Texture, TextureCube, DepthTexture
