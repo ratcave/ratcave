@@ -14,8 +14,7 @@ def lerp(vecA, vecB, time):
 reader = rc.WavefrontReader(rc.resources.obj_primitives)
 mesh = reader.get_mesh('MonkeySmooth', position=(0, 0, -2), scale=.2, dynamic=True)
 
-scene = rc.Scene(meshes=[mesh], bgColor=(0.5, 0, 0))
-scene.camera.projection = rc.OrthoProjection()
+scene = rc.Scene(meshes=[mesh], bgColor=(0.5, 0, 0), camera=rc.Camera(projection=rc.OrthoProjection()))
 
 win = pyglet.window.Window()
 fps_label = pyglet.window.FPSDisplay(window=win)

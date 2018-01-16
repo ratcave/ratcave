@@ -2,7 +2,10 @@ import pyglet
 import ratcave as rc
 import itertools as it
 import numpy as np
-from contextlib import ExitStack
+try:
+    from contextlib import ExitStack
+except ImportError:
+    from contextlib2 import ExitStack
 
 # Create Window
 window = pyglet.window.Window(resizable=True, vsync=False)

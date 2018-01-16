@@ -51,8 +51,7 @@ plane.uniforms['width'] = .01
 
 window = pyglet.window.Window(fullscreen=True)
 
-scene = rc.Scene(meshes=[plane], bgColor=(.5, .5, .5))
-scene.camera.projection = rc.OrthoProjection()
+scene = rc.Scene(meshes=[plane], bgColor=(.5, .5, .5), camera=rc.Camera(projection=rc.OrthoProjection()))
 
 # Draw Function
 @window.event

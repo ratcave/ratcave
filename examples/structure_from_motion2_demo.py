@@ -17,6 +17,7 @@ cylinder.scale.xyz = .5
 
 cyl2 = cylinder.copy()
 cyl2.position.x = 0
+cyl2.rotation.x = 20
 
 cyl3 = cylinder.copy()
 cyl3.position.x = .3
@@ -24,8 +25,7 @@ cyl3.rotation.y = 30
 
 win = pyglet.window.Window(fullscreen=True)
 
-scene = rc.Scene(meshes=[cylinder, cyl2, cyl3], bgColor=(0, 0, 0))
-scene.camera.projection = rc.OrthoProjection(coords='relative')
+scene = rc.Scene(meshes=[cylinder, cyl2, cyl3], bgColor=(0, 0, 0), camera=rc.Camera(projection=rc.OrthoProjection(coords='relative')))
 
 fps_label = pyglet.window.FPSDisplay(window=win)
 

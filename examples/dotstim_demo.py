@@ -13,8 +13,7 @@ cylinder = rc.Mesh.from_incomplete_data(verts, drawmode=rc.Mesh.points, position
 cylinder.uniforms['diffuse'] = 1., 1., 1.
 cylinder.uniforms['flat_shading'] = True
 
-scene = rc.Scene(meshes=[cylinder], bgColor=(0., 0, 0))
-scene.camera.projection = rc.OrthoProjection()
+scene = rc.Scene(meshes=[cylinder], bgColor=(0., 0, 0), camera=rc.Camera(projection=rc.OrthoProjection()))
 
 win = pyglet.window.Window()
 
