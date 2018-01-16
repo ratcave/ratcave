@@ -2,7 +2,8 @@ import os
 from os import path
 from glob import glob
 from .shader import Shader
-
+from .camera import Camera
+from .light import Light
 
 """
 Here are some sample obj files for prototyping your app!
@@ -34,3 +35,6 @@ for dirname in os.listdir(shader_path):
                                                           lazy=True)
 
 
+
+default_camera = Camera()
+default_light = Light()

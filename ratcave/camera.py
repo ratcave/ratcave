@@ -251,5 +251,3 @@ class Camera(PhysicalGraph, HasUniforms, NameLabelMixin):
     def projection_matrix(self):
         return self.projection.projection_matrix.view()
 
-
-default_camera = Camera()

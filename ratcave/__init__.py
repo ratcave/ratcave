@@ -1,7 +1,9 @@
+from __future__ import absolute_import
+
 from .coordinates import RotationEulerDegrees, RotationQuaternion, RotationEulerRadians, Translation, Scale
 from . import resources
 from . import utils
-from .camera import Camera, PerspectiveProjection, OrthoProjection, default_camera
+from .camera import Camera, PerspectiveProjection, OrthoProjection
 from .collision import CylinderCollisionChecker, SphereCollisionChecker
 from .fbo import FBO
 from .gl_states import GLStateManager, default_states
@@ -9,7 +11,7 @@ from .light import Light
 from .materials import Material
 from .mesh import Mesh, EmptyEntity, gen_fullscreen_quad
 from .physical import Physical, PhysicalGraph
-from .resources import default_shader
+from .resources import default_shader, default_camera, default_light
 from .scene import Scene
 from .shader import Shader, UniformCollection
 from .texture import Texture, TextureCube, DepthTexture
@@ -21,4 +23,4 @@ from .wavefront import WavefrontReader
 
 import pkg_resources
 __version__ = pkg_resources.get_distribution('ratcave').version
-__all__ = ['Camera', 'Mesh', 'MeshData', 'Material', 'Physical', 'Scene', 'WavefrontReader', 'resources']
+__all__ = ['Camera', 'Mesh', 'Material', 'Physical', 'Scene', 'Light', 'WavefrontReader']

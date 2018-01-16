@@ -24,6 +24,3 @@ class Light(Camera, HasUniforms, NameLabelMixin):
         self.uniforms['light_position'] = self.model_matrix_global[:3, 3]
         self.uniforms['light_projection_matrix'] = self.projection_matrix.view()
         self.uniforms['light_view_matrix'] = self.view_matrix.view()
-
-
-default_light = Light()

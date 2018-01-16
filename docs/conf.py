@@ -25,7 +25,7 @@ class Mock(MagicMock):
     def __len__(self):
         return 3  # Hacky patch
 
-MOCK_MODULES = ['argparse', 'numpy', 'pyglet', 'pyglet.gl', '_transformations']
+MOCK_MODULES = ['argparse', 'numpy', 'pyglet', 'pyglet.gl', '_transformations', 'ratcave.resources']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # If extensions (or modules to document with autodoc) are in another directory,
