@@ -39,6 +39,16 @@ def test_perspective_projection_updates():
     with pytest.raises(ValueError):
         proj.z_near = -20
 
+
+    with pytest.raises(ValueError):
+        p2 = PerspectiveProjection()
+        p2.z_near = .1
+        p2.z_far = .01
+
+    with pytest.raises(ValueError):
+        PerspectiveProjection(z_far=-.1)
+
+
     with pytest.raises(ValueError):
         proj.fov_y = -10
 

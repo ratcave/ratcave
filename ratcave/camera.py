@@ -15,6 +15,8 @@ class ProjectionBase(object):
     def __init__(self, z_near=0.1, z_far=12., **kwargs):
         super(ProjectionBase, self).__init__(**kwargs)
         self._projection_matrix = np.identity(4, dtype=np.float32)
+        if z_near >= z_far or z_near <= 0. or z_far <= 0.:
+            raise ValueError("z_near must be less than z_far, and both must be positive.")
         self._z_near = z_near
         self._z_far = z_far
         self._update_projection_matrix()
