@@ -66,7 +66,8 @@ class Physical(AutoRegisterObserver):
 
     @orientation0.setter
     def orientation0(self, vector):
-        assert len(vector) == 3
+        if len(vector) != 3:
+            raise ValueError("Orientation vector should be an xyz vector.")
         self._orientation0 = trans.unit_vector(vector)
 
     @property

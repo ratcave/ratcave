@@ -22,6 +22,9 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return Mock()
 
+    def __len__(self):
+        return 3  # Hacky patch
+
 MOCK_MODULES = ['argparse', 'numpy', 'pyglet', 'pyglet.gl', '_transformations']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
