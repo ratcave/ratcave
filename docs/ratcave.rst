@@ -25,13 +25,6 @@ ratcave.mesh module
     :undoc-members: EmptyMesh
     :show-inheritance:
 
-ratcave.mixins module
----------------------
-
-.. automodule:: ratcave.mixins
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 ratcave.resources module
 ------------------------

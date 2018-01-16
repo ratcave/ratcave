@@ -8,3 +8,4 @@ future
 pytest
 wavefront_reader
 sphinx
+sphinx_rtd_theme

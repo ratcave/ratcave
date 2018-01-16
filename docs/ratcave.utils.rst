@@ -12,21 +12,6 @@ ratcave.utils.gl module
     :undoc-members:
     :show-inheritance:
 
-ratcave.utils.orienting module
-------------------------------
-
-.. automodule:: ratcave.utils.orienting
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ratcave.utils.timers module
----------------------------
-
-.. automodule:: ratcave.utils.timers
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 
 Module contents
