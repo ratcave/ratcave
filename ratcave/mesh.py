@@ -94,7 +94,6 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
         self.vbos = []
 
 
-
     def __repr__(self):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
@@ -107,6 +106,18 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
     def reset_uniforms(self):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
+
+
+    @property
+    def dynamic(self):
+        return self._dynamic
+
+    @dynamic.setter
+    def dynamic(self, value):
+        for array in self.arrays:
+            array.setflags(write=True if value else False)
+        self._dynamic = value
+
 
     @property
     def vertices(self):
