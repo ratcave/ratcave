@@ -12,7 +12,7 @@ Full Documentation and Tutorials can be found at http://ratcave.readthedocs.io/
 
 ## Installation
 ```
-pip install numpy ratcave
+pip install pyglet numpy ratcave
 ```
 
 ## Features
