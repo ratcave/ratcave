@@ -1,7 +1,7 @@
-
-
 import pyglet.gl as gl
 from ctypes import byref
+from collections import namedtuple
+
 
 POINTS = gl.GL_POINTS
 TRIANGLES = gl.GL_TRIANGLES
@@ -35,3 +35,11 @@ def vec(data, dtype=float):
                     raise ValueError("integer ratcave.vec arrays are unsigned--negative values are not supported.")
 
         return (gl_dtype * len(data))(*data)
+
+
+Viewport = namedtuple('Viewport', 'x y width height')
+
+def get_viewport():
+    data = (gl.GLint * 4)()
+    gl.glGetIntegerv(gl.GL_VIEWPORT, data)
+    return Viewport(*data)

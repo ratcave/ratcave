@@ -4,7 +4,7 @@ from .physical import PhysicalGraph
 import pyglet.gl as gl
 from collections import namedtuple
 from .shader import HasUniforms
-from .utils import NameLabelMixin
+from .utils import NameLabelMixin, get_viewport
 
 Viewport = namedtuple('Viewport', 'x y width height')
 
@@ -63,9 +63,7 @@ class ProjectionBase(object):
 
     @property
     def viewport(self):
-        viewport_array = (gl.GLint * 4)()
-        gl.glGetIntegerv(gl.GL_VIEWPORT, viewport_array)
-        return Viewport(*viewport_array)
+        return get_viewport()
 
 
 ScreenEdges = namedtuple('ScreenEdges', 'left right bottom top')

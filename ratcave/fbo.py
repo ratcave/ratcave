@@ -1,5 +1,5 @@
 
-from .utils import BindingContextMixin, create_opengl_object
+from .utils import BindingContextMixin, create_opengl_object, get_viewport, Viewport
 from .texture import DepthTexture, RenderBuffer
 
 import pyglet.gl as gl
@@ -14,7 +14,7 @@ class FBO(BindingContextMixin):
 
         super(FBO, self).__init__(*args, **kwargs)
         self.id = create_opengl_object(gl.glGenFramebuffersEXT)
-        self._old_viewport_size = (gl.GLint * 4)()
+        self._old_viewport = get_viewport()
         self.texture = texture
         self.renderbuffer = RenderBuffer(texture.width, texture.height) if not isinstance(texture, DepthTexture) else None
 
@@ -41,7 +41,7 @@ class FBO(BindingContextMixin):
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
         # Store current viewport size for later
-        gl.glGetIntegerv(gl.GL_VIEWPORT, self._old_viewport_size)
+        self._old_viewport = get_viewport()
 
         # Bind the FBO, and change the viewport to fit its texture.
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, self.id)  # Rendering off-screen
@@ -54,8 +54,7 @@ class FBO(BindingContextMixin):
             with self.texture:
                 self.texture.generate_mipmap()
 
-
         gl.glBindFramebufferEXT(gl.GL_FRAMEBUFFER_EXT, 0)
 
         # Restore the old viewport size
-        gl.glViewport(*self._old_viewport_size)
+        gl.glViewport(*self._old_viewport)
