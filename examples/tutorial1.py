@@ -7,6 +7,7 @@ window = pyglet.window.Window()
 
 def update(dt):
     pass
+    # monkey.rotation.y += 15 * dt
 pyglet.clock.schedule(update)
 
 # Insert filename into WavefrontReader.
@@ -15,7 +16,8 @@ obj_reader = rc.WavefrontReader(obj_filename)
 
 # Create Mesh
 monkey = obj_reader.get_mesh("Monkey")
-monkey.position.xyz = 0, 0, -2
+monkey.position.xyz = 0, 0, -3
+monkey.textures.append(rc.Texture.from_image('../assets/wood.jpg'))
 
 # Create Scene
 scene = rc.Scene(meshes=[monkey])
