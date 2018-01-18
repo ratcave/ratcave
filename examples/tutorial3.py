@@ -5,15 +5,12 @@ import math
 
 vert_shader = """
  #version 330
-
- layout(location = 0) in vec3 vertexPosition;
+ layout(location = 0) in vec4 vertexPosition;
  uniform mat4 projection_matrix, view_matrix, model_matrix;
- out vec4 vVertex;
 
  void main()
  {
-     vVertex = model_matrix * vec4(vertexPosition, 1.0);
-     gl_Position = projection_matrix * view_matrix * vVertex;
+     gl_Position = projection_matrix * view_matrix * model_matrix * vertexPosition;
  }
  """
 
@@ -46,7 +43,7 @@ pyglet.clock.schedule(update)
 
 
 def update_color(dt):
-    torus.uniforms['diffuse'][0] = 0.5 * math.sin(time.clock() * 10) + .5
+    torus.uniforms['diffuse'][0] = 0.5 * math.sin(time.clock() * 30) + .5
 pyglet.clock.schedule(update_color)
 
 
