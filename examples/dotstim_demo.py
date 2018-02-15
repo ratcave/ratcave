@@ -34,7 +34,7 @@ def update(dt):
         cylinder.vertices = verts
 
     # print(cylinder.arrays[0][0, :])
-    cylinder.rotation.z += 100 * dt
+    # cylinder.rotation.z += 100 * dt
 pyglet.clock.schedule(update)
 
 pyglet.app.run()
