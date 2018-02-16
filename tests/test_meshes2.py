@@ -1,4 +1,4 @@
-from ratcave import resources, WavefrontReader, default_shader
+from ratcave import resources, WavefrontReader, default_shader, EmptyEntity
 import pytest
 import numpy as np
 @pytest.fixture()
@@ -69,4 +69,10 @@ def test_dynamic_mode_reflects_array_writability():
 def test_wavefront_objects_get_name():
     reader = WavefrontReader(resources.obj_primitives)
     cube = reader.get_mesh('Cube', name='CoolCube')
+    assert hasattr(cube, 'name')
     assert cube.name == 'CoolCube'
+
+def test_empty_entity_gets_name():
+    obj = EmptyEntity(name='DummyObj')
+    assert hasattr(obj, 'name')
+    assert obj.name == 'DummyObj'

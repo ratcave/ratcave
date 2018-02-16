@@ -25,7 +25,7 @@ def gen_fullscreen_quad(name='FullScreenQuad'):
     return Mesh(name=name, arrays=(verts, normals, texcoords), mean_center=False)
 
 
-class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
+class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
     """An object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
 
     def draw(self, *args, **kwargs):
