@@ -50,8 +50,14 @@ monkey4 = obj_reader.get_mesh("Monkey", position=(0, 0, -3), name='specular')
 monkey4.uniforms['flat_shading'] = False
 monkey4.uniforms['spec_weight'] = 30
 
-meshes = cycle([monkey, monkey2, monkey3, monkey4, rc.EmptyEntity()])
+monkey5 = obj_reader.get_mesh("Monkey", position=(0, 0, -3), name='specular')
+monkey5.uniforms['flat_shading'] = False
+monkey5.uniforms['spec_weight'] = 30
+
+meshes = cycle([monkey, monkey2, monkey3, monkey4, monkey5, rc.EmptyEntity()])
 mesh = [next(meshes)]
+
+img = rc.Texture.from_image(rc.resources.img_colorgrid)
 
 
 def change_mesh(dt):
@@ -62,7 +68,7 @@ pyglet.clock.schedule_interval(change_mesh, 4)
 @window.event
 def on_draw():
     rc.clear_color(*plane.uniforms['diffuse'])
-    if mesh[0] == monkey4:
+    if mesh[0] in [monkey4, monkey5]:
         with rc.default_shader, fbo_shadow, rc.default_light, cam, rc.default_states:
             window.clear()
             mesh[0].draw()
@@ -71,6 +77,11 @@ def on_draw():
 
         mesh[0].draw()
         print(mesh[0].name)
-        plane.textures = [fbo_shadow.texture] if mesh[0] == monkey4 else []
+        if mesh[0] == monkey4:
+            plane.textures = [fbo_shadow.texture]
+        elif mesh[0] == monkey5:
+            plane.textures = [img, fbo_shadow.texture]
+        else:
+            plane.textures = []
         plane.draw()
 pyglet.app.run()
