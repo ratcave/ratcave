@@ -164,12 +164,12 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
         raise DeprecationWarning("Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
 
     @classmethod
-    def from_incomplete_data(cls, vertices, normals=(), texcoords=(), name=None, **kwargs):
+    def from_incomplete_data(cls, vertices, normals=(), texcoords=(), **kwargs):
         """Return a Mesh with (vertices, normals, texcoords) as arrays, in that order.
            Useful for when you want a standardized array location format across different amounts of info in each mesh."""
         normals = normals if hasattr(texcoords, '__iter__') and len(normals) else vertutils.calculate_normals(vertices)
         texcoords = texcoords if hasattr(texcoords, '__iter__') and len(texcoords) else np.zeros((vertices.shape[0], 2), dtype=np.float32)
-        return cls(name=name, arrays=(vertices, normals, texcoords), **kwargs)
+        return cls(arrays=(vertices, normals, texcoords), **kwargs)
 
     def _fill_vao(self):
         """Put array location in VAO for shader in same order as arrays given to Mesh."""

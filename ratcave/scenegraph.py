@@ -5,7 +5,7 @@ class SceneGraph(object):
 
     def __init__(self, parent=None, children=None, **kwargs):
         """A Node of the Scenegraph.  Has children, but no parent."""
-        super(SceneGraph, self).__init__()
+        super(SceneGraph, self).__init__(**kwargs)
         self._children = []
         self._parent = None
         if parent:

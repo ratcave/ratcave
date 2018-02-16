@@ -64,3 +64,9 @@ def test_dynamic_mode_reflects_array_writability():
     cube.dynamic = True
     cube.vertices[:] += 1.
     assert cube.vertices[0][0] == old_vert + 2
+
+
+def test_wavefront_objects_get_name():
+    reader = WavefrontReader(resources.obj_primitives)
+    cube = reader.get_mesh('Cube', name='CoolCube')
+    assert cube.name == 'CoolCube'
