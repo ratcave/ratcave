@@ -43,3 +43,8 @@ def get_viewport():
     data = (gl.GLint * 4)()
     gl.glGetIntegerv(gl.GL_VIEWPORT, data)
     return Viewport(*data)
+
+
+def clear_color(r, g, b):
+    gl.glClearColor(r, g, b, 1.)
+    gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
