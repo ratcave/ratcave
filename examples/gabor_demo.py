@@ -23,7 +23,6 @@ frag_shader = """
 
  in vec2 texCoord;
  out vec4 final_color;
- uniform vec3 diffuse;
  float brightness;
  uniform float width;
 

@@ -1,4 +1,4 @@
-from ratcave import resources, WavefrontReader, default_shader
+from ratcave import resources, WavefrontReader, default_shader, EmptyEntity
 import pytest
 import numpy as np
 @pytest.fixture()
@@ -34,18 +34,45 @@ def test_mesh_copying_works(cube):
     assert cube2.visible == cube.visible
 
 
-def test_mesh_can_draw():
+def test_mesh_can_draw(cube):
     print('testing the draw process..')
-    mesh = cube()
-    assert not mesh.vbos
-    assert not mesh.vao
+    assert not cube.vbos
+    assert not cube.vao
 
     with pytest.raises(UnboundLocalError):
-        mesh.draw()
+        cube.draw()
 
     with default_shader:
-        mesh.draw()
+        cube.draw()
 
-    assert mesh.vao
-    assert mesh.vbos
-    assert len(mesh.vbos) == 3  # vertices, texcoords, and normals
+    assert cube.vao
+    assert cube.vbos
+    assert len(cube.vbos) == 3  # vertices, texcoords, and normals
+
+
+def test_dynamic_mode_reflects_array_writability():
+    reader = WavefrontReader(resources.obj_primitives)
+    cube = reader.get_mesh("Cube", dynamic=True)
+    old_vert = cube.vertices[0, 0]
+    cube.vertices[:] += 1.
+    assert cube.vertices[0, 0] == old_vert + 1
+    assert cube.dynamic
+    cube.dynamic = False
+    assert not cube.dynamic
+    with pytest.raises(ValueError):
+        cube.vertices[:] += 1.
+    cube.dynamic = True
+    cube.vertices[:] += 1.
+    assert cube.vertices[0][0] == old_vert + 2
+
+
+def test_wavefront_objects_get_name():
+    reader = WavefrontReader(resources.obj_primitives)
+    cube = reader.get_mesh('Cube', name='CoolCube')
+    assert hasattr(cube, 'name')
+    assert cube.name == 'CoolCube'
+
+def test_empty_entity_gets_name():
+    obj = EmptyEntity(name='DummyObj')
+    assert hasattr(obj, 'name')
+    assert obj.name == 'DummyObj'

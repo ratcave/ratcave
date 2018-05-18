@@ -3,7 +3,7 @@ import ratcave as rc
 import numpy as np
 from numpy.random import random
 
-n_points = 10000
+n_points = 5000
 width, height = 0.2, 0.5
 theta = random(n_points) * np.pi * 2
 verts = np.vstack((np.sin(theta) * width, (random(n_points) - .5) * height, np.cos(theta) * width)).T
@@ -14,10 +14,11 @@ cylinder.uniforms['flat_shading'] = True
 cylinder.point_size = .02
 cylinder.position.x = -.3
 cylinder.scale.xyz = .5
+cylinder.dynamic = True
 
 cyl2 = cylinder.copy()
 cyl2.position.x = 0
-cyl2.rotation.x = 20
+# cyl2.rotation.x = 20
 
 cyl3 = cylinder.copy()
 cyl3.position.x = .3
@@ -40,5 +41,13 @@ def update(dt):
     cyl2.rotation.y += 100 * dt
     cyl3.rotation.z += 100 * dt
 pyglet.clock.schedule(update)
+
+def randomize_points(dt):
+    theta = random(n_points) * np.pi * 2
+    verts = np.vstack((np.sin(theta) * width, (random(n_points) - .5) * height, np.cos(theta) * width)).T
+    cylinder.vertices = verts
+    cyl2.vertices = verts
+    cyl3.vertices = verts
+pyglet.clock.schedule_interval(randomize_points, 1/10.)
 
 pyglet.app.run()

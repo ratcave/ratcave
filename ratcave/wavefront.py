@@ -28,14 +28,13 @@ class WavefrontReader(object):
         self.bodies = read_wavefront(file_name)
         self.textures = {}
 
-    def get_mesh(self, name, **kwargs):
+    def get_mesh(self, body_name, **kwargs):
         """Builds Mesh from geom name in the wavefront file.  Takes all keyword arguments that Mesh takes."""
-        body = self.bodies[name]
+        body = self.bodies[body_name]
         vertices = body['v']
         normals = body['vn'] if 'vn' in body else None
         texcoords = body['vt'] if 'vt' in body else None
-
-        mesh = Mesh.from_incomplete_data(name=name, vertices=vertices, normals=normals, texcoords=texcoords, **kwargs)
+        mesh = Mesh.from_incomplete_data(vertices=vertices, normals=normals, texcoords=texcoords, **kwargs)
 
         uniforms = kwargs['uniforms'] if 'uniforms' in kwargs else {}
         if 'material' in body:

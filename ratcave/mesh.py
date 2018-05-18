@@ -25,7 +25,7 @@ def gen_fullscreen_quad(name='FullScreenQuad'):
     return Mesh(name=name, arrays=(verts, normals, texcoords), mean_center=False)
 
 
-class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph):
+class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
     """An object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
 
     def draw(self, *args, **kwargs):
@@ -94,7 +94,6 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
         self.vbos = []
 
 
-
     def __repr__(self):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
@@ -107,6 +106,18 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
     def reset_uniforms(self):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
+
+
+    @property
+    def dynamic(self):
+        return self._dynamic
+
+    @dynamic.setter
+    def dynamic(self, value):
+        for array in self.arrays:
+            array.setflags(write=True if value else False)
+        self._dynamic = value
+
 
     @property
     def vertices(self):
@@ -153,12 +164,12 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
         raise DeprecationWarning("Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
 
     @classmethod
-    def from_incomplete_data(cls, vertices, normals=(), texcoords=(), name=None, **kwargs):
+    def from_incomplete_data(cls, vertices, normals=(), texcoords=(), **kwargs):
         """Return a Mesh with (vertices, normals, texcoords) as arrays, in that order.
            Useful for when you want a standardized array location format across different amounts of info in each mesh."""
         normals = normals if hasattr(texcoords, '__iter__') and len(normals) else vertutils.calculate_normals(vertices)
         texcoords = texcoords if hasattr(texcoords, '__iter__') and len(texcoords) else np.zeros((vertices.shape[0], 2), dtype=np.float32)
-        return cls(name=name, arrays=(vertices, normals, texcoords), **kwargs)
+        return cls(arrays=(vertices, normals, texcoords), **kwargs)
 
     def _fill_vao(self):
         """Put array location in VAO for shader in same order as arrays given to Mesh."""

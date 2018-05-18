@@ -1,7 +1,7 @@
 import pyglet.gl as gl
 from . import Camera, Light
 from .texture import TextureCube
-from .utils import mixins
+from .utils import mixins, clear_color
 from .gl_states import GLStateManager
 
 
@@ -23,8 +23,7 @@ class Scene(mixins.NameLabelMixin):
 
     def clear(self):
         """Clear Screen and Apply Background Color"""
-        gl.glClearColor(*(self.bgColor + (1.,)))
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        clear_color(*self.bgColor)
 
     def draw(self, clear=True):
         """Draw each visible mesh in the scene from the perspective of the scene's camera and lit by its light."""
