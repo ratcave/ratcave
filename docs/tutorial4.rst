@@ -18,6 +18,7 @@ At the beginning of the script::
 
     import pyglet
     import ratcave as rc
+    from ratcave.resources import cube_shader
 
     window = pyglet.window.Window(resizable=True)
     shader = rc.Shader.from_file(*rc.resources.genShader)
@@ -126,7 +127,7 @@ All that's left is for the scenes to be drawn. The virtual_scene should be drawn
 
     @window.event
     def on_draw():
-        with rc.default_shader:
+        with cube_shader:
             with cube_fbo as fbo:
                 virtual_scene.draw360_to_texture(fbo.texture)
             projected_scene.draw()
@@ -140,7 +141,7 @@ Here's the full code::
     import pyglet
     import ratcave as rc
     import math, time
-
+    from ratcave.resources import cube_shader
 
     window = pyglet.window.Window(resizable=True)
 
@@ -167,12 +168,13 @@ Here's the full code::
     projected_scene = rc.Scene(meshes=[monkey, screen, sphere, cube], bgColor=(1., .5, 1.))
     projected_scene.light.position = virtual_scene.light.position
     projected_scene.camera = rc.Camera(position=(0, 4, 0), rotation=(-90, 0, 0))
-
+    projected_scene.camera.projection.z_far = 6
 
     # Create Framebuffer and Textures
     cube_texture = rc.texture.TextureCube(width=1024, height=1024)  # this is the actual cube texture
     cube_fbo = rc.FBO(texture=cube_texture)
     screen.textures.append(cube_texture)
+
 
 
     clock = 0.
@@ -182,16 +184,15 @@ Here's the full code::
         monkey.position.x = math.sin(1.3 * clock)
         virtual_scene.camera.position.xyz = monkey.position.xyz
         screen.uniforms['playerPos'] = virtual_scene.camera.position.xyz
-    pyglet.clock.schedule(update)
+        pyglet.clock.schedule(update)
 
 
     @window.event
     def on_draw():
-        with shader:
-            with cube_fbo as fbo, rc.default_shader:
-                virtual_scene.draw360_to_texture(fbo.texture)
+    with cube_shader:
+        with cube_fbo as fbo:
+            virtual_scene.draw360_to_texture(fbo.texture)
             projected_scene.draw()
 
 
     pyglet.app.run()
-
