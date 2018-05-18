@@ -4,8 +4,8 @@ import time
 import math
 
 vert_shader = """
- #version 330
- layout(location = 0) in vec4 vertexPosition;
+ #version 120
+ attribute vec4 vertexPosition;
  uniform mat4 projection_matrix, view_matrix, model_matrix;
 
  void main()
@@ -15,12 +15,11 @@ vert_shader = """
  """
 
 frag_shader = """
- #version 330
- out vec4 final_color;
+ #version 120
  uniform vec3 diffuse;
  void main()
  {
-     final_color = vec4(diffuse, 1.);
+     gl_FragColor = vec4(diffuse, 1.);
  }
  """
 

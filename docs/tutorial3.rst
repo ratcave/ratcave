@@ -62,18 +62,15 @@ Shader programs come in two types.  **Vertex Shaders** tell the graphics card wh
 Our shader here will take data from the meshes, the lights, and the camera to determine where everything goes::
 
     vert_shader = """
-    #version 330
+     #version 120
+     attribute vec4 vertexPosition;
+     uniform mat4 projection_matrix, view_matrix, model_matrix;
 
-    layout(location = 0) in vec3 vertexPosition;
-    uniform mat4 projection_matrix, view_matrix, model_matrix;
-    out vec4 vVertex;
-
-    void main()
-    {
-        vVertex = model_matrix * vec4(vertexPosition, 1.0);
-        gl_Position = projection_matrix * view_matrix * vVertex;
-    }
-    """
+     void main()
+     {
+         gl_Position = projection_matrix * view_matrix * model_matrix * vertexPosition;
+     }
+     """
 
 .. warning:: This shader requires OpenGL 3.3 drivers to be installed, along with an OpenGL 3.3-compatible graphics card on your system.
 
@@ -81,13 +78,13 @@ The **fragment shader** takes the vertex shader's position data determines what 
 These can get quite complex, but we'll use a fairly simple one here, and just make everything automatically appear red::
 
     frag_shader = """
-    #version 330
-    out vec4 final_color;
-    void main()
-    {
-        final_color = vec4(1., 0., 0., 1.);
-    }
-    """
+     #version 120
+     uniform vec3 diffuse;
+     void main()
+     {
+         gl_FragColor = vec4(diffuse, 1.);
+     }
+     """
 
 .. note:: Normally, you would just put these shaders in their own files, but here we'll keep everything together and use them as strings.
 
@@ -103,29 +100,28 @@ Here is what the code should look like now::
 
     import pyglet
     import ratcave as rc
+    import time
+    import math
 
     vert_shader = """
-    #version 330
+     #version 120
+     attribute vec4 vertexPosition;
+     uniform mat4 projection_matrix, view_matrix, model_matrix;
 
-    layout(location = 0) in vec3 vertexPosition;
-    uniform mat4 projection_matrix, view_matrix, model_matrix;
-    out vec4 vVertex;
-
-    void main()
-    {
-        vVertex = model_matrix * vec4(vertexPosition, 1.0);
-        gl_Position = projection_matrix * view_matrix * vVertex;
-    }
-    """
+     void main()
+     {
+         gl_Position = projection_matrix * view_matrix * model_matrix * vertexPosition;
+     }
+     """
 
     frag_shader = """
-    #version 330
-    out vec4 final_color;
-    void main()
-    {
-        final_color = vec4(1., 0., 0., 1.);
-    }
-    """
+     #version 120
+     uniform vec3 diffuse;
+     void main()
+     {
+         gl_FragColor = vec4(diffuse, 1.);
+     }
+     """
 
     shader = rc.Shader(vert=vert_shader, frag=frag_shader)
 
@@ -135,13 +131,19 @@ Here is what the code should look like now::
     # Load Meshes and put into a Scene
     obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)
     torus = obj_reader.get_mesh('Torus', position=(0, 0, -2))
+    torus.uniforms['diffuse'] = [.5, .0, .8]
 
     scene = rc.Scene(meshes=[torus])
 
     # Constantly-Running mesh rotation, for fun
     def update(dt):
-        torus.rot_y += 20. * dt
+        torus.rotation.y += 20. * dt
     pyglet.clock.schedule(update)
+
+
+    def update_color(dt):
+        torus.uniforms['diffuse'][0] = 0.5 * math.sin(time.clock() * 30) + .5
+    pyglet.clock.schedule(update_color)
 
 
     # Draw Function
@@ -149,6 +151,7 @@ Here is what the code should look like now::
     def on_draw():
         with shader:
             scene.draw()
+
 
     # Pyglet's event loop run function
     pyglet.app.run()
