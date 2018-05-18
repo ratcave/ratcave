@@ -1,8 +1,9 @@
-#version 120
+#version 150
+#extension GL_ARB_explicit_attrib_location : enable
 
-attribute vec4 vertexPosition;
-attribute vec3 normalPosition;
-attribute vec2 uvTexturePosition;
+layout(location = 0) in vec4 vertexPosition;
+layout(location = 1) in vec3 normalPosition;
+layout(location = 2) in vec2 uvTexturePosition;
 
 uniform vec3 light_position, playerPos;
 uniform mat4 model_matrix, normal_matrix;
@@ -14,10 +15,10 @@ uniform mat4 projection_matrix = mat4(vec4(1.38564062,  0.,  0.,  0.),
                                       );
 uniform mat4 light_projection_matrix, light_view_matrix;
 
-varying float lightAmount;
-varying vec2 texCoord;
-varying vec3 normal, eyeVec;
-varying vec4 vVertex, ShadowCoord;
+out float lightAmount;
+out vec2 texCoord;
+out vec3 normal, eyeVec;
+out vec4 vVertex, ShadowCoord;
 
 mat4 texture_bias = mat4(0.5, 0.0, 0.0, 0.0,
                          0.0, 0.5, 0.0, 0.0,
@@ -28,7 +29,6 @@ float diffuse_weight = .5;
 
 void main()
   {
-
     //Calculate Vertex World Position and Normal Direction
     vVertex = model_matrix * vertexPosition;
     normal = normalize(normal_matrix * vec4(normalPosition, 1.0)).xyz;
@@ -39,7 +39,7 @@ void main()
 	//Calculate Texture Coordinate for UV and Cubemaps
 	texCoord = uvTexturePosition;
 	eyeVec = vVertex.xyz - playerPos;
-
+  
   	//Calculate Shadow Coordinate
   	ShadowCoord = (texture_bias * light_projection_matrix * light_view_matrix * vVertex);
 
@@ -50,3 +50,4 @@ void main()
 
     return;
   }
+  
