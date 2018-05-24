@@ -5,6 +5,11 @@ from .utils import mixins, clear_color
 from .gl_states import GLStateManager
 
 
+def update_children(mesh):
+    for child in mesh.children:
+        child.update()
+
+
 class Scene(mixins.NameLabelMixin):
 
     def __init__(self, meshes=(), camera=None, light=None, bgColor=(0.4, 0.4, 0.4),
@@ -32,7 +37,9 @@ class Scene(mixins.NameLabelMixin):
 
         with self.gl_states, self.camera, self.light:
             for mesh in self.meshes:
-                mesh.draw()
+                mesh.draw()    
+                update_children(mesh)
+
 
     def draw_anaglyph(self, clear=True, inter_eye_distance=.08):
 

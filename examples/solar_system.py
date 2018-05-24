@@ -52,7 +52,7 @@ jupyter.position.z += 5
 moon.position.z += 1
 
 # Create Scene
-scene = rc.Scene(meshes=sun)
+scene = rc.Scene(meshes=sun, bgColor=(0,0,0))
 
 @window.event
 def on_draw():
@@ -65,19 +65,6 @@ def on_draw():
         empty_jupyter.rotation.y += 0.5
 
         earth.rotation.y += 0.5
-
-        empty_merkury.update()
-        empty_venus.update()
-        empty_earth.update()
-        empty_mars.update()
-        empty_jupyter.update()
-
-        merkury.update()
-        venus.update()
-        earth.update()
-        mars.update()
-        jupyter.update()
-        moon.update()
 
         scene.draw()
 
