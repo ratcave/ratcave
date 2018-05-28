@@ -56,20 +56,26 @@ sun.textures.append(rc.Texture.from_image(rc.resources.img_colorgrid))
 # Create Scene
 scene = rc.Scene(meshes=sun, bgColor=(0,0,0))
 scene.camera.projection.z_far = 20
+earth.add_child(scene.light)
+# scene.camera.position.z += 2
+# scene.camera.position.x -= 1.5
 
 @window.event
 def on_draw():
     window.clear()
+    sun.rotation.y += 0.5
+    earth.rotation.y += 0.5
+    empty_merkury.rotation.y += 2
+    empty_venus.rotation.y += 1.5
+    empty_earth.rotation.y += 1
+    empty_mars.rotation.y += 0.75
+    empty_jupyter.rotation.y += 0.5
+    # scene.camera.rotation.y += 1
+    # scene.camera.update()
+    # print(scene.camera.model_matrix_global)
+
+
     with rc.default_shader:
-        sun.rotation.y += 0.5
-        earth.rotation.y += 0.5
-        empty_merkury.rotation.y += 2
-        empty_venus.rotation.y += 1.5
-        empty_earth.rotation.y += 1
-        empty_mars.rotation.y += 0.75
-        empty_jupyter.rotation.y += 0.5
-
-
         # sun.draw()
         # earth.draw()
         # mars.draw()

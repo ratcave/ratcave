@@ -143,7 +143,8 @@ class PhysicalGraph(Physical, SceneGraph):
         if self.parent:
             self.model_matrix_global = np.dot(self.parent.model_matrix_global, self._model_matrix)
             self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self._normal_matrix)
-            self.view_matrix_global = np.dot(self.parent.normal_matrix_global, self._normal_matrix)
+            self.view_matrix_global = trans.inverse_matrix(self._model_matrix_global)
+            # self.view_matrix_global = np.dot(self.parent.view_matrix_global, self._view_matrix)
         else:
             self.model_matrix_global = self._model_matrix
             self.normal_matrix_global = self._normal_matrix

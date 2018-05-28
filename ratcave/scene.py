@@ -1,5 +1,5 @@
 import pyglet.gl as gl
-from . import Camera, Light
+from . import Camera, Light, Mesh, EmptyEntity
 from .texture import TextureCube
 from .utils import mixins, clear_color
 from .gl_states import GLStateManager
@@ -34,8 +34,10 @@ class Scene(mixins.NameLabelMixin):
 
         with self.gl_states, self.camera, self.light:
             for mesh in self.meshes:
-                mesh.draw()
-
+                try:
+                    mesh.draw()
+                except AttributeError:
+                    pass
 
     def draw_anaglyph(self, clear=True, inter_eye_distance=.08):
 
