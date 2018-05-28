@@ -5,10 +5,6 @@ from .utils import mixins, clear_color
 from .gl_states import GLStateManager
 
 
-def update_children(mesh):
-    for child in mesh.children:
-        child.update()
-
 
 class Scene(mixins.NameLabelMixin):
 
@@ -21,6 +17,7 @@ class Scene(mixins.NameLabelMixin):
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
         self.bgColor = bgColor
+
         self.gl_states = GLStateManager(gl_states)
 
     def __repr__(self):

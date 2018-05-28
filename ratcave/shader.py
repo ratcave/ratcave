@@ -43,8 +43,8 @@ class UniformCollection(IterableUserDict, object):
         else:
             uniform = np.array([value]) if not hasattr(value, '__iter__') else np.array(value)
 
-        uniform = uniform.view(UniformArray)  # Cast as a UniformArray for 'loc' to be set as an attribute later.
-        self.data[key] = uniform
+        uniform_view = uniform.view(UniformArray)  # Cast as a UniformArray for 'loc' to be set as an attribute later.
+        self.data[key] = uniform_view
 
     def __delitem__(self, key):
         del self.data[key]
@@ -100,6 +100,24 @@ class HasUniforms(object):
         pass
 
 
+class HasUniformsUpdater(HasUniforms):
+    """HasUniforms can not inherit from Observer, we need something on the level of Mesh, that can update the uniforms"""
+    def __init__(self, **kwargs):
+        self._uniforms = None
+        super(HasUniformsUpdater, self).__init__(**kwargs)
+        if not hasattr(self, 'update'):
+            raise AttributeError("HasUniformsUpdater needs update() method to work.")
+
+    @property
+    def uniforms(self):
+        self.update()
+        return self._uniforms
+
+    @uniforms.setter
+    def uniforms(self, value):
+        self._uniforms = value
+
+
 class Shader(BindingContextMixin, BindNoTargetMixin):
 
     bindfun = gl.glUseProgram
@@ -148,10 +166,10 @@ class Shader(BindingContextMixin, BindNoTargetMixin):
 
 
     def createShader(self, strings, shadertype):
- 
+
         # create the shader handle
         shader = gl.glCreateShader(shadertype)
- 
+
         # convert the source strings into a ctypes pointer-to-char array, and upload them
         # this is deep, dark, dangerous black magick - don't try stuff like this at home!
         strings = tuple(s.encode('ascii') for s in strings)  # Nick added, for python3
@@ -163,7 +181,7 @@ class Shader(BindingContextMixin, BindNoTargetMixin):
         # retrieve the compile status
         compile_success = c_int(0)
         gl.glGetShaderiv(shader, gl.GL_COMPILE_STATUS, byref(compile_success))
- 
+
         # if compilation failed, print the log
         if compile_success:
             gl.glAttachShader(self.id, shader)
@@ -172,7 +190,7 @@ class Shader(BindingContextMixin, BindNoTargetMixin):
             buffer = create_string_buffer(compile_success.value)  # create a buffer for the log
             gl.glGetShaderInfoLog(shader, compile_success, None, buffer)  # retrieve the log text
             print(buffer.value)  # print the log to the console
- 
+
     def link(self):
         """link the program"""
         gl.glLinkProgram(self.id)

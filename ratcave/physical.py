@@ -33,10 +33,10 @@ class Physical(AutoRegisterObserver):
         self._model_matrix = np.identity(4, dtype=np.float32)
         self._normal_matrix = np.identity(4, dtype=np.float32)
         self._view_matrix = np.identity(4, dtype=np.float32)
-        self.update()
 
     @property
     def model_matrix(self):
+        self.update()
         return self._model_matrix
 
     @model_matrix.setter
@@ -45,6 +45,7 @@ class Physical(AutoRegisterObserver):
 
     @property
     def normal_matrix(self):
+        self.update()
         return self._normal_matrix
 
     @normal_matrix.setter
@@ -53,6 +54,7 @@ class Physical(AutoRegisterObserver):
 
     @property
     def view_matrix(self):
+        self.update()
         return self._view_matrix
 
     @view_matrix.setter
@@ -94,9 +96,9 @@ class Physical(AutoRegisterObserver):
 
     def on_change(self):
         self.model_matrix = np.dot(self.position.to_matrix(), self.rotation.to_matrix())
-        self.view_matrix = trans.inverse_matrix(self.model_matrix)
-        self.model_matrix = np.dot(self.model_matrix, self.scale.to_matrix())
-        self.normal_matrix = trans.inverse_matrix(self.model_matrix.T)
+        self.view_matrix = trans.inverse_matrix(self._model_matrix)
+        self.model_matrix = np.dot(self._model_matrix, self.scale.to_matrix())
+        self.normal_matrix = trans.inverse_matrix(self._model_matrix.T)
 
 
 class PhysicalGraph(Physical, SceneGraph):
@@ -111,6 +113,7 @@ class PhysicalGraph(Physical, SceneGraph):
 
     @property
     def model_matrix_global(self):
+        self.update()
         return self._model_matrix_global
 
     @model_matrix_global.setter
@@ -119,6 +122,7 @@ class PhysicalGraph(Physical, SceneGraph):
 
     @property
     def normal_matrix_global(self):
+        self.update()
         return self._normal_matrix_global
 
     @normal_matrix_global.setter
@@ -127,6 +131,7 @@ class PhysicalGraph(Physical, SceneGraph):
 
     @property
     def view_matrix_global(self):
+        self.update()
         return self._view_matrix_global
 
     @view_matrix_global.setter
@@ -136,18 +141,18 @@ class PhysicalGraph(Physical, SceneGraph):
     def on_change(self):
         Physical.on_change(self)
         if self.parent:
-            self.model_matrix_global = np.dot(self.parent.model_matrix_global, self.model_matrix)
-            self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
-            self.view_matrix_global = np.dot(self.parent.normal_matrix_global, self.normal_matrix)
+            self.model_matrix_global = np.dot(self.parent.model_matrix_global, self._model_matrix)
+            self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self._normal_matrix)
+            self.view_matrix_global = np.dot(self.parent.normal_matrix_global, self._normal_matrix)
         else:
-            self.model_matrix_global = self.model_matrix
-            self.normal_matrix_global = self.normal_matrix
-            self.view_matrix_global = self.view_matrix
+            self.model_matrix_global = self._model_matrix
+            self.normal_matrix_global = self._normal_matrix
+            self.view_matrix_global = self._view_matrix
 
+    def notify(self):
+        super(Physical, self).notify()
         for child in self.children:
-            child.model_matrix_global = np.dot(self.model_matrix_global, child.model_matrix)
-            child.normal_matrix_global = np.dot(self.normal_matrix_global, child.normal_matrix)
-            child.view_matrix_global  = np.dot(self.normal_matrix_global, child.normal_matrix)
+            child.notify()
 
 
     @property

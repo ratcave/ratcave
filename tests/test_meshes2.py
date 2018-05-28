@@ -7,11 +7,6 @@ def cube():
     return reader.get_mesh("Cube")
 
 
-def test_mesh_has_all_uniforms(cube):
-    for name in ['model_matrix', 'normal_matrix']:
-        assert name in cube.uniforms
-
-
 def test_mesh_vertices_are_correct(cube):
     assert cube.vertices.shape[1] == 3
     assert cube.texcoords.shape[1] == 2

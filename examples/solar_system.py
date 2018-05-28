@@ -40,7 +40,7 @@ empty_jupyter.add_child(jupyter)
 earth.add_child(moon)
 
 # Define Relative Positions
-sun.rotation.x = 90
+sun.rotation.x = 50
 sun.position.xyz = 0, 0, -12
 
 merkury.position.z += 1
@@ -51,25 +51,30 @@ jupyter.position.z += 5
 
 moon.position.z += 1
 
+sun.textures.append(rc.Texture.from_image(rc.resources.img_colorgrid))
+
 # Create Scene
 scene = rc.Scene(meshes=sun, bgColor=(0,0,0))
+scene.camera.projection.z_far = 20
 
 @window.event
 def on_draw():
     window.clear()
     with rc.default_shader:
         sun.rotation.y += 0.5
+        earth.rotation.y += 0.5
         empty_merkury.rotation.y += 2
         empty_venus.rotation.y += 1.5
         empty_earth.rotation.y += 1
         empty_mars.rotation.y += 0.75
         empty_jupyter.rotation.y += 0.5
 
-        earth.rotation.y += 0.5
 
-        scene.draw()
         # sun.draw()
         # earth.draw()
-        # venus.draw()
+        # mars.draw()
+        # moon.draw()
+
+        scene.draw()
 
 pyglet.app.run()
