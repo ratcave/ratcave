@@ -56,6 +56,7 @@ scene = rc.Scene(meshes=sun, bgColor=(0,0,0))
 
 @window.event
 def on_draw():
+    window.clear()
     with rc.default_shader:
         sun.rotation.y += 0.5
         empty_merkury.rotation.y += 2
@@ -67,5 +68,8 @@ def on_draw():
         earth.rotation.y += 0.5
 
         scene.draw()
+        # sun.draw()
+        # earth.draw()
+        # venus.draw()
 
 pyglet.app.run()

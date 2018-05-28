@@ -144,6 +144,12 @@ class PhysicalGraph(Physical, SceneGraph):
             self.normal_matrix_global = self.normal_matrix
             self.view_matrix_global = self.view_matrix
 
+        for child in self.children:
+            child.model_matrix_global = np.dot(self.model_matrix_global, child.model_matrix)
+            child.normal_matrix_global = np.dot(self.normal_matrix_global, child.normal_matrix)
+            child.view_matrix_global  = np.dot(self.normal_matrix_global, child.normal_matrix)
+
+
     @property
     def position_global(self):
         return tuple(self.model_matrix_global[:3, -1])

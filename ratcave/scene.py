@@ -37,8 +37,7 @@ class Scene(mixins.NameLabelMixin):
 
         with self.gl_states, self.camera, self.light:
             for mesh in self.meshes:
-                mesh.draw()    
-                update_children(mesh)
+                mesh.draw()
 
 
     def draw_anaglyph(self, clear=True, inter_eye_distance=.08):
