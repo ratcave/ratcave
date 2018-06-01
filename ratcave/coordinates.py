@@ -51,6 +51,30 @@ class Coordinates(IterObservable):
         self[-1] = value
 
     @property
+    def xy(self):
+        return self[-3:-1]
+
+    @xy.setter
+    def xy(self, value):
+        self[-3:-1] = value
+
+    @property
+    def yz(self):
+        return self[-2:]
+
+    @yz.setter
+    def yz(self, value):
+        self[-2:] = value
+
+    @property
+    def xz(self):
+        return self[-3], self[-1]
+
+    @xz.setter
+    def xz(self, value):
+        self[-3], self[-1] = value[0], value[1]
+
+    @property
     def xyz(self):
         return self[-3:]
 
