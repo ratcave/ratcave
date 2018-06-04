@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/ratcave/ratcave.svg?branch=master)](https://travis-ci.org/ratcave/ratcave)
 
-[![Coverage Status](https://coveralls.io/repos/github/neuroneuro15/ratcave/badge.svg?branch=master)](https://coveralls.io/github/neuroneuro15/ratcave?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/ratcave/ratcave/badge.svg?branch=master)](https://coveralls.io/github/ratcave/ratcave?branch=master)
 
 
 
