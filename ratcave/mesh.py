@@ -25,7 +25,7 @@ def gen_fullscreen_quad(name='FullScreenQuad'):
     return Mesh(name=name, arrays=(verts, normals, texcoords), mean_center=False)
 
 
-class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
+class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
     """An object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
 
     def draw(self, *args, **kwargs):
@@ -35,7 +35,7 @@ class EmptyEntity(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
         pass
 
 
-class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
+class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
     triangles = gl.GL_TRIANGLES
     points = gl.GL_POINTS
@@ -202,6 +202,3 @@ class Mesh(shader.HasUniforms, physical.PhysicalGraph, NameLabelMixin):
 
             for texture in self.textures:
                 texture.unbind()
-
-
-

@@ -17,6 +17,21 @@ class TestMesh(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_position_update_to_modelmatrix(self):
+
+
+        for pos in [(4,5, 6), (5, 4, 1)]:
+            mesh = self.reader.get_mesh("Cube", position=pos)
+            self.assertEqual(mesh.position.xyz, pos)
+            # self.assertTrue(np.isclose(mesh.uniforms['model_matrix'][:3, 3], pos).all())
+
+        for pos in [(4,5, 6), (5, 4, 1)]:
+            mesh = self.mesh
+            mesh.position.xyz = pos
+            self.assertEqual(mesh.position.xyz, pos)
+            self.assertTrue(np.isclose(mesh.uniforms['model_matrix'][:3, 3], pos).all())
+
+
     def test_position_update(self):
 
         mesh = self.mesh
