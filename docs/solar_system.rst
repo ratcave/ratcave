@@ -36,14 +36,16 @@ We can not define more then one rotation speed for the sun object. To introduce 
 Empty Entities are objects, that occupie physical space, but doesn't actually draw anything when :py:func:`Scene.draw()` is called (just passing the values).
 Later, we can set rotation speed for each of the :py:class:`.Empty Entity` object.
 
-    sun = obj_reader.get_mesh("Sphere")
-    merkury = obj_reader.get_mesh("Sphere", scale =.1)
-    venus   = obj_reader.get_mesh("Sphere", scale =.2)
-    earth   = obj_reader.get_mesh("Sphere", scale =.2)
-    mars    = obj_reader.get_mesh("Sphere", scale =.2)
-    jupyter = obj_reader.get_mesh("Sphere", scale =.4)
-    moon = obj_reader.get_mesh("Sphere", scale =.5)
+    # Create Meshes
+    sun = obj_reader.get_mesh("Sphere", name='sun')
+    merkury = obj_reader.get_mesh("Sphere", scale =.1, name='merkury')
+    venus   = obj_reader.get_mesh("Sphere", scale =.2, name='venus')
+    earth   = obj_reader.get_mesh("Sphere", scale =.2, name='earth')
+    mars    = obj_reader.get_mesh("Sphere", scale =.2, name='mars')
+    jupyter = obj_reader.get_mesh("Sphere", scale =.4, name='jupyter')
+    moon = obj_reader.get_mesh("Sphere", scale =.5, name='moon')
 
+    # Create Empty Entities
     empty_merkury = rc.EmptyEntity(name='sun_merkury')
     empty_venus   = rc.EmptyEntity(name='sun_venus')
     empty_earth   = rc.EmptyEntity(name='sun_earth')
@@ -60,6 +62,8 @@ To define layout relationship in between objects in ratcave, user has to link th
  - :py:func:`Mesh.parent()`
 
     # Define Relationships
+    sun.add_children(empty_merkury, empty_earth, empty_venus, empty_mars, empty_jupyter)
+
     empty_merkury.add_child(merkury)
     empty_venus.add_child(venus)
     empty_earth.add_child(earth)
@@ -73,7 +77,7 @@ Additionally it is important to define the position of the children in relative 
 This can be done in a following way:
 
     # Define Relative Positions
-    sun.rotation.x = 90
+    sun.rotation.x = 50
     sun.position.xyz = 0, 0, -12
 
     merkury.position.z += 1
@@ -92,38 +96,35 @@ Each of the roations has to be set separately.
 
 def on_draw():
     with rc.default_shader:
+    sun.rotation.y += 0.5
+    earth.rotation.y += 0.5
+    empty_merkury.rotation.y += 2
+    empty_venus.rotation.y += 1.5
+    empty_earth.rotation.y += 1
+    empty_mars.rotation.y += 0.75
+    empty_jupyter.rotation.y += 0.5
 
-        sun.rotation.y += 0.5
-        empty_merkury.rotation.y += 2
-        empty_venus.rotation.y += 1.5
-        empty_earth.rotation.y += 1
-        empty_mars.rotation.y += 0.75
-        empty_jupyter.rotation.y += 0.5
-
-        earth.rotation.y += 0.5
-
-Update
+Scene - Update
 ------
 
-The drawback of current version is that the user has to manually call an :py:func:`Mesh.update()` on all of the children connected to the parent, before drawing the scene.
+After defintion of a scene:
 
-def on_draw():
-    with rc.default_shader:
-        ...
-        empty_merkury.update()
-        empty_venus.update()
-        empty_earth.update()
-        empty_mars.update()
-        empty_jupyter.update()
+    scene = rc.Scene(meshes=sun, bgColor=(0,0,0))
 
-        merkury.update()
-        venus.update()
-        earth.update()
-        mars.update()
-        jupyter.update()
-        moon.update()
+sun and all of its children now get drawn when :py:func:`scene.draw()` gets called. There is no further need of updating any of the Meshes (or its children) included in the scene.
+You can also decide which of the elements are going to be drawn, by calling them separately, the position of the planets will still be relative to the sun (also when sun itself is not being drawn).
 
-        scene.draw()
+    def on_draw():
+        window.clear()
+        with rc.default_shader, scene.camera, scene.light:
+            sun.draw()
+            earth.draw()
+
+Additionally you can parent the camera and light to one of the Mesh objects. It can be done in following manner:
+
+    #Define Relationships For Cameras and Objects
+    earth.add_child(scene.camera)
+    earth.add_child(scene.light)
 
 
 If you run it, you should see this simulation of solar system:
@@ -136,10 +137,14 @@ Summary
 Here is the full code for the Tutorial 5::
 
     import pyglet
+    from pyglet.window import key
     import ratcave as rc
 
     # Create Window
     window = pyglet.window.Window(resizable=True)
+    keys = key.KeyStateHandler()
+    window.push_handlers(keys)
+
 
     def update(dt):
         pass
@@ -150,13 +155,13 @@ Here is the full code for the Tutorial 5::
     obj_reader = rc.WavefrontReader(obj_filename)
 
     # Create Meshes
-    sun = obj_reader.get_mesh("Sphere")
-    merkury = obj_reader.get_mesh("Sphere", scale =.1)
-    venus   = obj_reader.get_mesh("Sphere", scale =.2)
-    earth   = obj_reader.get_mesh("Sphere", scale =.2)
-    mars    = obj_reader.get_mesh("Sphere", scale =.2)
-    jupyter = obj_reader.get_mesh("Sphere", scale =.4)
-    moon = obj_reader.get_mesh("Sphere", scale =.5)
+    sun = obj_reader.get_mesh("Sphere", name='sun')
+    merkury = obj_reader.get_mesh("Sphere", scale =.1, name='merkury')
+    venus   = obj_reader.get_mesh("Sphere", scale =.2, name='venus')
+    earth   = obj_reader.get_mesh("Sphere", scale =.2, name='earth')
+    mars    = obj_reader.get_mesh("Sphere", scale =.2, name='mars')
+    jupyter = obj_reader.get_mesh("Sphere", scale =.4, name='jupyter')
+    moon = obj_reader.get_mesh("Sphere", scale =.5, name='moon')
 
     # Create Empty Entities
     empty_merkury = rc.EmptyEntity(name='sun_merkury')
@@ -177,7 +182,7 @@ Here is the full code for the Tutorial 5::
     earth.add_child(moon)
 
     # Define Relative Positions
-    sun.rotation.x = 90
+    sun.rotation.x = 50
     sun.position.xyz = 0, 0, -12
 
     merkury.position.z += 1
@@ -188,34 +193,40 @@ Here is the full code for the Tutorial 5::
 
     moon.position.z += 1
 
+    sun.textures.append(rc.Texture.from_image(rc.resources.img_colorgrid))
+
     # Create Scene
-    scene = rc.Scene(meshes=sun)
+    scene = rc.Scene(meshes=sun, bgColor=(0,0,0))
+    scene.camera.projection.z_far = 20
+
+    # Define Relationships For Cameras and Objects
+    # earth.add_child(scene.camera)
+    # earth.add_child(scene.light)
+
+    planets = [sun, earth, jupyter]
+
+    def move_camera(dt):
+        '''function used to parent the camera to a different planet'''
+        if keys[key.LEFT]:
+            cam_parent = planets.pop(0)
+            cam_parent.add_child(scene.camera)
+            planets.append(cam_parent)
+
+    pyglet.clock.schedule(move_camera)
+
 
     @window.event
     def on_draw():
+        window.clear()
+        sun.rotation.y += 0.5
+        earth.rotation.y += 0.5
+        empty_merkury.rotation.y += 2
+        empty_venus.rotation.y += 1.5
+        empty_earth.rotation.y += 1
+        empty_mars.rotation.y += 0.75
+        empty_jupyter.rotation.y += 0.5
+
         with rc.default_shader:
-            sun.rotation.y += 0.5
-            empty_merkury.rotation.y += 2
-            empty_venus.rotation.y += 1.5
-            empty_earth.rotation.y += 1
-            empty_mars.rotation.y += 0.75
-            empty_jupyter.rotation.y += 0.5
-
-            earth.rotation.y += 0.5
-
-            empty_merkury.update()
-            empty_venus.update()
-            empty_earth.update()
-            empty_mars.update()
-            empty_jupyter.update()
-
-            merkury.update()
-            venus.update()
-            earth.update()
-            mars.update()
-            jupyter.update()
-            moon.update()
-
             scene.draw()
 
     pyglet.app.run()
