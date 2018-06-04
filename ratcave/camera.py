@@ -3,7 +3,7 @@ import numpy as np
 from .physical import PhysicalGraph
 import pyglet.gl as gl
 from collections import namedtuple
-from .shader import HasUniforms
+from .shader import HasUniformsUpdater
 from .utils import NameLabelMixin, get_viewport
 
 Viewport = namedtuple('Viewport', 'x y width height')
@@ -207,7 +207,7 @@ class PerspectiveProjection(ProjectionBase):
 
 
 
-class Camera(PhysicalGraph, HasUniforms, NameLabelMixin):
+class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
     def __init__(self, projection=None, orientation0=(0, 0, -1), **kwargs):
         kwargs['orientation0'] = orientation0
@@ -219,6 +219,7 @@ class Camera(PhysicalGraph, HasUniforms, NameLabelMixin):
         return "<Camera(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
     def __enter__(self):
+        self.update()
         self.uniforms.send()
         return self
 
@@ -248,4 +249,3 @@ class Camera(PhysicalGraph, HasUniforms, NameLabelMixin):
     @property
     def projection_matrix(self):
         return self.projection.projection_matrix.view()
-

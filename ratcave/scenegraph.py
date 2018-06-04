@@ -43,11 +43,14 @@ class SceneGraph(object):
         """Adds an object as a child in the scene graph."""
         if not issubclass(child.__class__, SceneGraph):
             raise TypeError("child must have parent/child iteration implemented to be a node in a SceneGraph.")
+        # if not hasattr(child, 'update'):
+            # raise TypeError("child must have an attribute update()")
+
         child._parent = self
         self._children.append(child)
 
     def add_children(self, *children):
-        """Convenience function: Adds objects as children in the scene graph."""
+        """Conveniience function: Adds objects as children in the scene graph."""
         for child in children:
             self.add_child(child)
 
@@ -59,4 +62,3 @@ class SceneGraph(object):
     @property
     def children(self):
         return tuple(self._children)
-

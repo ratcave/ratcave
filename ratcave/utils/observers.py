@@ -31,23 +31,21 @@ class Observer(object):
 
     def __init__(self, **kwargs):
         super(Observer, self).__init__(**kwargs)
-        # self._requires_update = True
+        self._requires_update = False
 
     def notify(self):
         """Flags Observer to perform update() at proper time."""
-        # self._requires_update = True
-        try:
-            self.update()
-        except AttributeError:
-            pass
-
+        self._requires_update = True
+        
     def on_change(self):
         """Callback for if change  detected. Meant to be overridable by subclasses."""
         pass
 
     def update(self):
         # """Check if any updates happened. If not, return False.  Else, perform callback and reset update flag, and return True."""
-        self.on_change()
+        if self._requires_update:
+            self.on_change()
+            self._requires_update = False
 
 
 

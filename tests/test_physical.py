@@ -20,6 +20,7 @@ class TestPhysical(unittest.TestCase):
             self.assertTrue(np.isclose(phys.model_matrix[:3, 3], pos).all())
 
         for pos in [(4,5, 6), (5, 4, 1)]:
+            phys = Physical()
             phys.position.xyz = pos
             self.assertEqual(phys.position.xyz, pos)
             self.assertTrue(np.isclose(phys.model_matrix[:3, 3], pos).all())
@@ -76,7 +77,7 @@ class TestModelViewNormalMatrices(unittest.TestCase):
 
     def test_update_doesnt_alter_mats(self):
 
-        modelmat, normalmat, viewmat = self.phys.model_matrix, self.phys.normal_matrix, self.phys.view_matrix
+        modelmat, normalmat, viewmat = self.phys.model_matrix.copy(), self.phys.normal_matrix.copy(), self.phys.view_matrix.copy()
         self.phys.update()
         self.assertTrue((modelmat == self.phys.model_matrix).all())
         self.assertTrue((normalmat == self.phys.normal_matrix).all())
@@ -100,4 +101,3 @@ class TestOrientation(unittest.TestCase):
             phys.orientation0 = ori0
             phys.rotation.x = 90
             self.assertTrue(np.isclose(phys.orientation, ori1, atol=1e-4).all())
-
