@@ -34,7 +34,7 @@ Meshes and Empty Entities
 
 We can not define more then one rotation speed for the sun object. To introduce different rotation for each of the planets, we need to use Empty Entities.
 Empty Entities are objects, that occupie physical space, but doesn't actually draw anything when :py:func:`Scene.draw()` is called (just passing the values).
-Later, we can set rotation speed for each of the :py:class:`.Empty Entity` object.
+Later, we can set rotation speed for each of the :py:class:`.Empty Entity` object::
 
     # Create Meshes
     sun = obj_reader.get_mesh("Sphere", name='sun')
@@ -56,10 +56,15 @@ Later, we can set rotation speed for each of the :py:class:`.Empty Entity` objec
 Define Relationships and Relative Positions
 -------------------------------------------
 
+Relationships Between Objects
+=============================
+
 To define layout relationship in between objects in ratcave, user has to link them togheter using :py:class:`.SceneGraph` properties:
  - :py:func:`Mesh.add_child()`
  - :py:func:`Mesh.add_children()`
  - :py:func:`Mesh.parent()`
+
+The following code does the job::
 
     # Define Relationships
     sun.add_children(empty_merkury, empty_earth, empty_venus, empty_mars, empty_jupyter)
@@ -72,9 +77,11 @@ To define layout relationship in between objects in ratcave, user has to link th
 
     earth.add_child(moon)
 
+Relative Objects Positions
+==========================
 
 Additionally it is important to define the position of the children in relative position to the parent (position of planets in relation to the sun).
-This can be done in a following way:
+This can be done in a following way::
 
     # Define Relative Positions
     sun.rotation.x = 50
@@ -92,27 +99,27 @@ This can be done in a following way:
 Setting Rotations
 -----------------
 
-Each of the roations has to be set separately.
+Each of the roations has to be set separately::
 
-def on_draw():
-    with rc.default_shader:
-    sun.rotation.y += 0.5
-    earth.rotation.y += 0.5
-    empty_merkury.rotation.y += 2
-    empty_venus.rotation.y += 1.5
-    empty_earth.rotation.y += 1
-    empty_mars.rotation.y += 0.75
-    empty_jupyter.rotation.y += 0.5
+    def on_draw():
+        with rc.default_shader:
+        sun.rotation.y += 0.5
+        earth.rotation.y += 0.5
+        empty_merkury.rotation.y += 2
+        empty_venus.rotation.y += 1.5
+        empty_earth.rotation.y += 1
+        empty_mars.rotation.y += 0.75
+        empty_jupyter.rotation.y += 0.5
 
 Scene - Update
 ------
 
-After defintion of a scene:
+After defintion of a scene::
 
     scene = rc.Scene(meshes=sun, bgColor=(0,0,0))
 
 sun and all of its children now get drawn when :py:func:`scene.draw()` gets called. There is no further need of updating any of the Meshes (or its children) included in the scene.
-You can also decide which of the elements are going to be drawn, by calling them separately, the position of the planets will still be relative to the sun (also when sun itself is not being drawn).
+You can also decide which of the elements are going to be drawn, by calling them separately, the position of the planets will still be relative to the sun (also when sun itself is not being drawn)::
 
     def on_draw():
         window.clear()
@@ -120,7 +127,7 @@ You can also decide which of the elements are going to be drawn, by calling them
             sun.draw()
             earth.draw()
 
-Additionally you can parent the camera and light to one of the Mesh objects. It can be done in following manner:
+Additionally you can parent the camera and light to one of the Mesh objects. It can be done in following manner::
 
     #Define Relationships For Cameras and Objects
     earth.add_child(scene.camera)
