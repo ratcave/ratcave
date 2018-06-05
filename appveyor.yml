@@ -24,6 +24,12 @@ install:
 
 before_test:
 - ps: >-
+    $webclient = New-Object System.Net.WebClient
+    
+    $basedir = $pwd.Path + "\"
+    
+    $filepath = $basedir + "opengl32sw-32.7z"
+
     # Download and retry up to 3 times in case of network transient errors.
     
     $url = "http://download.qt.io/development_releases/prebuilt/llvmpipe/windows/opengl32sw-32.7z"
