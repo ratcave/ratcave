@@ -15,16 +15,13 @@ environment:
 
 init:
   - "ECHO %PYTHON%"
-  
-build: off
 
 install:
   - "%PYTHON%\\python.exe -m pip install wheel"
   - "%PYTHON%\\python.exe -m pip install numpy"
-  - "%PYTHON%\\python.exe -m pip install nose"
-  - "%PYTHON%\\python.exe -m pip install coverage"
-  - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
   - "%PYTHON%\\python.exe -m pip  install ."
+  - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+  
 
 test_script:
   - "%PYTHON%\\python.exe setup.py test"
