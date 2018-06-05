@@ -1,4 +1,4 @@
-from ratcave import resources, WavefrontReader, default_shader, EmptyEntity
+from ratcave import resources, WavefrontReader, EmptyEntity
 import pytest
 import numpy as np
 @pytest.fixture()
