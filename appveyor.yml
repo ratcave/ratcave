@@ -38,6 +38,10 @@ before_test:
     
     7z x opengl32sw-32.7z
     
+    dir
+    
+    regsvr32 /u opengl32.dll
+    
     move opengl32sw.dll Release\opengl32.dll
 
 
