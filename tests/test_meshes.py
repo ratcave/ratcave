@@ -1,5 +1,5 @@
 import unittest
-from ratcave import resources, WavefrontReader, default_shader
+from ratcave import resources, WavefrontReader
 import pytest
 import numpy as np
 
