@@ -48,6 +48,8 @@ before_test:
     regsvr32 /i opengl32sw.dll
     
     echo "Register Success"
+    
+    SET APPVEYOR=1
 
 
 
