@@ -34,22 +34,6 @@ def test_mesh_copying_works(cube):
     assert cube2.visible == cube.visible
 
 
-def test_mesh_can_draw(cube):
-    print('testing the draw process..')
-    assert not cube.vbos
-    assert not cube.vao
-
-    with pytest.raises(UnboundLocalError):
-        cube.draw()
-
-    with default_shader:
-        cube.draw()
-
-    assert cube.vao
-    assert cube.vbos
-    assert len(cube.vbos) == 3  # vertices, texcoords, and normals
-
-
 def test_dynamic_mode_reflects_array_writability():
     reader = WavefrontReader(resources.obj_primitives)
     cube = reader.get_mesh("Cube", dynamic=True)
