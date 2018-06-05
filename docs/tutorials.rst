@@ -10,3 +10,4 @@ These Tutorials are meant to help you get started!
     tutorial2
     tutorial3
     tutorial4
+    solar_system

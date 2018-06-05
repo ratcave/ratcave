@@ -1,8 +1,9 @@
 import pyglet.gl as gl
-from . import Camera, Light
+from . import Camera, Light, Mesh, EmptyEntity
 from .texture import TextureCube
 from .utils import mixins, clear_color
 from .gl_states import GLStateManager
+
 
 
 class Scene(mixins.NameLabelMixin):
@@ -16,6 +17,7 @@ class Scene(mixins.NameLabelMixin):
         self.camera = Camera() if not camera else camera # create a default Camera object
         self.light = Light() if not light else light
         self.bgColor = bgColor
+
         self.gl_states = GLStateManager(gl_states)
 
     def __repr__(self):
@@ -32,7 +34,10 @@ class Scene(mixins.NameLabelMixin):
 
         with self.gl_states, self.camera, self.light:
             for mesh in self.meshes:
-                mesh.draw()
+                try:
+                    mesh.draw()
+                except AttributeError:
+                    pass
 
     def draw_anaglyph(self, clear=True, inter_eye_distance=.08):
 
