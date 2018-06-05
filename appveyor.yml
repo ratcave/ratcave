@@ -48,8 +48,6 @@ before_test:
     regsvr32 /i opengl32sw.dll
     
     echo "Register Success"
-    
-    move opengl32sw.dll Release\opengl32.dll
 
 
 
