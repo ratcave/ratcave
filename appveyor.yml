@@ -7,7 +7,6 @@ environment:
     - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python36"
     - PYTHON: "C:\\Python27-x64"
-    - PYTHON: "C:\\Python33-x64"
     - PYTHON: "C:\\Python34-x64"
     - PYTHON: "C:\\Python35-x64"
     - PYTHON: "C:\\Python36-x64"
@@ -17,6 +16,7 @@ init:
   - "ECHO %PYTHON%"
 
 install:
+  - "%PYTHON%\\python.exe -m pip install --upgrade setuptools"
   - "%PYTHON%\\python.exe -m pip install wheel"
   - "%PYTHON%\\python.exe -m pip install numpy"
   - "%PYTHON%\\python.exe -m pip  install ."
@@ -32,22 +32,22 @@ before_test:
 
     # Download and retry up to 3 times in case of network transient errors.
     
-    $url = "http://download.qt.io/development_releases/prebuilt/llvmpipe/windows/opengl32sw-32.7z"
+    # $url = "http://download.qt.io/development_releases/prebuilt/llvmpipe/windows/opengl32sw-32.7z"
     
-    $webclient.DownloadFile($url, $filepath)
+    # $webclient.DownloadFile($url, $filepath)
     
-    7z x opengl32sw-32.7z
+    # 7z x opengl32sw-32.7z
     
-    dir
+    # dir
     
     
-    echo "Replacing Old OpenGL with new OpenGL"
+    # echo "Replacing Old OpenGL with new OpenGL"
     
-    regsvr32 /u opengl32.dll
+    # regsvr32 /u opengl32.dll
     
-    regsvr32 /i opengl32sw.dll
+    # regsvr32 /i opengl32sw.dll
     
-    echo "Register Success"
+    # echo "Register Success"
     
     SET APPVEYOR=1
 
