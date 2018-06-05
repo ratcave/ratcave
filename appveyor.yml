@@ -1,3 +1,5 @@
+build: false
+
 environment:
   matrix:
     - PYTHON: "C:\\Python27"
@@ -19,7 +21,20 @@ install:
   - "%PYTHON%\\python.exe -m pip install numpy"
   - "%PYTHON%\\python.exe -m pip  install ."
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
-  
+
+after_install:
+- ps: >-
+    # Download and retry up to 3 times in case of network transient errors.
+    
+    $url = "http://download.qt.io/development_releases/prebuilt/llvmpipe/windows/opengl32sw-32.7z"
+    
+    $webclient.DownloadFile($url, $filepath)
+    
+    7z x opengl32sw-32.7z
+    
+    move opengl32sw.dll Release\opengl32.dll
+
+
 
 test_script:
   - "%PYTHON%\\python.exe setup.py test"
