@@ -41,7 +41,13 @@ before_test:
     dir
     
     
+    echo "Replacing Old OpenGL with new OpenGL"
+    
     regsvr32 /u opengl32.dll
+    
+    regsvr32 /i opengl32sw.dll
+    
+    echo "Register Success"
     
     move opengl32sw.dll Release\opengl32.dll
 
