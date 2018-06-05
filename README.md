@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/ratcave/ratcave.svg?branch=master)](https://travis-ci.org/ratcave/ratcave)
 
+[![Appveyor Build Status](https://ci.appveyor.com/api/projects/status/github/ratcave/ratcave?branch=master&svg=true)](https://ci.appveyor.com/project/neuroneuro15/ratcave)
+
 [![Coverage Status](https://coveralls.io/repos/github/ratcave/ratcave/badge.svg?branch=master)](https://coveralls.io/github/ratcave/ratcave?branch=master)
 
 
