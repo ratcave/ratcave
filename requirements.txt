@@ -6,6 +6,7 @@ mock
 six
 future
 pytest
+pytest-faulthandler
 wavefront_reader
 sphinx
 sphinx_rtd_theme
