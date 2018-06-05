@@ -40,6 +40,7 @@ before_test:
     
     dir
     
+    
     regsvr32 /u opengl32.dll
     
     move opengl32sw.dll Release\opengl32.dll
