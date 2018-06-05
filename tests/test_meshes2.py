@@ -1,4 +1,4 @@
-from ratcave import resources, WavefrontReader, default_shader, EmptyEntity
+from ratcave import resources, WavefrontReader, EmptyEntity
 import pytest
 import numpy as np
 @pytest.fixture()
@@ -27,22 +27,6 @@ def test_mesh_copying_works(cube):
     assert not np.all(np.isclose(cube2.rotation.xyz, cube.rotation.xyz))
     assert np.all(cube.position.xyz == cube2.position.xyz)
     assert cube2.visible == cube.visible
-
-
-def test_mesh_can_draw(cube):
-    print('testing the draw process..')
-    assert not cube.vbos
-    assert not cube.vao
-
-    with pytest.raises(UnboundLocalError):
-        cube.draw()
-
-    with default_shader:
-        cube.draw()
-
-    assert cube.vao
-    assert cube.vbos
-    assert len(cube.vbos) == 3  # vertices, texcoords, and normals
 
 
 def test_dynamic_mode_reflects_array_writability():
