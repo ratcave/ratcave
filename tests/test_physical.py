@@ -39,7 +39,7 @@ class TestPhysical(unittest.TestCase):
             phys.position = pos
             self.assertEqual(phys.position.xyz, pos)
             self.assertTrue(np.isclose(phys.model_matrix[:3, 3], pos).all())
-            
+
     def test_rotation_update(self):
 
         for rot in [(4, 5, 6), (5, 4, 1)]:

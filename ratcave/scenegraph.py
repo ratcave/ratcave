@@ -28,6 +28,7 @@ class SceneGraph(object):
 
     @property
     def parent(self):
+        # TODO: change to set_parent
         """A SceneNode object that is this object's parent in the scene graph."""
         return self._parent
 
@@ -49,10 +50,10 @@ class SceneGraph(object):
         child._parent = self
         self._children.append(child)
 
-    def add_children(self, *children):
+    def add_children(self, *children, **kwargs):
         """Conveniience function: Adds objects as children in the scene graph."""
         for child in children:
-            self.add_child(child)
+            self.add_child(child, **kwargs)
 
     def remove_children(self, *children):
         for child in children:

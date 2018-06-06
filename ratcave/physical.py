@@ -188,6 +188,20 @@ class PhysicalGraph(Physical, SceneGraph):
         for child in self.children:
             child.notify()
 
+    @staticmethod
+    def child_update(parent, child):
+        """Prevents the changes of the coordinates of the child when it gets parented, by pre-calculating childs model_matrix """
+        model_matrix_new = np.dot(trans.inverse_matrix(parent.model_matrix), child.model_matrix)
+        child.position.xyz = model_matrix_new[:-1, 3]
+        child.rotation = coordinates.RotationEulerDegrees.from_matrix(model_matrix_new)
+        #child.scale.xyz = model_matrix_new.diagonal()[:-1] / child.rotation.to_matrix().diagonal()[:-1]
+
+
+    def add_child(self, child, modify=False):
+        SceneGraph.add_child(self, child)
+        self.notify()
+        if modify:
+            self.child_update(self, child)
 
     @property
     def position_global(self):
