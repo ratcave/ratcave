@@ -61,9 +61,9 @@ class TestPhysical(unittest.TestCase):
 
         for scale in (5, 6, 7):
             phys = Physical(scale=scale)
-            self.assertTrue(np.isclose(phys.model_matrix[0, 0], scale).all())
-            self.assertTrue(np.isclose(phys.model_matrix[1, 1], scale).all())
-            self.assertTrue(np.isclose(phys.model_matrix[2, 2], scale).all())
+            self.assertTrue(np.isclose(phys.model_matrix[0, 0], scale))
+            self.assertTrue(np.isclose(phys.model_matrix[1, 1], scale))
+            self.assertTrue(np.isclose(phys.model_matrix[2, 2], scale))
 
     def test_scale_property_routing_causes_update_to_modelmatrix(self):
 
