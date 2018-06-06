@@ -141,6 +141,10 @@ class PhysicalGraph(Physical, SceneGraph):
         self._model_matrix_global = np.identity(4, dtype=np.float32)
         self._normal_matrix_global = np.identity(4, dtype=np.float32)
         self._view_matrix_global = np.identity(4, dtype=np.float32)
+
+        self._model_matrix_transform = np.identity(4, dtype=np.float32)
+        self._normal_matrix_transform = np.identity(4, dtype=np.float32)
+
         super(PhysicalGraph, self).__init__(**kwargs)
 
 
@@ -173,35 +177,28 @@ class PhysicalGraph(Physical, SceneGraph):
 
     def on_change(self):
         Physical.on_change(self)
-        if self.parent:
-            self.model_matrix_global = np.dot(self.parent.model_matrix_global, self._model_matrix)
-            self.normal_matrix_global = np.dot(self.parent.normal_matrix_global, self._normal_matrix)
-            self.view_matrix_global = trans.inverse_matrix(self._model_matrix_global)
-            # self.view_matrix_global = np.dot(self.parent.view_matrix_global, self._view_matrix)
-        else:
-            self.model_matrix_global = self._model_matrix
-            self.normal_matrix_global = self._normal_matrix
-            self.view_matrix_global = self._view_matrix
+        mm_pg = self.parent.model_matrix_global if self.parent else np.identity(4, dtype=np.float32)
+        nn_pg = self.parent.normal_matrix_global if self.parent else np.identity(4, dtype=np.float32)
+        mm, mm_t = self._model_matrix, self._model_matrix_transform
+        nn, nn_t = self._normal_matrix, self._normal_matrix_transform
+
+        self.model_matrix_global = mm_pg.dot(mm_t).dot(mm)
+        self.normal_matrix_global = nn_pg.dot(nn_t).dot(nn)
+        self.view_matrix_global = trans.inverse_matrix(self._model_matrix_global)
 
     def notify(self):
         super(Physical, self).notify()
         for child in self.children:
             child.notify()
 
-    @staticmethod
-    def child_update(parent, child):
-        """Prevents the changes of the coordinates of the child when it gets parented, by pre-calculating childs model_matrix """
-        model_matrix_new = np.dot(trans.inverse_matrix(parent.model_matrix), child.model_matrix)
-        child.position.xyz = model_matrix_new[:-1, 3]
-        child.rotation = coordinates.RotationEulerDegrees.from_matrix(model_matrix_new)
-        #child.scale.xyz = model_matrix_new.diagonal()[:-1] / child.rotation.to_matrix().diagonal()[:-1]
-
 
     def add_child(self, child, modify=False):
+        """ Adds an object as a child in the scene graph. With modify=True, model_matrix_transform gets change from identity and prevents the changes of the coordinates of the child"""
         SceneGraph.add_child(self, child)
         self.notify()
         if modify:
-            self.child_update(self, child)
+            child._model_matrix_transform[:] = trans.inverse_matrix(self.model_matrix_global)
+            child._normal_matrix_transform[:] = trans.inverse_matrix(self.normal_matrix_global)
 
     @property
     def position_global(self):
