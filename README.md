@@ -7,7 +7,7 @@
 
 
 # ratcave
-3D Graphics Engine running off Python, Psychopy, and Pyglet
+3D Graphics Engine running off Python, Psychopy, and Pyglet using modern OpenGL conventions.
 
 Full Documentation and Tutorials can be found at http://ratcave.readthedocs.io/
 
