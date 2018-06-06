@@ -16,14 +16,21 @@ class TestPhysical(unittest.TestCase):
 
         for pos in [(4,5, 6), (5, 4, 1)]:
             phys = Physical(position=pos)
-            self.assertEqual(phys.position.xyz, pos)
+            self.assertTrue(np.isclose(phys.position.xyz, pos).all())
+            self.assertTrue(np.isclose(phys.position.zyx, pos[::-1]).all())
             self.assertTrue(np.isclose(phys.model_matrix[:3, 3], pos).all())
 
         for pos in [(4,5, 6), (5, 4, 1)]:
             phys = Physical()
             phys.position.xyz = pos
-            self.assertEqual(phys.position.xyz, pos)
+            self.assertTrue(np.isclose(phys.position.xyz, pos).all())
+            self.assertTrue(np.isclose(phys.position.zyx, pos[::-1]).all())
             self.assertTrue(np.isclose(phys.model_matrix[:3, 3], pos).all())
+
+        for pos in [4, 5]:
+            phys = Physical()
+            phys.position.xxx = pos
+            self.assertTrue(np.isclose(phys.model_matrix[:3, 3], (pos, 0, 0)).all())
 
     def test_position_property_routing_causes_update_to_modelmatrix(self):
 
@@ -32,16 +39,16 @@ class TestPhysical(unittest.TestCase):
             phys.position = pos
             self.assertEqual(phys.position.xyz, pos)
             self.assertTrue(np.isclose(phys.model_matrix[:3, 3], pos).all())
-
+            
     def test_rotation_update(self):
 
         for rot in [(4, 5, 6), (5, 4, 1)]:
             phys = Physical(rotation=rot)
-            self.assertEqual(phys.rotation.xyz, rot)
+            self.assertTrue(np.isclose(phys.rotation.xyz, rot).all())
 
         for rot in [(4, 5, 6), (5, 4, 1)]:
             phys.rotation.xyz = rot
-            self.assertEqual(phys.rotation.xyz, rot)
+            self.assertTrue(np.isclose(phys.rotation.xyz, rot).all())
 
     def test_rotation_property_routing_causes_update_to_modelmatrix(self):
 
@@ -54,9 +61,9 @@ class TestPhysical(unittest.TestCase):
 
         for scale in (5, 6, 7):
             phys = Physical(scale=scale)
-            self.assertTrue(np.isclose(phys.model_matrix[0, 0], scale))
-            self.assertTrue(np.isclose(phys.model_matrix[1, 1], scale))
-            self.assertTrue(np.isclose(phys.model_matrix[2, 2], scale))
+            self.assertTrue(np.isclose(phys.model_matrix[0, 0], scale).all())
+            self.assertTrue(np.isclose(phys.model_matrix[1, 1], scale).all())
+            self.assertTrue(np.isclose(phys.model_matrix[2, 2], scale).all())
 
     def test_scale_property_routing_causes_update_to_modelmatrix(self):
 
