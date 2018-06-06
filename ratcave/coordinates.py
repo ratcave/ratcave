@@ -2,17 +2,43 @@ import numpy as np
 import _transformations as trans
 from abc import ABCMeta, abstractmethod
 from ratcave.utils.observers import IterObservable
-
+import itertools
+from operator import setitem
 
 class Coordinates(IterObservable):
+
+    coords = {'x': 0, 'y': 1, 'z': 2}
 
     def __init__(self, *args, **kwargs):
         super(Coordinates, self).__init__(**kwargs)
         self._array = np.array(args, dtype=np.float32)
+        self._init_coord_properties()
 
     def __repr__(self):
         arg_str = ', '.join(['{}={}'.format(*el) for el in zip('xyz', self._array)])
         return "{cls}({coords})".format(cls=self.__class__.__name__, coords=arg_str)
+
+    def _init_coord_properties(self):
+        """
+        Generates combinations of named coordinate values, mapping them to the internal array.
+        For Example: x, xy, xyz, y, yy, zyx, etc
+        """
+        def gen_getter_setter_funs(*args):
+            indices = [self.coords[coord] for coord in args]
+
+            def getter(self):
+                return tuple(self._array[indices]) if len(args) > 1 else self._array[indices[0]]
+
+            def setter(self, value):
+                setitem(self._array, indices, value)
+                self.notify_observers()
+
+            return getter, setter
+
+        for n_repeats in range(1, len(self.coords)+1):
+            for args in itertools.product(self.coords.keys(), repeat=n_repeats):
+                getter, setter = gen_getter_setter_funs(*args)
+                setattr(self.__class__, ''.join(args), property(fget=getter, fset=setter))
 
     def __getitem__(self, item):
         if type(item) == slice:
@@ -23,64 +49,6 @@ class Coordinates(IterObservable):
     def __setitem__(self, idx, value):
         self._array[idx] = value
         super(Coordinates, self).__setitem__(idx, value)
-
-
-    # Note: Index counts backwards from end of array to increase compatibility with Quaternions.
-    @property
-    def x(self):
-        return self[-3]
-
-    @x.setter
-    def x(self, value):
-        self[-3] = value
-
-    @property
-    def y(self):
-        return self[-2]
-
-    @y.setter
-    def y(self, value):
-        self[-2] = value
-
-    @property
-    def z(self):
-        return self[-1]
-
-    @z.setter
-    def z(self, value):
-        self[-1] = value
-
-    @property
-    def xy(self):
-        return self[-3:-1]
-
-    @xy.setter
-    def xy(self, value):
-        self[-3:-1] = value
-
-    @property
-    def yz(self):
-        return self[-2:]
-
-    @yz.setter
-    def yz(self, value):
-        self[-2:] = value
-
-    @property
-    def xz(self):
-        return self[-3], self[-1]
-
-    @xz.setter
-    def xz(self, value):
-        self[-3], self[-1] = value[0], value[1]
-
-    @property
-    def xyz(self):
-        return self[-3:]
-
-    @xyz.setter
-    def xyz(self, value):
-        self[-3:] = value
 
 
 class RotationBase(object):
@@ -172,6 +140,8 @@ class RotationEulerDegrees(RotationEuler):
 
 class RotationQuaternion(RotationBase, Coordinates):
 
+    coords = {'w': 0, 'x': 1, 'y': 2, 'z': 3}
+
     def __init__(self, w, x, y, z, **kwargs):
         super(RotationQuaternion, self).__init__(w, x, y, z)
 
@@ -202,30 +172,6 @@ class RotationQuaternion(RotationBase, Coordinates):
             matrix = mat
         coords = trans.quaternion_from_matrix(matrix)
         return cls(*coords)
-
-    @property
-    def w(self):
-        return self[-4]
-
-    @w.setter
-    def w(self, value):
-        self[-4] = value
-
-    @property
-    def wxyz(self):
-        return self[-4:]
-
-    @wxyz.setter
-    def wxyz(self, value):
-        self[-4:] = value
-
-    @property
-    def xyzw(self):
-        return self[[1, 2, 3, 0]]
-
-    @xyzw.setter
-    def xyzw(self, value):
-        self[[1, 2, 3, 0]] = value
 
 
 class Translation(Coordinates):
@@ -260,37 +206,6 @@ class Scale(Coordinates):
     def to_matrix(self):
         return np.diag((self._array[0], self._array[1], self._array[2], 1.))
 
-    @property
-    def x(self):
-        return self[0]
-
-    @x.setter
-    def x(self, value):
-        self[0] = value
-
-    @property
-    def y(self):
-        return self[1]
-
-    @y.setter
-    def y(self, value):
-        self[1] = value
-
-    @property
-    def z(self):
-        return self[2]
-
-    @z.setter
-    def z(self, value):
-        self[2] = value
-
-    @property
-    def xyz(self):
-        return self[:]
-
-    @xyz.setter
-    def xyz(self, value):
-        self[:] = value
 
 
 def cross_product_matrix(vec):

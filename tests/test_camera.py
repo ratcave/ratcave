@@ -6,17 +6,17 @@ import pyglet
 
 def test_camera_physical_attributes():
     cam = Camera()
-    assert cam.position.xyz == (0, 0, 0)
-    assert cam.rotation.xyz == (0, 0, 0)
+    assert np.isclose(cam.position.xyz, (0, 0, 0)).all()
+    assert np.isclose(cam.rotation.xyz, (0, 0, 0)).all()
 
     cam.position.x = 1
-    assert cam.position.xyz == (1, 0, 0)
+    assert np.isclose(cam.position.xyz, (1, 0, 0)).all()
     assert np.all(cam.view_matrix[:3, -1] == tuple(-el for el in cam.position.xyz))
     assert np.all(cam.model_matrix[:3, -1] == cam.position.xyz)
 
 
     cam.rotation.y = 30
-    assert cam.rotation.xyz == (0, 30, 0)
+    assert np.isclose(cam.rotation.xyz, (0, 30, 0)).all()
     assert cam.rotation.y == 30
 
 
