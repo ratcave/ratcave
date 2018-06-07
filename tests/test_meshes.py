@@ -19,16 +19,15 @@ class TestMesh(unittest.TestCase):
 
     def test_position_update_to_modelmatrix(self):
 
-
         for pos in [(4,5, 6), (5, 4, 1)]:
             mesh = self.reader.get_mesh("Cube", position=pos)
-            self.assertEqual(mesh.position.xyz, pos)
-            # self.assertTrue(np.isclose(mesh.uniforms['model_matrix'][:3, 3], pos).all())
+            self.assertTrue(np.isclose(mesh.position.xyz, pos).all())
+            self.assertTrue(np.isclose(mesh.uniforms['model_matrix'][:3, 3], pos).all())
 
         for pos in [(4,5, 6), (5, 4, 1)]:
             mesh = self.mesh
             mesh.position.xyz = pos
-            self.assertEqual(mesh.position.xyz, pos)
+            self.assertTrue(np.isclose(mesh.position.xyz, pos).all())
             self.assertTrue(np.isclose(mesh.uniforms['model_matrix'][:3, 3], pos).all())
 
 
@@ -37,25 +36,25 @@ class TestMesh(unittest.TestCase):
         mesh = self.mesh
         for pos in [(4,5, 6), (5, 4, 1)]:
             mesh.position.x, mesh.position.y, mesh.position.z = pos
-            self.assertEqual(mesh.position.xyz, pos)
+            self.assertTrue(np.isclose(mesh.position.xyz, pos).all())
 
     def test_rotation_update(self):
 
         mesh = self.mesh
         for rot in [(4, 5, 6), (5, 4, 1)]:
             mesh.rotation.x, mesh.rotation.y, mesh.rotation.z = rot
-            self.assertEqual(mesh.rotation.xyz, rot)
+            self.assertTrue(np.isclose(mesh.rotation.xyz, rot).all())
 
     def test_scale_update(self):
 
         mesh = self.mesh
         for rot in [(4, 5, 6), (5, 4, 1)]:
             mesh.scale.x, mesh.scale.y, mesh.scale.z = rot
-            self.assertEqual(mesh.scale.xyz, rot)
+            self.assertTrue(np.isclose(mesh.scale.xyz, rot).all())
 
         for rot in [4, 5]:
             mesh.scale.xyz = rot
-            self.assertEqual(mesh.scale.xyz, (rot, rot, rot))
+            self.assertTrue(np.isclose(mesh.scale.xyz, (rot, rot, rot)).all())
 
 
 @pytest.fixture()
