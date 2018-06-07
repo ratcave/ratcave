@@ -5,7 +5,7 @@ import pyglet.gl as gl
 
 from . import coordinates
 from .utils import AutoRegisterObserver
-from .utils import mixins
+from .coordinates import Translation, RotationBase, Scale
 from .scenegraph import SceneGraph
 
 
@@ -33,6 +33,39 @@ class Physical(AutoRegisterObserver):
         self._model_matrix = np.identity(4, dtype=np.float32)
         self._normal_matrix = np.identity(4, dtype=np.float32)
         self._view_matrix = np.identity(4, dtype=np.float32)
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, value):
+        if isinstance(value, Translation):
+            self._position = value
+        else:
+            self._position[:] = value
+
+    @property
+    def rotation(self):
+        return self._rotation
+
+    @rotation.setter
+    def rotation(self, value):
+        if isinstance(value, RotationBase):
+            self._rotation = value
+        else:
+            self._rotation[:] = value
+
+    @property
+    def scale(self):
+        return self._scale
+
+    @scale.setter
+    def scale(self, value):
+        if isinstance(value, Scale):
+            self._scale = value
+        else:
+            self._scale[:] = value
 
     @property
     def model_matrix(self):
