@@ -1,11 +1,11 @@
 import numpy as np
 import pyglet.gl as gl
 from .utils import BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
-
+from sys import platform
 
 class VAO(BindingContextMixin, BindNoTargetMixin):
 
-    bindfun = gl.glBindVertexArray
+    bindfun = gl.glBindVertexArray if platform != 'darwin' else gl.glBindVertexArrayAPPLE
 
     def __init__(self, indices=None, **kwargs):
         """
@@ -22,7 +22,7 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
 
         # Create Vertex Array Object and Bind it
         super(VAO, self).__init__(**kwargs)
-        self.id = create_opengl_object(gl.glGenVertexArrays)
+        self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
         self.n_verts = None
 
         self.drawfun = self._draw_arrays
