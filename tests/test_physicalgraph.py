@@ -40,7 +40,6 @@ class TestPhysical(unittest.TestCase):
             old_mm = child.model_matrix_global.copy()
             parent.add_child(child, modify=True)
 
-            print(old_mm - child.model_matrix_global, end='\n\n')
             self.assertTrue(np.isclose(old_mm, child.model_matrix_global,atol=1.e-3).all())  # TODO: Improve numerical accuracy of parenting
 
 
@@ -53,5 +52,4 @@ class TestPhysical(unittest.TestCase):
             old_mm = child.model_matrix_global.copy()
             parent.add_child(child, modify=True)
 
-            print(old_mm - child.model_matrix_global, end='\n\n')
             self.assertTrue(np.isclose(old_mm, child.model_matrix_global,atol=1.e-3).all())  # TODO: Improve numerical accuracy of parenting
