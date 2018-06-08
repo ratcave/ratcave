@@ -252,22 +252,15 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 class CameraGroup(PhysicalGraph):
 
     def __init__(self, position=(0, 0, 0), rotation=(0, 0, 0), distance=.1, look_at=(0, 0, 0), projection=None, *args, **kwargs):
-        """ Creates a group of cameras that behave dependently
-
-        Arguments:
-            - posittion (tuple, optional):
-            - rotation (tuple, optional):
-            - distance (float, optional):
-            - look_at (tuple, optional):
-
-        """
+        """ Creates a group of cameras that behave dependently"""
+        
         super(CameraGroup, self).__init__(position=position, rotation=rotation, *args, **kwargs)
         self.cam_left = Camera(position=(-distance / 2, 0., 0.))
         self.cam_right = Camera(position=(distance / 2, 0., 0.))
         self.projection = PerspectiveProjection() if not projection else projection
 
         self.distance = distance
-        # self.look_at(*look_at)
+        self.look_at(*look_at)
         self.add_children(self.cam_left, self.cam_right)
 
     @property
