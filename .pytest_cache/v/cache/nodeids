@@ -1,0 +1,9 @@
+[
+  "tests/test_camera.py::test_camera_physical_attributes",
+  "tests/test_camera.py::test_perspective_projection_updates",
+  "tests/test_camera.py::test_default_projection_is_perspective",
+  "tests/test_camera.py::test_camera_has_all_uniforms",
+  "tests/test_camera.py::test_projection_attributes_change_cameras_projection_matrix_uniform",
+  "tests/test_camera.py::test_projection_matrix_updates_when_assigning_new_projection",
+  "tests/test_camera.py::test_viewport"
+]

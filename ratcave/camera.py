@@ -247,3 +247,49 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
     @property
     def projection_matrix(self):
         return self.projection.projection_matrix.view()
+
+
+class CameraGroup(PhysicalGraph):
+
+    def __init__(self, position=(0, 0, 0), rotation=(0, 0, 0), distance=.1, look_at=(0, 0, 0), projection=None, *args, **kwargs):
+        """ Creates a group of cameras that behave dependently
+
+        Arguments:
+            - posittion (tuple, optional):
+            - rotation (tuple, optional):
+            - distance (float, optional):
+            - look_at (tuple, optional):
+
+        """
+        super(CameraGroup, self).__init__(position=position, rotation=rotation, *args, **kwargs)
+        self.cam_left = Camera(position=(-distance / 2, 0., 0.))
+        self.cam_right = Camera(position=(distance / 2, 0., 0.))
+        self.projection = PerspectiveProjection() if not projection else projection
+
+        self.distance = distance
+        # self.look_at(*look_at)
+        self.add_children(self.cam_left, self.cam_right)
+
+    @property
+    def projection(self):
+        return self._projection
+
+    @projection.setter
+    def projection(self, value): 
+        self._projection = value
+        self.cam_left.projection = self._projection
+        self.cam_right.projection = self._projection
+
+    @property
+    def distance(self):
+        return self.cam_right.position.x - self.cam_left.position.x
+
+    @distance.setter
+    def distance(self, value):
+        self.cam_left.position.x = -value / 2
+        self.cam_right.position.x = value / 2
+
+    def look_at(self, x, y, z):
+        """Converges the two cameras to look at the specific point"""
+        self.cam_left.look_at(x, y, z)
+        self.cam_right.look_at(x, y, z)
