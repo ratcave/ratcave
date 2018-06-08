@@ -14,7 +14,6 @@ def test_camera_physical_attributes():
     assert np.all(cam.view_matrix[:3, -1] == tuple(-el for el in cam.position.xyz))
     assert np.all(cam.model_matrix[:3, -1] == cam.position.xyz)
 
-
     cam.rotation.y = 30
     assert np.isclose(cam.rotation.xyz, (0, 30, 0)).all()
     assert cam.rotation.y == 30
@@ -23,7 +22,7 @@ def test_camera_physical_attributes():
 def test_perspective_projection_updates():
     proj = PerspectiveProjection()
     assert np.isclose(proj.projection_matrix[2, 2], (proj.z_far + proj.z_near) / (proj.z_near - proj.z_far))
-    assert np.isclose(proj.projection_matrix[0, 0], 1./np.tan(np.radians(proj.fov_y / 2.)) / proj.aspect)
+    assert np.isclose(proj.projection_matrix[0, 0], 1. / np.tan(np.radians(proj.fov_y / 2.)) / proj.aspect)
     proj.z_far = 30
     assert np.isclose(proj.projection_matrix[2, 2], (proj.z_far + proj.z_near) / (proj.z_near - proj.z_far))
     assert np.isclose(proj.projection_matrix[0, 0], 1. / np.tan(np.radians(proj.fov_y / 2.)) / proj.aspect)
@@ -41,7 +40,6 @@ def test_perspective_projection_updates():
     with pytest.raises(ValueError):
         proj.z_near = -20
 
-
     with pytest.raises(ValueError):
         p2 = PerspectiveProjection()
         p2.z_near = .1
@@ -49,7 +47,6 @@ def test_perspective_projection_updates():
 
     with pytest.raises(ValueError):
         PerspectiveProjection(z_far=-.1)
-
 
     with pytest.raises(ValueError):
         proj.fov_y = -10
@@ -83,6 +80,20 @@ def test_projection_attributes_change_cameras_projection_matrix_uniform():
         assert np.all(cam.projection_matrix == cam.uniforms['projection_matrix'])
         assert np.all(cam.projection.projection_matrix == cam.projection_matrix)
         assert np.all(cam.uniforms['projection_matrix'] == cam.projection.projection_matrix)
+
+
+def test_projection_matrix_updates_when_assigning_new_projection():
+    cam = Camera()
+    assert (cam.projection_matrix == cam.projection.projection_matrix).all()
+
+    old_projmat = cam.projection_matrix.copy()
+    cam.projection = OrthoProjection()
+    assert (cam.projection_matrix == cam.projection.projection_matrix).all()
+    assert not (cam.projection_matrix == old_projmat).all()
+    assert not (cam.projection.projection_matrix == old_projmat).all()
+
+    cam.projection = PerspectiveProjection()
+    assert (cam.projection_matrix == old_projmat).all()
 
 
 def test_viewport():

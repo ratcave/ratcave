@@ -234,11 +234,9 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
     def projection(self, value):
         if not issubclass(value.__class__, ProjectionBase):
             raise TypeError("Camera.projection must be a Projection.")
-        if not hasattr(self, '_projection'):
-            self._projection = value
-            self.reset_uniforms()
-        else:
-            raise NotImplementedError("Setting a new projection on an existing Camera is not currently working.  Please create a new Camera.")
+    
+        self._projection = value
+        self.reset_uniforms()
 
     def reset_uniforms(self):
         self.uniforms['projection_matrix'] = self.projection_matrix.view()
