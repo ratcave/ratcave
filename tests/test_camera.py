@@ -135,13 +135,13 @@ def test_look_at_updates_for_children():
     angle = np.arctan(point[2]/(cam.distance/2))[0]
     cam.cam_right.rotation.y = -np.rad2deg(angle)
     cam.cam_left.rotation.y = np.rad2deg(angle)
-    point_view_mat_left = cam.cam_left.view_matrix @ point
-    point_view_mat_right = cam.cam_right.view_matrix @ point
+    point_view_mat_left = np.dot(cam.cam_left.view_matrix, point)
+    point_view_mat_right = np.dot(cam.cam_right.view_matrix, point)
     assert (point_view_mat_left == point_view_mat_right).all()
 
     cam2 = CameraGroup(distance=dist, look_at=point[:3])
-    point_view_mat_left2 = cam2.cam_left.view_matrix @ point
-    point_view_mat_right2 = cam2.cam_right.view_matrix @ point
+    point_view_mat_left2 = np.dot(cam2.cam_left.view_matrix, point)
+    point_view_mat_right2 = np.dot(cam2.cam_right.view_matrix, point)
     assert (point_view_mat_left == point_view_mat_left2).all() and (point_view_mat_right == point_view_mat_right2).all()
 
 

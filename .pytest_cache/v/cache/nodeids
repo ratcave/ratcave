@@ -1,0 +1,14 @@
+[
+  "tests/test_camera.py::test_camera_physical_attributes", 
+  "tests/test_camera.py::test_perspective_projection_updates", 
+  "tests/test_camera.py::test_default_projection_is_perspective", 
+  "tests/test_camera.py::test_camera_has_all_uniforms", 
+  "tests/test_camera.py::test_projection_attributes_change_cameras_projection_matrix_uniform", 
+  "tests/test_camera.py::test_projection_matrix_updates_when_assigning_new_projection", 
+  "tests/test_camera.py::test_cameragroup_contains_two_cameras", 
+  "tests/test_camera.py::test_cameras_are_cameragroup_childrens", 
+  "tests/test_camera.py::test_cameras_have_correct_distance", 
+  "tests/test_camera.py::test_projection_instance_is_shared_between_cameragroup_and_its_children", 
+  "tests/test_camera.py::test_look_at_updates_for_children", 
+  "tests/test_camera.py::test_viewport"
+]
