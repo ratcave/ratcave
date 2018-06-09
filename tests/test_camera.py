@@ -1,4 +1,4 @@
-from ratcave import Camera, PerspectiveProjection, OrthoProjection
+from ratcave import Camera, CameraGroup, PerspectiveProjection, OrthoProjection
 import pytest
 import numpy as np
 import pyglet
@@ -94,6 +94,55 @@ def test_projection_matrix_updates_when_assigning_new_projection():
 
     cam.projection = PerspectiveProjection()
     assert (cam.projection_matrix == old_projmat).all()
+
+
+def test_cameragroup_contains_two_cameras():
+    cam = CameraGroup()
+    assert hasattr(cam, "cam_right") and hasattr(cam, "cam_left")
+
+
+def test_cameras_are_cameragroup_childrens():
+    cam = CameraGroup()
+    assert cam.cam_right in cam.children
+    assert cam.cam_left in cam.children
+
+
+def test_cameras_have_correct_distance():
+    dist = 10
+    cam = CameraGroup(distance=dist)
+    assert cam.distance == dist
+    assert (cam.cam_right.position.x - cam.cam_left.position.x) == cam.distance
+
+    cam.distance = 20
+    assert (cam.cam_right.position.x - cam.cam_left.position.x) == cam.distance
+
+
+def test_projection_instance_is_shared_between_cameragroup_and_its_children():
+    cam = CameraGroup()
+    assert (cam.projection == cam.cam_right.projection) and (cam.projection == cam.cam_left.projection)
+
+    cam.projection = OrthoProjection()
+    assert isinstance(cam.projection, OrthoProjection)
+    assert (cam.projection == cam.cam_right.projection) and (cam.projection == cam.cam_left.projection)    
+
+
+def test_look_at_updates_for_children():
+    dist = 2.
+    cam = CameraGroup(distance=dist)
+    point = np.array([0, 0, 0, 1]).reshape(-1, 1)
+    point[2] = -1 #np.random.randint(1, 6)
+
+    angle = np.arctan(point[2]/(cam.distance/2))[0]
+    cam.cam_right.rotation.y = -np.rad2deg(angle)
+    cam.cam_left.rotation.y = np.rad2deg(angle)
+    point_view_mat_left = np.dot(cam.cam_left.view_matrix, point)
+    point_view_mat_right = np.dot(cam.cam_right.view_matrix, point)
+    assert (point_view_mat_left == point_view_mat_right).all()
+
+    cam2 = CameraGroup(distance=dist, look_at=point[:3])
+    point_view_mat_left2 = np.dot(cam2.cam_left.view_matrix, point)
+    point_view_mat_right2 = np.dot(cam2.cam_right.view_matrix, point)
+    assert (point_view_mat_left == point_view_mat_left2).all() and (point_view_mat_right == point_view_mat_right2).all()
 
 
 def test_viewport():
