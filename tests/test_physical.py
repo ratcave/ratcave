@@ -5,6 +5,7 @@ import numpy as np
 
 
 np.set_printoptions(suppress=True, precision=2)
+np.random.seed(100)
 
 class TestPhysical(unittest.TestCase):
     """
@@ -113,6 +114,16 @@ class TestModelViewNormalMatrices(unittest.TestCase):
         self.assertTrue((modelmat == self.phys.model_matrix).all())
         self.assertTrue((normalmat == self.phys.normal_matrix).all())
         self.assertTrue((viewmat == self.phys.view_matrix).all())
+
+    def test_look_at_makes_correct_viewmatrix(self):
+        """Makes sure that the projection of a looked-at point is centered onscreen."""
+        for _ in range(200):
+            phys = Physical(position=np.random.uniform(-3, 3, size=3), rotation=np.random.uniform(-3, 3, size=3), scale=np.random.uniform(-5, 5, size=3))
+            x, y, z = np.random.uniform(-5, 5, size=3)
+            phys.look_at(x, y, z)
+            view_projection = np.dot(phys.view_matrix, np.matrix([x, y, z, 1]).T)
+            self.assertTrue(np.isclose(view_projection[:2], 0, atol=1e-4).all())
+
 
 
 class TestOrientation(unittest.TestCase):
