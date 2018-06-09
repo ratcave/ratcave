@@ -9,3 +9,5 @@ ratcave.egg-info/*
 .idea
 .cache
 *.egg-info
+.pytest_cache/
+.eggs/
