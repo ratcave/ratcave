@@ -25,9 +25,9 @@ void main()
             if (TextureMap_isBound > 0){
                 final_color = vec4(diffuse * texture2D(TextureMap, texCoord).rgb, 1.0);
                 return;
-            //} else if (CubeMap_isBound > 0) {
-            //    final_color = vec4((diffuse * textureCube(CubeMap, eyeVec).rgb), 1.0);
-            //    return;
+            } else if (CubeMap_isBound > 0) {
+                final_color = vec4((diffuse * textureCube(CubeMap, eyeVec).rgb), 1.0);
+                return;
             } else {
                  final_color = vec4(diffuse, 1.0);
                  return;
@@ -35,12 +35,12 @@ void main()
     }
 
     //Shade Cube Map and return, if needed
-    //if (CubeMap_isBound > 0){
-    //        final_color = textureCube(CubeMap, eyeVec);// * lightAmount;
-    //        final_color[3] = 1.0;
-    //        gl_FragColor = final_color;
-    //        return;
-    //}
+    if (CubeMap_isBound > 0){
+            final_color = textureCube(CubeMap, eyeVec);// * lightAmount;
+            final_color[3] = 1.0;
+            gl_FragColor = final_color;
+            return;
+    }
 
     // Ambient Lighting
     float ambient_coeff = .25;

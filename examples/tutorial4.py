@@ -1,7 +1,7 @@
 import pyglet
 import ratcave as rc
 import math, time
-from ratcave.resources import cube_shader
+from ratcave.resources import cube_shader, default_shader
 
 window = pyglet.window.Window(resizable=True)
 
@@ -49,7 +49,7 @@ pyglet.clock.schedule(update)
 
 @window.event
 def on_draw():
-    with cube_shader:
+    with default_shader:
         with cube_fbo as fbo:
             virtual_scene.draw360_to_texture(fbo.texture)
         projected_scene.draw()
