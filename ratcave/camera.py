@@ -13,6 +13,19 @@ class ProjectionBase(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, z_near=0.1, z_far=12., **kwargs):
+        """
+        Abstract Base Class for the Projections. Used to create projectoin matrix that later represents Camera Space.
+        Vertex with position=(0,0,0), should be located in the middle of the scene. Projection matrix has defined z - distance to the camera.
+
+        Args:
+            z_near (float): the nearest distance to the camera, has to be positive
+            z_far (float): the furthest point from the  camera that is visible, has to be positive and bigger then z_near
+
+        Returns:
+            ProjectionBase instance
+
+
+        """
         super(ProjectionBase, self).__init__(**kwargs)
         self._projection_matrix = np.identity(4, dtype=np.float32)
         if z_near >= z_far or z_near <= 0. or z_far <= 0.:
@@ -23,6 +36,7 @@ class ProjectionBase(object):
 
     @property
     def projection_matrix(self):
+        """Return projection_matrix"""
         return self._projection_matrix.view()
 
     @projection_matrix.setter
@@ -31,6 +45,7 @@ class ProjectionBase(object):
 
     @property
     def z_near(self):
+        """Return z_near value"""
         return self._z_near
 
     @z_near.setter
@@ -44,6 +59,7 @@ class ProjectionBase(object):
 
     @property
     def z_far(self):
+        """Return z_far value"""
         return self._z_far
 
     @z_far.setter
@@ -59,10 +75,12 @@ class ProjectionBase(object):
     def _update_projection_matrix(self): pass
 
     def update(self):
+        """ Updates projection matrix"""
         self._update_projection_matrix()
 
     @property
     def viewport(self):
+        """returns the viewport"""
         return get_viewport()
 
     def copy(self):
@@ -83,10 +101,14 @@ class OrthoProjection(ProjectionBase):
 
     def __init__(self, origin='center', coords='relative', **kwargs):
         """
-        Parameters
-        ----------
-        origin: 'center', 'corner',
-        coords: 'relative', 'absolute'
+        Orthogonal Projection Object cretes projection Object that can be used in Camera
+
+        Args:
+            origin (str): 'center' or 'corner'
+            coords (str): 'relative' or 'absolute'
+
+        Returns:
+            OrthoProjection instance
         """
         self._origin = origin
         self._coords = coords
@@ -94,6 +116,7 @@ class OrthoProjection(ProjectionBase):
 
     @property
     def origin(self):
+        """Returns origin of the Projection """
         return self._origin
 
     @origin.setter
@@ -105,6 +128,7 @@ class OrthoProjection(ProjectionBase):
 
     @property
     def coords(self):
+        """Returns coordinates"""
         return self._coords
 
     @coords.setter
@@ -143,6 +167,8 @@ class OrthoProjection(ProjectionBase):
 
 
 class PerspectiveProjection(ProjectionBase):
+  
+  
 
     def __init__(self, fov_y=60., aspect=1.25, x_shift=0., y_shift=0., **kwargs):
         self._fov_y = fov_y
@@ -247,14 +273,14 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
     @property
     def projection(self):
-        """Projection type of the camera"""
+        """Returns the Camera's Projection """
         return self._projection
 
     @projection.setter
     def projection(self, value):
         if not issubclass(value.__class__, ProjectionBase):
             raise TypeError("Camera.projection must be a Projection.")
-    
+
         self._projection = value
         self.reset_uniforms()
 
@@ -266,6 +292,7 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
     @property
     def projection_matrix(self):
+        """Returns projection matrix of the Camera"""
         return self.projection.projection_matrix.view()
 
 
@@ -273,7 +300,6 @@ class CameraGroup(PhysicalGraph):
 
     def __init__(self, cameras=None, *args, **kwargs):
         """ Creates a group of cameras that behave dependently"""
-        
         super(CameraGroup, self).__init__(*args, **kwargs)
         self.cameras = cameras
         self.add_children(*self.cameras)
@@ -298,7 +324,7 @@ class StereoCameraGroup(CameraGroup):
         self.left, self.right = self.cameras
         self.distance = distance
         self.convergence = convergence
-
+        
     @property
     def distance(self):
         return self.right.position.x - self.left.position.x
@@ -317,4 +343,3 @@ class StereoCameraGroup(CameraGroup):
         self.left.projection.x_shift = value
         self.right.projection.x_shift = -value
         self._convergence = value
-    

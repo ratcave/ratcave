@@ -24,6 +24,7 @@ Texture
 +++++++
 .. automodule:: ratcave.texture
     :members: Texture
+    :exclude-members: target, target0, attachment_point, internal_fmt, pixel_fmt, bindfun
     :undoc-members:
     :show-inheritance:
 
@@ -39,15 +40,10 @@ Shader
 ++++++
 .. automodule:: ratcave.shader
     :members: Shader
+    :exclude-members: bindfun
     :undoc-members:
     :show-inheritance:
 
-
-
-.. .. automodule:: ratcave
-..     :members: Mesh, Scene, Shader, Camera
-..     :undoc-members:
-..     :show-inheritance:
 
 
 Main Topic Details
@@ -59,6 +55,6 @@ Main Topic Details
     mesh
     cameras
     texture
-    relations
+    relationships
     shader
     other
