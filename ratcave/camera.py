@@ -65,6 +65,16 @@ class ProjectionBase(object):
     def viewport(self):
         return get_viewport()
 
+    def copy(self):
+        """Returns a copy of the projection matrix"""
+        params = {}
+        for key, val in self.__dict__.items():
+            if 'matrix' not in key:
+                k = key[1:] if key[0] == '_' else key
+                params[k] = val
+        # params = {param: params[param] for param in params}
+        return self.__class__(**params)
+
 
 ScreenEdges = namedtuple('ScreenEdges', 'left right bottom top')
 
@@ -266,24 +276,18 @@ class CameraGroup(PhysicalGraph):
 
 class StereoCameraGroup(CameraGroup):
 
-    def __init__(self, distance=.1, projection=None, *args, **kwargs):
+    def __init__(self, distance=.1, projection=None, convergence=0., *args, **kwargs):
         """ Creates a group of cameras that behave dependently"""
-        
-        self.left = Camera(position=(-distance / 2, 0., 0.))
-        self.right = Camera(position=(distance / 2, 0., 0.))
-        super(StereoCameraGroup, self).__init__(cameras=[self.left, self.right], *args, **kwargs)
-        self.projection = PerspectiveProjection() if not projection else projection
+        cameras = [Camera(projection=projection) for _ in range(2)]
+        super(StereoCameraGroup, self).__init__(cameras=cameras, *args, **kwargs)
+        for camera, x in zip(self.cameras, [-distance / 2, distance / 2]):
+            project = projection.copy() if isinstance(projection, ProjectionBase) else PerspectiveProjection()
+            camera.projection = project
+            camera.position.x = x
+
+        self.left, self.right = self.cameras
         self.distance = distance
-
-    @property
-    def projection(self):
-        return self._projection
-
-    @projection.setter
-    def projection(self, value): 
-        self._projection = value
-        for camera in self.cameras:
-            camera.projection = self._projection
+        self.convergence = convergence
 
     @property
     def distance(self):
@@ -293,3 +297,14 @@ class StereoCameraGroup(CameraGroup):
     def distance(self, value):
         self.left.position.x = -value / 2
         self.right.position.x = value / 2
+
+    @property
+    def convergence(self):
+        return self._convergence
+
+    @convergence.setter
+    def convergence(self, value):
+        self.left.projection.x_shift = value
+        self.right.projection.x_shift = -value
+        self._convergence = value
+    
