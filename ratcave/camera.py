@@ -66,6 +66,16 @@ class ProjectionBase(object):
     def viewport(self):
         return get_viewport()
 
+    def copy(self):
+        """Returns a copy of the projection matrix"""
+        params = {}
+        for key, val in self.__dict__.items():
+            if 'matrix' not in key:
+                k = key[1:] if key[0] == '_' else key
+                params[k] = val
+        # params = {param: params[param] for param in params}
+        return self.__class__(**params)
+
 
 ScreenEdges = namedtuple('ScreenEdges', 'left right bottom top')
 
@@ -269,38 +279,50 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
 class CameraGroup(PhysicalGraph):
 
-    def __init__(self, position=(0, 0, 0), rotation=(0, 0, 0), distance=.1, look_at=(0, 0, 0), projection=None, *args, **kwargs):
+    def __init__(self, cameras=None, *args, **kwargs):
         """ Creates a group of cameras that behave dependently"""
         
-        super(CameraGroup, self).__init__(position=position, rotation=rotation, *args, **kwargs)
-        self.cam_left = Camera(position=(-distance / 2, 0., 0.))
-        self.cam_right = Camera(position=(distance / 2, 0., 0.))
-        self.projection = PerspectiveProjection() if not projection else projection
-
-        self.distance = distance
-        self.look_at(*look_at)
-        self.add_children(self.cam_left, self.cam_right)
-
-    @property
-    def projection(self):
-        return self._projection
-
-    @projection.setter
-    def projection(self, value): 
-        self._projection = value
-        self.cam_left.projection = self._projection
-        self.cam_right.projection = self._projection
-
-    @property
-    def distance(self):
-        return self.cam_right.position.x - self.cam_left.position.x
-
-    @distance.setter
-    def distance(self, value):
-        self.cam_left.position.x = -value / 2
-        self.cam_right.position.x = value / 2
+        super(CameraGroup, self).__init__(*args, **kwargs)
+        self.cameras = cameras
+        self.add_children(*self.cameras)
 
     def look_at(self, x, y, z):
         """Converges the two cameras to look at the specific point"""
-        self.cam_left.look_at(x, y, z)
-        self.cam_right.look_at(x, y, z)
+        for camera in self.cameras:
+            camera.look_at(x, y, z)
+
+
+class StereoCameraGroup(CameraGroup):
+
+    def __init__(self, distance=.1, projection=None, convergence=0., *args, **kwargs):
+        """ Creates a group of cameras that behave dependently"""
+        cameras = [Camera(projection=projection) for _ in range(2)]
+        super(StereoCameraGroup, self).__init__(cameras=cameras, *args, **kwargs)
+        for camera, x in zip(self.cameras, [-distance / 2, distance / 2]):
+            project = projection.copy() if isinstance(projection, ProjectionBase) else PerspectiveProjection()
+            camera.projection = project
+            camera.position.x = x
+
+        self.left, self.right = self.cameras
+        self.distance = distance
+        self.convergence = convergence
+
+    @property
+    def distance(self):
+        return self.right.position.x - self.left.position.x
+
+    @distance.setter
+    def distance(self, value):
+        self.left.position.x = -value / 2
+        self.right.position.x = value / 2
+
+    @property
+    def convergence(self):
+        return self._convergence
+
+    @convergence.setter
+    def convergence(self, value):
+        self.left.projection.x_shift = value
+        self.right.projection.x_shift = -value
+        self._convergence = value
+    
