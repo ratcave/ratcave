@@ -112,6 +112,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
     @classmethod
     def from_pickle(cls, filename):
+        """Loads and Returns a Mesh from a pickle file, given a filename."""
         with open(filename, 'rb') as f:
             mesh = pickle.load(f)
         return cls(arrays=deepcopy([arr.copy() for arr in [mesh.arrays[0][:, :-1], mesh.arrays[1], mesh.arrays[2]]]),

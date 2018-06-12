@@ -234,6 +234,7 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
     @classmethod
     def from_pickle(cls, filename):
+        """Loads and Returns a Camera from a pickle file, given a filename."""
         with open(filename, 'rb') as f:
             cam = pickle.load(f)
 
