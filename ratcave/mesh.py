@@ -2,6 +2,7 @@
 This module contains the Mesh and EmptyEntity classes.
 """
 
+import pickle
 import numpy as np
 from .utils import vertices as vertutils
 from .utils import NameLabelMixin
@@ -10,6 +11,7 @@ from .texture import Texture
 from .vertex import VAO, VBO
 import pyglet.gl as gl
 from copy import deepcopy
+from warnings import warn
 
 
 def gen_fullscreen_quad(name='FullScreenQuad'):
@@ -98,11 +100,23 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
     def copy(self):
-        """Returns copy of the Mesh object"""
+        """Returns a copy of the Mesh."""
         return Mesh(arrays=deepcopy([arr.copy() for arr in [self.vertices, self.normals, self.texcoords]]), texture=self.textures, mean_center=deepcopy(self._mean_center),
                     position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]), scale=self.scale.xyz,
                     drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic, visible=self.visible,
                     gl_states=deepcopy(self.gl_states))
+
+    def to_pickle(self, filename):
+        """Save Mesh to a pickle file, given a filename."""
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def from_pickle(cls, filename):
+        """Loads and Returns a Mesh from a pickle file, given a filename."""
+        with open(filename, 'rb') as f:
+            mesh = pickle.load(f).copy()
+        return mesh
 
     def reset_uniforms(self):
         """ Resets the uniforms to the Mesh object to the ""global"" coordinate system"""

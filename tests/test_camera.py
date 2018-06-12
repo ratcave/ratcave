@@ -2,6 +2,9 @@ from ratcave import Camera, CameraGroup, StereoCameraGroup, PerspectiveProjectio
 import pytest
 import numpy as np
 import pyglet
+import pickle
+import sys
+from tempfile import NamedTemporaryFile
 
 
 def test_camera_physical_attributes():
@@ -175,3 +178,104 @@ def test_viewport():
     assert viewport.width == win.width
     assert viewport.height == win.height
     win.close()
+
+
+def test_projection_shift():
+    for _ in range(50):
+        x, y = np.random.uniform(-5, 5, size=2)
+        proj = PerspectiveProjection(x_shift=x, y_shift=y)
+        smat = proj._get_shift_matrix()
+        assert np.isclose(smat[0, 2], x)
+        assert np.isclose(smat[1, 2], y)
+
+        proj = PerspectiveProjection()
+        old_pmat = proj.projection_matrix.copy()
+        proj.x_shift = x
+        proj.y_shift = y
+        smat = proj._get_shift_matrix()
+        assert np.isclose(smat[0, 2], x)
+        assert np.isclose(smat[1, 2], y)
+        assert not np.isclose(old_pmat, proj.projection_matrix).all()
+
+        cam = Camera()
+        old_pmat = cam.projection_matrix.copy()
+        assert np.isclose(old_pmat, cam.projection.projection_matrix).all()
+        assert np.isclose(old_pmat, cam.projection_matrix).all()
+        cam.projection.x_shift = x
+        cam.projection.y_shift = y
+        assert not np.isclose(old_pmat, cam.projection_matrix).all()
+
+        proj = PerspectiveProjection(x_shift=x)
+        cam = Camera(projection=proj)
+        old_pmat = cam.projection_matrix.copy()
+        assert np.isclose(old_pmat, cam.projection.projection_matrix).all()
+        assert np.isclose(old_pmat, cam.projection_matrix).all()
+        assert np.isclose(old_pmat, cam.uniforms['projection_matrix']).all()
+        cam.projection.y_shift = y
+        assert not np.isclose(old_pmat, cam.projection_matrix).all()
+        assert not np.isclose(old_pmat, cam.uniforms['projection_matrix']).all()
+
+
+        proj = PerspectiveProjection()
+        old_smat = proj._get_shift_matrix()
+        proj.fov_y = 10.
+        assert np.isclose(old_smat, proj._get_shift_matrix()).all()
+
+
+
+
+if sys.platform == 'linux':
+    def test_camera_is_picklable():
+        for _ in range(2):
+            phys = Camera()
+            phys.position.xyz =np.random.uniform(-5, 5, 3)
+            phys.rotation.xyz = np.random.uniform(-5, 5, 3)
+
+            with NamedTemporaryFile('wb', delete=False) as f:
+                phys.to_pickle(f.name)
+            with open(f.name, 'rb') as f:
+                phys2 = Camera.from_pickle(f.name)
+            assert phys.position.xyz == phys2.position.xyz
+            assert phys.rotation.xyz == phys2.rotation.xyz
+            assert np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+
+            phys.position.xyz = 5, 5, 5
+            assert not np.isclose(phys.position.xyz, phys2.position.xyz).all()
+            assert not np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+            assert np.isclose(phys.model_matrix, phys.uniforms['model_matrix']).all()
+            assert np.isclose(phys.view_matrix, phys.uniforms['view_matrix']).all()
+
+            phys2.position.xyz = 5, 5, 5
+            assert np.isclose(phys.position.xyz, phys2.position.xyz).all()
+            assert np.isclose(phys2.position.xyz, phys2.model_matrix[:3, -1]).all()
+
+            assert np.isclose(phys2.model_matrix, phys2.uniforms['model_matrix']).all()
+            assert np.isclose(phys2.view_matrix, phys2.uniforms['view_matrix']).all()
+
+            assert np.isclose(phys.view_matrix, phys2.view_matrix).all()
+
+            assert np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+
+
+            phys2.position.xyz = 10, 10, 10
+            assert np.isclose(phys2.position.xyz, phys2.uniforms['model_matrix'][:3, -1]).all()
+
+            assert np.isclose(phys.projection.projection_matrix, phys2.projection.projection_matrix).all()
+            assert np.isclose(phys2.projection.projection_matrix, phys2.uniforms['projection_matrix']).all()
+
+
+            phys2.projection.fov_y = 30
+            assert not np.isclose(phys.projection.projection_matrix, phys2.projection.projection_matrix).all()
+            assert np.isclose(phys2.projection.projection_matrix, phys2.uniforms['projection_matrix']).all()
+
+
+def test_projection_copy_works():
+    proj = PerspectiveProjection(fov_y=30)
+    proj2 = proj.copy()
+    assert proj.fov_y == proj2.fov_y
+    proj.x_shift = 3
+    proj2.x_shift = 5
+    assert proj.x_shift != proj2.x_shift
+    assert proj._get_shift_matrix()[0, 2] == proj.x_shift
+    assert proj2._get_shift_matrix()[0, 2] == proj2.x_shift
+    assert not np.isclose(proj.projection_matrix, proj2.projection_matrix).all()

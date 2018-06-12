@@ -1,3 +1,4 @@
+import pickle
 import abc
 import numpy as np
 from .physical import PhysicalGraph
@@ -271,6 +272,20 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
     def __exit__(self, *args):
         pass
 
+    def to_pickle(self, filename):
+        """Save Camera to a pickle file, given a filename."""
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def from_pickle(cls, filename):
+        """Loads and Returns a Camera from a pickle file, given a filename."""
+        with open(filename, 'rb') as f:
+            cam = pickle.load(f)
+
+        projection = cam.projection.copy()
+        return cls(projection=projection, position=cam.position.xyz, rotation=cam.rotation.__class__(*cam.rotation[:]))
+
     @property
     def projection(self):
         """Returns the Camera's Projection """
@@ -343,3 +358,4 @@ class StereoCameraGroup(CameraGroup):
         self.left.projection.x_shift = value
         self.right.projection.x_shift = -value
         self._convergence = value
+
