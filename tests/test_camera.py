@@ -2,6 +2,9 @@ from ratcave import Camera, CameraGroup, PerspectiveProjection, OrthoProjection
 import pytest
 import numpy as np
 import pyglet
+import pickle
+import sys
+from tempfile import NamedTemporaryFile
 
 
 def test_camera_physical_attributes():
@@ -199,3 +202,47 @@ def test_projection_shift():
 
 
 
+
+if sys.platform == 'linux':
+    def test_camera_is_picklable():
+        for _ in range(2):
+            phys = Camera()
+            phys.position.xyz =np.random.uniform(-5, 5, 3)
+            phys.rotation.xyz = np.random.uniform(-5, 5, 3)
+
+            with NamedTemporaryFile('wb', delete=False) as f:
+                phys.to_pickle(f.name)
+            with open(f.name, 'rb') as f:
+                phys2 = Camera.from_pickle(f.name)
+            assert phys.position.xyz == phys2.position.xyz
+            assert phys.rotation.xyz == phys2.rotation.xyz
+            assert np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+
+            phys.position.xyz = 5, 5, 5
+            assert not np.isclose(phys.position.xyz, phys2.position.xyz).all()
+            assert not np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+            assert np.isclose(phys.model_matrix, phys.uniforms['model_matrix']).all()
+            assert np.isclose(phys.view_matrix, phys.uniforms['view_matrix']).all()
+
+            phys2.position.xyz = 5, 5, 5
+            assert np.isclose(phys.position.xyz, phys2.position.xyz).all()
+            assert np.isclose(phys2.position.xyz, phys2.model_matrix[:3, -1]).all()
+
+            assert np.isclose(phys2.model_matrix, phys2.uniforms['model_matrix']).all()
+            assert np.isclose(phys2.view_matrix, phys2.uniforms['view_matrix']).all()
+
+            assert np.isclose(phys.view_matrix, phys2.view_matrix).all()
+
+            assert np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+
+
+            phys2.position.xyz = 10, 10, 10
+            assert np.isclose(phys2.position.xyz, phys2.uniforms['model_matrix'][:3, -1]).all()
+
+            assert np.isclose(phys.projection.projection_matrix, phys2.projection.projection_matrix).all()
+            assert np.isclose(phys2.projection.projection_matrix, phys2.uniforms['projection_matrix']).all()
+
+
+            phys2.projection.fov_y = 30
+            assert not np.isclose(phys.projection.projection_matrix, phys2.projection.projection_matrix).all()
+            assert np.isclose(phys2.projection.projection_matrix, phys2.uniforms['projection_matrix']).all()

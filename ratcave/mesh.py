@@ -8,6 +8,7 @@
     This documentation was auto-generated from the mesh.py file.
 """
 
+import pickle
 import numpy as np
 from .utils import vertices as vertutils
 from .utils import NameLabelMixin
@@ -16,6 +17,7 @@ from .texture import Texture
 from .vertex import VAO, VBO
 import pyglet.gl as gl
 from copy import deepcopy
+from warnings import warn
 
 
 def gen_fullscreen_quad(name='FullScreenQuad'):
@@ -102,6 +104,22 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
                     position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]), scale=self.scale.xyz,
                     drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic, visible=self.visible,
                     gl_states=deepcopy(self.gl_states))
+
+    def to_pickle(self, filename):
+        """Save Mesh to a pickle file, given a filename."""
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def from_pickle(cls, filename):
+        with open(filename, 'rb') as f:
+            mesh = pickle.load(f)
+        return cls(arrays=deepcopy([arr.copy() for arr in [mesh.arrays[0][:, :-1], mesh.arrays[1], mesh.arrays[2]]]),
+             texture=mesh.textures, mean_center=deepcopy(mesh._mean_center),
+             position=mesh.position.xyz, rotation=mesh.rotation.__class__(*mesh.rotation[:]), scale=mesh.scale.xyz,
+             drawmode=mesh.drawmode, point_size=mesh.point_size, dynamic=mesh.dynamic, visible=mesh.visible,
+             gl_states=deepcopy(mesh.gl_states))
+
 
     def reset_uniforms(self):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()

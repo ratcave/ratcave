@@ -3,6 +3,10 @@ import unittest
 import pytest
 from ratcave import Physical
 import numpy as np
+import pickle
+from tempfile import NamedTemporaryFile
+import sys
+
 
 
 np.set_printoptions(suppress=True, precision=2)
@@ -164,3 +168,31 @@ class TestOrientation(unittest.TestCase):
             phys.orientation0 = ori0
             phys.rotation.x = 90
             self.assertTrue(np.isclose(phys.orientation, ori1, atol=1e-4).all())
+
+
+if sys.platform == 'linux':
+    def test_physical_is_picklable():
+        for _ in range(10):
+            phys = Physical(position=np.random.uniform(-5, 5, 3),
+                            rotation=np.random.uniform(-5, 5, 3),
+                            scale=np.random.uniform(1, 5, 3))
+            with NamedTemporaryFile('wb', delete=False) as f:
+                pickle.dump(phys, f)
+            with open(f.name, 'rb') as f:
+                phys2 = pickle.load(f)
+            assert phys.position.xyz == phys2.position.xyz
+            assert phys.rotation.xyz == phys2.rotation.xyz
+            assert phys.scale.xyz == phys2.scale.xyz
+            assert np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+
+            phys.position.xyz = 5, 5, 5
+            assert not np.isclose(phys.position.xyz, phys2.position.xyz).all()
+            assert not np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+
+            phys2.position.xyz = 5, 5, 5
+            assert np.isclose(phys.position.xyz, phys2.position.xyz).all()
+            assert np.isclose(phys2.position.xyz, phys2.model_matrix[:3, -1]).all()
+            assert np.isclose(phys.normal_matrix, phys2.normal_matrix).all()
+            assert np.isclose(phys.view_matrix, phys2.view_matrix).all()
+            print(phys2.model_matrix)
+            assert np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
