@@ -8,6 +8,7 @@ Mesh
 ++++
 .. automodule:: ratcave.mesh
     :members: Mesh
+    :exclude-members: points, triangles
     :undoc-members:
     :show-inheritance:
 
