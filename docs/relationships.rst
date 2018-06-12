@@ -18,7 +18,7 @@ scenegraph.py
 physical.py
 -----------
 .. automodule:: ratcave.physical
-    :members: Physcial, PhysicalGraph
+    :members: Physical, PhysicalGraph
     :undoc-members:
     :show-inheritance:
 

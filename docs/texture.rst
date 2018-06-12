@@ -1,7 +1,6 @@
 Textures
 ========
 
-
 texture.py
 ----------
 .. automodule:: ratcave.texture
