@@ -10,7 +10,20 @@ class Scene(mixins.NameLabelMixin):
 
     def __init__(self, meshes=(), camera=None, light=None, bgColor=(0.4, 0.4, 0.4),
                  gl_states=(gl.GL_DEPTH_TEST, gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_2D, gl.GL_CULL_FACE), **kwargs):
-        """Returns a Scene object.  Scenes manage rendering of Meshes, Lights, and Cameras."""
+        """
+        Returns a Scene object, that manages the creation of the scene needed to view the projection of the Objects.
+        Class manages rendering of Meshes, Lights and Cameras.
+
+        Args:
+            meshes (Mesh): all of Mesh instances that you want to view in the Scene
+            camera (Camera): a Camera instance, if not provided created automatically
+            light (Light): a Light instance, if not provided created automatically
+            bgColor (float):  defines the color of the background
+
+        Returns:
+            Scene instance
+
+        """
         super(Scene, self).__init__(**kwargs)
 
         self.meshes = meshes
@@ -40,7 +53,6 @@ class Scene(mixins.NameLabelMixin):
                     pass
 
     def draw_anaglyph(self, clear=True, inter_eye_distance=.08):
-
         cam = self.camera
         orig_cam_position = cam.uniforms['view_matrix'][0, 3]
         gl.glColorMask(True, False, False, True)

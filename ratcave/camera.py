@@ -13,6 +13,18 @@ class ProjectionBase(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, z_near=0.1, z_far=12., **kwargs):
+        """
+        Abstract Base Class for the Projections. Used to create 
+
+        Args:
+            z_near (float):
+            z_far (float):
+
+        Returns:
+            ProjectionBase instance
+
+
+        """
         super(ProjectionBase, self).__init__(**kwargs)
         self._projection_matrix = np.identity(4, dtype=np.float32)
         if z_near >= z_far or z_near <= 0. or z_far <= 0.:
@@ -23,6 +35,7 @@ class ProjectionBase(object):
 
     @property
     def projection_matrix(self):
+        """ return projection_matrix"""
         return self._projection_matrix.view()
 
     @projection_matrix.setter
@@ -210,6 +223,18 @@ class PerspectiveProjection(ProjectionBase):
 class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
     def __init__(self, projection=None, orientation0=(0, 0, -1), **kwargs):
+        """
+        Returns Camera Object
+
+        Args:
+            projection (PerspectiveProjection, OrthoProjection): providing projection for the Camera, if not provided created PerspectiveProjection()
+            orientation0 (float): values of orientation
+
+        Returns:
+            Camera instance
+        """
+
+
         kwargs['orientation0'] = orientation0
         super(Camera, self).__init__(**kwargs)
         self.projection = PerspectiveProjection() if not projection else projection
@@ -228,13 +253,14 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
     @property
     def projection(self):
+        """Returns Cameras Projection """
         return self._projection
 
     @projection.setter
     def projection(self, value):
         if not issubclass(value.__class__, ProjectionBase):
             raise TypeError("Camera.projection must be a Projection.")
-    
+
         self._projection = value
         self.reset_uniforms()
 
@@ -246,6 +272,7 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
     @property
     def projection_matrix(self):
+        """Returns projection matrix of the Camera"""
         return self.projection.projection_matrix.view()
 
 
@@ -253,7 +280,7 @@ class CameraGroup(PhysicalGraph):
 
     def __init__(self, position=(0, 0, 0), rotation=(0, 0, 0), distance=.1, look_at=(0, 0, 0), projection=None, *args, **kwargs):
         """ Creates a group of cameras that behave dependently"""
-        
+
         super(CameraGroup, self).__init__(position=position, rotation=rotation, *args, **kwargs)
         self.cam_left = Camera(position=(-distance / 2, 0., 0.))
         self.cam_right = Camera(position=(distance / 2, 0., 0.))
@@ -268,7 +295,7 @@ class CameraGroup(PhysicalGraph):
         return self._projection
 
     @projection.setter
-    def projection(self, value): 
+    def projection(self, value):
         self._projection = value
         self.cam_left.projection = self._projection
         self.cam_right.projection = self._projection

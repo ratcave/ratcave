@@ -1,7 +1,5 @@
-
-
 """
-This module contains the Mesh and Empty classes.
+This module contains the Mesh and EmptyEntity classes.
 """
 
 import numpy as np
@@ -181,7 +179,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
                 self.vao.assign_vertex_attrib_location(vbo, loc)
 
     def draw(self):
-        """ Draw the mesh if it's visible, from the perspective of the camera and lit by the light. The function sends the uniforms"""
+        """ Draw the Mesh if it's visible, from the perspective of the camera and lit by the light. The function sends the uniforms"""
         if not self.vao:
             self.vao = VAO(indices=self.array_indices)
             self._fill_vao()
