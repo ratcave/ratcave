@@ -186,13 +186,16 @@ def test_projection_shift():
         old_pmat = cam.projection_matrix.copy()
         assert np.isclose(old_pmat, cam.projection.projection_matrix).all()
         assert np.isclose(old_pmat, cam.projection_matrix).all()
+        assert np.isclose(old_pmat, cam.uniforms['projection_matrix']).all()
         cam.projection.y_shift = y
         assert not np.isclose(old_pmat, cam.projection_matrix).all()
+        assert not np.isclose(old_pmat, cam.uniforms['projection_matrix']).all()
 
 
         proj = PerspectiveProjection()
         old_smat = proj._get_shift_matrix()
         proj.fov_y = 10.
         assert np.isclose(old_smat, proj._get_shift_matrix()).all()
+
 
 
