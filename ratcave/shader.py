@@ -14,18 +14,40 @@ class UniformArray(np.ndarray): pass
 
 
 class UniformCollection(IterableUserDict, object):
-    """Dict-like that converts data to arrays and sends all data to a Shader as uniform arrays."""
     # todo: Switch all uniforms functions to array equivalents, to get pointer-passing performance benefit.
     _sendfuns = {'f': [gl.glUniform1f, gl.glUniform2f, gl.glUniform3f, gl.glUniform4f],
                 'i':   [gl.glUniform1i, gl.glUniform2i, gl.glUniform3i, gl.glUniform4i]
                 }
 
     def __init__(self, **kwargs):
+        """Returns a dict-like collection of arrays that can copy itself to shader programs as GLSL Uniforms.
+
+        Uniforms can be thought of as pipes to the program on the graphics card.  Variables set in UniformCollection can
+          be directly used in the grpahics card.
+
+
+        Example::
+
+            uniforms = UniformCollection()
+            uniforms['diffuse'] = 1., 1., 0.
+            uniforms['model_matrix'] = numpyp.eye(4)
+
+        In the shader, this would be used by initializing the uniform variable, for example::
+
+            uniform vec3 diffuse;
+            uniform mat4 model_matrix;
+
+        Any key-value pairs are sent to a bound shader program when UniformCollection.send() is called.
+
+        More information about GLSL Uniforms can be found at https://www.khronos.org/opengl/wiki/Uniform_(GLSL)
+
+        .. note:: This class isn't usually constructed directly.  It can be found as 'uniforms' attributes
+        of Meshes and Cameras.
+        """
+
         super(UniformCollection, self).__init__()
         for key, value in iteritems(kwargs):
             self.data[key] = value
-
-
 
     def __setitem__(self, key, value):
 
@@ -50,6 +72,10 @@ class UniformCollection(IterableUserDict, object):
         del self.data[key]
 
     def send(self):
+        """
+        Sends all the key-value pairs to the graphics card.
+        These uniform variables will be available in the currently-bound shader.
+        """
 
         for name, array in iteritems(self):
 
@@ -88,7 +114,7 @@ class UniformCollection(IterableUserDict, object):
     #         self[key] = value
 
 class HasUniforms(object):
-    """Interface for drawing."""
+    """Interface for drawing.  Ensures that there is a uniforms attribute to the class, which can be reset upond demand."""
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, uniforms=None, **kwargs):
@@ -110,6 +136,13 @@ class HasUniformsUpdater(HasUniforms):
 
     @property
     def uniforms(self):
+        """
+        The dict-like collection of uniform values.  To send data to the graphics card, simply add it as a key-value pair.
+
+        Example::
+
+            mesh.uniforms['diffuse'] = 1., 1., 0.  # Will sends a 3-value vector of floats to the graphics card, when drawn.
+        """
         self.update()
         return self._uniforms
 
@@ -125,11 +158,21 @@ class Shader(BindingContextMixin, BindNoTargetMixin):
     def __init__(self, vert='', frag='', geom='', lazy=False):
         """
         GLSL Shader program object for rendering in OpenGL.
+        To activate, call the Shader.bind() method, or pass it to a context manager (the 'with' statement).
+
+        Examples and inspiration for shader programs can found at https://www.shadertoy.com/.
 
         Args:
           - vert (str): The vertex shader program  string
           - frag (str): The fragment shader program string
           - geom (str): The geometry shader program
+
+        Example::
+
+            shader = Shader.from_file(vert='vertshader.vert', frag='fragshader.frag')
+            with shader:
+                mesh.draw()
+
         """
         self.id = gl.glCreateProgram()  # create the program handle
         self.is_linked = False
@@ -145,13 +188,29 @@ class Shader(BindingContextMixin, BindNoTargetMixin):
 
     def compile(self):
         # create the vertex, fragment, and geometry shaders
-        self.createShader(self.vert, gl.GL_VERTEX_SHADER)
-        self.createShader(self.frag, gl.GL_FRAGMENT_SHADER)
+        self._createShader(self.vert, gl.GL_VERTEX_SHADER)
+        self._createShader(self.frag, gl.GL_FRAGMENT_SHADER)
         if self.geom:
-            self.createShader(self.geom, gl.GL_GEOMETRY_SHADER_EXT)
+            self._createShader(self.geom, gl.GL_GEOMETRY_SHADER_EXT)
         self.is_compiled = True
 
     def bind(self):
+        """Activate this Shader, making it the currently-bound program.
+
+        Any Mesh.draw() calls after bind() will have their data processed by this Shader.  To unbind, call Shader.unbind().
+
+        Example::
+
+           shader.bind()
+           mesh.draw()
+           shader.unbind()
+
+        .. note:: Shader.bind() and Shader.unbind() can be also be called implicitly by using the 'with' statement.
+
+        Example of with statement with Shader::
+            with shader:
+                mesh.draw()
+        """
         if not self.is_linked:
             if not self.is_compiled:
                 self.compile()
@@ -160,12 +219,22 @@ class Shader(BindingContextMixin, BindNoTargetMixin):
 
     @classmethod
     def from_file(cls, vert, frag, **kwargs):
+        """
+        Reads the shader programs, given the vert and frag filenames
+
+        Arguments:
+            - vert (str): The filename of the vertex shader program (ex: 'vertshader.vert')
+            - frag (str): The filename of the fragment shader program (ex: 'fragshader.frag')
+
+        Returns:
+            - shader (Shader): The Shader using these files.
+        """
         vert_program = open(vert).read()
         frag_program = open(frag).read()
         return cls(vert=vert_program, frag=frag_program, **kwargs)
 
 
-    def createShader(self, strings, shadertype):
+    def _createShader(self, strings, shadertype):
 
         # create the shader handle
         shader = gl.glCreateShader(shadertype)
@@ -192,7 +261,10 @@ class Shader(BindingContextMixin, BindNoTargetMixin):
             print(buffer.value)  # print the log to the console
 
     def link(self):
-        """link the program"""
+        """link the program, making it the active shader.
+
+        .. note:: Shader.bind() is preferred here, because link() Requires the Shader to be compiled already.
+        """
         gl.glLinkProgram(self.id)
 
         # Check if linking was successful.  If not, print the log.
