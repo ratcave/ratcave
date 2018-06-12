@@ -128,10 +128,12 @@ def test_cameras_have_correct_distance_in_stereocameragroup():
     assert (cam.right.position.x - cam.left.position.x) == cam.distance
 
 
-def test_projection_set_when_given_as_input_to_StereoCameraGroup():
-    cam = StereoCameraGroup(projection=OrthoProjection())
+def test_attributes_given_as_input_to_StereoCameraGroup():
+    cam = StereoCameraGroup(projection=OrthoProjection(), convergence=10.)
     assert isinstance(cam.left.projection, OrthoProjection)
     assert isinstance(cam.left.projection, OrthoProjection)
+    assert cam.convergence == 10.
+
 
 
 def test_projection_instance_is_not_shared_between_children_of_stereocameragroup():
