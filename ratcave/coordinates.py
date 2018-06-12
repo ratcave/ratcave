@@ -10,6 +10,7 @@ class Coordinates(IterObservable):
     coords = {'x': 0, 'y': 1, 'z': 2}
 
     def __init__(self, *args, **kwargs):
+        " Returns a Coordinates object"
         super(Coordinates, self).__init__(**kwargs)
         self._array = np.array(args, dtype=np.float32)
         self._init_coord_properties()
