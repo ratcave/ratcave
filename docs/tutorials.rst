@@ -11,3 +11,4 @@ These Tutorials are meant to help you get started!
     tutorial3
     tutorial4
     tutorial5
+    tutorial6
