@@ -1,11 +1,7 @@
 
 
 """
-    mesh
-    ~~~~
-
-    This module contains the Mesh, MeshData, and Material classes.
-    This documentation was auto-generated from the mesh.py file.
+This module contains the Mesh and Empty classes.
 """
 
 import numpy as np
@@ -26,12 +22,14 @@ def gen_fullscreen_quad(name='FullScreenQuad'):
 
 
 class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
-    """An object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
+    """Returns an EmptyEntity object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
 
     def draw(self, *args, **kwargs):
+        """Passes all given arguments"""
         pass
 
     def reset_uniforms(self):
+        """Passes alll given arguments"""
         pass
 
 
@@ -98,12 +96,14 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
     def copy(self):
+        """Returns copy of the Mesh object"""
         return Mesh(arrays=deepcopy([arr.copy() for arr in [self.vertices, self.normals, self.texcoords]]), texture=self.textures, mean_center=deepcopy(self._mean_center),
                     position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]), scale=self.scale.xyz,
                     drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic, visible=self.visible,
                     gl_states=deepcopy(self.gl_states))
 
     def reset_uniforms(self):
+        """ Resets the uniforms to the Mesh object to the ""global"" coordinate system"""
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
 
@@ -181,6 +181,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
                 self.vao.assign_vertex_attrib_location(vbo, loc)
 
     def draw(self):
+        """ Draw the mesh if it's visible, from the perspective of the camera and lit by the light. The function sends the uniforms"""
         if not self.vao:
             self.vao = VAO(indices=self.array_indices)
             self._fill_vao()
