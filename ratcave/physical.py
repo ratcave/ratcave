@@ -26,8 +26,12 @@ class Physical(AutoRegisterObserver):
         self.rotation = coordinates.RotationEulerDegrees(*rotation)
         self.position = coordinates.Translation(*position)
         if hasattr(scale, '__iter__'):
+            if 0 in scale:
+                raise ValueError("Scale can not be set to 0")
             self.scale = coordinates.Scale(*scale)
         else:
+            if scale is 0:
+                raise ValueError("Scale can not be set to 0")
             self.scale = coordinates.Scale(scale)
 
         self._model_matrix = np.identity(4, dtype=np.float32)
@@ -62,6 +66,11 @@ class Physical(AutoRegisterObserver):
 
     @scale.setter
     def scale(self, value):
+        if hasattr(value, '__iter__') and (0 in value):
+            raise ValueError("Scale can not be set to 0")
+        elif value == 0:
+            raise ValueError("Scale can not be set to 0")
+
         if isinstance(value, Scale):
             self._scale = value
         else:

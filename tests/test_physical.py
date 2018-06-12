@@ -1,5 +1,6 @@
 from __future__ import print_function
 import unittest
+import pytest
 from ratcave import Physical
 import numpy as np
 
@@ -12,7 +13,6 @@ class TestPhysical(unittest.TestCase):
     """
 
     def test_position_update_to_modelmatrix(self):
-
 
         for pos in [(4,5, 6), (5, 4, 1)]:
             phys = Physical(position=pos)
@@ -65,6 +65,16 @@ class TestPhysical(unittest.TestCase):
             self.assertTrue(np.isclose(phys.model_matrix[1, 1], scale))
             self.assertTrue(np.isclose(phys.model_matrix[2, 2], scale))
 
+        with pytest.raises(ValueError):
+            phys = Physical(scale=0)
+
+        with pytest.raises(ValueError):
+            phys = Physical(scale=(0, 0, 0))
+
+        with pytest.raises(ValueError):
+            phys = Physical(scale=(0, 1, 1))
+
+
     def test_scale_property_routing_causes_update_to_modelmatrix(self):
 
         for scale in (5, 6, 7):
@@ -73,6 +83,17 @@ class TestPhysical(unittest.TestCase):
             self.assertTrue(np.isclose(phys.model_matrix[0, 0], scale))
             self.assertTrue(np.isclose(phys.model_matrix[1, 1], scale))
             self.assertTrue(np.isclose(phys.model_matrix[2, 2], scale))
+
+        phys = Physical()
+        with pytest.raises(ValueError):
+            phys.scale = 0
+
+        with pytest.raises(ValueError):
+            phys.scale = 0, 0, 0
+
+        with pytest.raises(ValueError):
+            phys.scale = (0, 1, 1)
+
 
 
 class TestModelViewNormalMatrices(unittest.TestCase):
