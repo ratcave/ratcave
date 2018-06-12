@@ -22,7 +22,7 @@ def gen_fullscreen_quad(name='FullScreenQuad'):
 
 
 class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
-    """Returns an EmptyEntity object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
+    """Returns an EmptyEntity object that occupies physical space and uniforms, but doesn't draw anything when draw() is called."""
 
     def draw(self, *args, **kwargs):
         """Passes all given arguments"""
@@ -50,9 +50,13 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         .. note:: Meshes are not usually instantiated directly, but from a 3D file, like the WavefrontReader .obj and .mtl files.
 
         Args:
-            name (str): the mesh's name.
             arrays (tuple): a list of 2D arrays to be rendered.  All arrays should have same number of rows. Arrays will be accessible in shader in same attrib location order.
+            mean_center (bool):
             texture (Texture): a Texture instance, which is linked when the Mesh is rendered.
+            gl_states:
+            drawmode: specifies the OpenGL draw mode
+            point_size (int): 
+            dynamic (bool): enables dynamic manipulation of vertices
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
 
         Returns:
@@ -110,6 +114,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
     @property
     def dynamic(self):
+        """dynamic property of the mesh. If set to True, enables the user to modify vertices dynamically."""
         return self._dynamic
 
     @dynamic.setter
@@ -121,7 +126,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
     @property
     def vertices(self):
-        """Mesh vertices, centered around 0,0,0"""
+        """Mesh vertices, centered around 0,0,0."""
         return self.arrays[0][:, :3].view()
 
     @vertices.setter
@@ -139,6 +144,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
     @property
     def texcoords(self):
+        """UV coordinates"""
         return self.arrays[2][:, :2].view()
 
     @texcoords.setter
