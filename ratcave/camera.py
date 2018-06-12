@@ -14,11 +14,12 @@ class ProjectionBase(object):
 
     def __init__(self, z_near=0.1, z_far=12., **kwargs):
         """
-        Abstract Base Class for the Projections. Used to create 
+        Abstract Base Class for the Projections. Used to create projectoin matrix that later represents Camera Space.
+        Vertex with position=(0,0,0), should be located in the middle of the scene. Projection matrix has defined z - distance to the camera.
 
         Args:
-            z_near (float):
-            z_far (float):
+            z_near (float): the nearest distance to the camera, has to be positive
+            z_far (float): the furthest point from the  camera that is visible, has to be positive and bigger then z_near
 
         Returns:
             ProjectionBase instance
@@ -35,7 +36,7 @@ class ProjectionBase(object):
 
     @property
     def projection_matrix(self):
-        """ return projection_matrix"""
+        """Return projection_matrix"""
         return self._projection_matrix.view()
 
     @projection_matrix.setter
@@ -44,6 +45,7 @@ class ProjectionBase(object):
 
     @property
     def z_near(self):
+        """Return z_near value"""
         return self._z_near
 
     @z_near.setter
@@ -57,6 +59,7 @@ class ProjectionBase(object):
 
     @property
     def z_far(self):
+        """Return z_far value"""
         return self._z_far
 
     @z_far.setter
@@ -72,10 +75,12 @@ class ProjectionBase(object):
     def _update_projection_matrix(self): pass
 
     def update(self):
+        """ Updates projection matrix"""
         self._update_projection_matrix()
 
     @property
     def viewport(self):
+        """returns the viewport"""
         return get_viewport()
 
 
@@ -86,10 +91,14 @@ class OrthoProjection(ProjectionBase):
 
     def __init__(self, origin='center', coords='relative', **kwargs):
         """
-        Parameters
-        ----------
-        origin: 'center', 'corner',
-        coords: 'relative', 'absolute'
+        Orthogonal Projection Object cretes projection Object that can be used in Camera
+
+        Args:
+            origin (str): 'center' or 'corner'
+            coords (str): 'relative' or 'absolute'
+
+        Returns:
+            OrthoProjection instance
         """
         self._origin = origin
         self._coords = coords
@@ -97,6 +106,7 @@ class OrthoProjection(ProjectionBase):
 
     @property
     def origin(self):
+        """Returns origin of the Projection """
         return self._origin
 
     @origin.setter
@@ -108,6 +118,7 @@ class OrthoProjection(ProjectionBase):
 
     @property
     def coords(self):
+        """Returns coordinates"""
         return self._coords
 
     @coords.setter
