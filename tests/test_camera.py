@@ -154,3 +154,21 @@ def test_viewport():
     assert viewport.width == win.width
     assert viewport.height == win.height
     win.close()
+
+
+def test_projection_shift():
+    for _ in range(50):
+        x, y = np.random.uniform(-5, 5, size=2)
+        proj = PerspectiveProjection(x_shift=x, y_shift=y)
+        smat = proj._get_shift_matrix()
+        assert np.isclose(smat[0, 2], x)
+        assert np.isclose(smat[1, 2], y)
+
+        proj = PerspectiveProjection()
+        old_pmat = proj.projection_matrix.copy()
+        proj.x_shift = x
+        proj.y_shift = y
+        smat = proj._get_shift_matrix()
+        assert np.isclose(smat[0, 2], x)
+        assert np.isclose(smat[1, 2], y)
+        assert not np.isclose(old_pmat, proj.projection_matrix).all()
