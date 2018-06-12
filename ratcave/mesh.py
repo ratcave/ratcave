@@ -115,13 +115,8 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
     def from_pickle(cls, filename):
         """Loads and Returns a Mesh from a pickle file, given a filename."""
         with open(filename, 'rb') as f:
-            mesh = pickle.load(f)
-        return cls(arrays=deepcopy([arr.copy() for arr in [mesh.arrays[0][:, :-1], mesh.arrays[1], mesh.arrays[2]]]),
-             texture=mesh.textures, mean_center=deepcopy(mesh._mean_center),
-             position=mesh.position.xyz, rotation=mesh.rotation.__class__(*mesh.rotation[:]), scale=mesh.scale.xyz,
-             drawmode=mesh.drawmode, point_size=mesh.point_size, dynamic=mesh.dynamic, visible=mesh.visible,
-             gl_states=deepcopy(mesh.gl_states))
-
+            mesh = pickle.load(f).copy()
+        return mesh
 
     def reset_uniforms(self):
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
