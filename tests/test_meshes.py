@@ -1,8 +1,12 @@
 import unittest
-from ratcave import resources, WavefrontReader
+from ratcave import resources, WavefrontReader, Mesh
 import pytest
 import numpy as np
+import pickle
+from tempfile import NamedTemporaryFile
+import sys
 
+np.random.seed(100)
 
 class TestMesh(unittest.TestCase):
     """
@@ -19,16 +23,15 @@ class TestMesh(unittest.TestCase):
 
     def test_position_update_to_modelmatrix(self):
 
-
         for pos in [(4,5, 6), (5, 4, 1)]:
             mesh = self.reader.get_mesh("Cube", position=pos)
-            self.assertEqual(mesh.position.xyz, pos)
-            # self.assertTrue(np.isclose(mesh.uniforms['model_matrix'][:3, 3], pos).all())
+            self.assertTrue(np.isclose(mesh.position.xyz, pos).all())
+            self.assertTrue(np.isclose(mesh.uniforms['model_matrix'][:3, 3], pos).all())
 
         for pos in [(4,5, 6), (5, 4, 1)]:
             mesh = self.mesh
             mesh.position.xyz = pos
-            self.assertEqual(mesh.position.xyz, pos)
+            self.assertTrue(np.isclose(mesh.position.xyz, pos).all())
             self.assertTrue(np.isclose(mesh.uniforms['model_matrix'][:3, 3], pos).all())
 
 
@@ -37,25 +40,25 @@ class TestMesh(unittest.TestCase):
         mesh = self.mesh
         for pos in [(4,5, 6), (5, 4, 1)]:
             mesh.position.x, mesh.position.y, mesh.position.z = pos
-            self.assertEqual(mesh.position.xyz, pos)
+            self.assertTrue(np.isclose(mesh.position.xyz, pos).all())
 
     def test_rotation_update(self):
 
         mesh = self.mesh
         for rot in [(4, 5, 6), (5, 4, 1)]:
             mesh.rotation.x, mesh.rotation.y, mesh.rotation.z = rot
-            self.assertEqual(mesh.rotation.xyz, rot)
+            self.assertTrue(np.isclose(mesh.rotation.xyz, rot).all())
 
     def test_scale_update(self):
 
         mesh = self.mesh
         for rot in [(4, 5, 6), (5, 4, 1)]:
             mesh.scale.x, mesh.scale.y, mesh.scale.z = rot
-            self.assertEqual(mesh.scale.xyz, rot)
+            self.assertTrue(np.isclose(mesh.scale.xyz, rot).all())
 
         for rot in [4, 5]:
             mesh.scale.xyz = rot
-            self.assertEqual(mesh.scale.xyz, (rot, rot, rot))
+            self.assertTrue(np.isclose(mesh.scale.xyz, (rot, rot, rot)).all())
 
 
 @pytest.fixture()
@@ -85,10 +88,18 @@ def test_mesh_copying_works(cube):
     assert np.all(np.isclose(cube2.normals, cube.normals))
     assert np.all(np.isclose(cube2.texcoords, cube.texcoords))
     assert np.all(np.isclose(cube2.rotation.xyz, cube.rotation.xyz))
+    assert np.isclose(cube2.model_matrix, cube.model_matrix).all()
+    assert np.isclose(cube2.normal_matrix, cube.normal_matrix).all()
+    assert np.isclose(cube2.view_matrix, cube.view_matrix).all()
     cube2.rotation.x = 22.5
     assert not np.all(np.isclose(cube2.rotation.xyz, cube.rotation.xyz))
     assert np.all(cube.position.xyz == cube2.position.xyz)
     assert cube2.visible == cube.visible
+
+    assert not np.isclose(cube2.model_matrix, cube.model_matrix).all()
+    assert not np.isclose(cube2.normal_matrix, cube.normal_matrix).all()
+    assert not np.isclose(cube2.view_matrix, cube.view_matrix).all()
+
 
 
 def test_mesh_can_draw():
@@ -106,3 +117,48 @@ def test_mesh_can_draw():
 #     assert mesh.vao
 #     assert mesh.vbos
 #     assert len(mesh.vbos) == 3  # vertices, texcoords, and normals
+
+
+
+
+if sys.platform == 'linux':
+    def test_mesh_is_picklable():
+        for _ in range(2):
+            phys = cube()
+            phys.position.xyz =np.random.uniform(-5, 5, 3)
+            phys.rotation.xyz = np.random.uniform(-5, 5, 3)
+            phys.scale.xyz = np.random.uniform(1, 5, 3)
+
+            with NamedTemporaryFile('wb', delete=False) as f:
+                phys.to_pickle(f.name)
+            with open(f.name, 'rb') as f:
+                phys2 = Mesh.from_pickle(f.name)
+            assert phys.position.xyz == phys2.position.xyz
+            assert phys.rotation.xyz == phys2.rotation.xyz
+            assert phys.scale.xyz == phys2.scale.xyz
+            assert np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+
+            phys.position.xyz = 5, 5, 5
+            assert not np.isclose(phys.position.xyz, phys2.position.xyz).all()
+            assert not np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+            assert np.isclose(phys.model_matrix, phys.uniforms['model_matrix']).all()
+            assert np.isclose(phys.normal_matrix, phys.uniforms['normal_matrix']).all()
+
+            phys2.position.xyz = 5, 5, 5
+            assert np.isclose(phys.position.xyz, phys2.position.xyz).all()
+            assert np.isclose(phys2.position.xyz, phys2.model_matrix[:3, -1]).all()
+
+            assert np.isclose(phys2.model_matrix, phys2.uniforms['model_matrix']).all()
+            assert np.isclose(phys2.normal_matrix, phys2.uniforms['normal_matrix']).all()
+            assert np.isclose(phys.normal_matrix, phys2.normal_matrix).all()
+            assert np.isclose(phys.view_matrix, phys2.view_matrix).all()
+
+            assert np.isclose(phys.model_matrix[:3, -1], phys2.model_matrix[:3, -1]).all()
+
+
+            phys2.position.xyz = 10, 10, 10
+            assert np.isclose(phys2.position.xyz, phys2.uniforms['model_matrix'][:3, -1]).all()
+
+            assert np.isclose(phys.vertices, phys2.vertices).all()
+            assert np.isclose(phys.normals, phys2.normals).all()
+            assert np.isclose(phys.texcoords, phys2.texcoords).all()

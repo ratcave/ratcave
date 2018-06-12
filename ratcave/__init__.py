@@ -8,7 +8,7 @@ try:
 except ImportError:
     pass
 from . import utils
-from .camera import Camera, PerspectiveProjection, OrthoProjection
+from .camera import Camera, PerspectiveProjection, OrthoProjection, CameraGroup, StereoCameraGroup
 from .collision import CylinderCollisionChecker, SphereCollisionChecker
 from .fbo import FBO
 from .gl_states import GLStateManager, default_states

@@ -9,3 +9,6 @@ ratcave.egg-info/*
 .idea
 .cache
 *.egg-info
+.eggs
+.pytest_cache
+*.so

@@ -6,7 +6,7 @@ except ImportError:
 
 
 setup(name='ratcave',
-      version='0.7.1rc2',
+      version='0.8.0',
       url='https://www.github.com/neuroneuro15/ratcave',
       description='3D Graphics Engine for Scientific, Video Game, and VR Applications.',
       author='Nicholas A. Del Grosso',
