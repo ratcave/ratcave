@@ -25,6 +25,12 @@ class Mock(MagicMock):
     def __len__(self):
         return 3  # Hacky patch
 
+    def __repr__(self):
+        return ""
+
+    def __str__(self):
+        return(self)
+
 MOCK_MODULES = ['argparse', 'numpy', 'pyglet', 'pyglet.gl', '_transformations', 'ratcave.resources']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 

@@ -1,59 +1,64 @@
 API Documentation
 =================
 
-.. toctree::
-
-
-Module contents
----------------
-
-.. automodule:: ratcave
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Submodules
-----------
-
-
-
-ratcave.mesh module
--------------------
-
-.. automodule:: ratcave.mesh
-    :members:
-    :undoc-members: EmptyMesh
-    :show-inheritance:
-
-
-ratcave.scene module
---------------------
-
-.. automodule:: ratcave.scene
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ratcave.shader module
+Main Modules Contents
 ---------------------
 
-.. automodule:: ratcave.shader
-    :members:
+Mesh
+++++
+.. automodule:: ratcave.mesh
+    :members: Mesh
+    :exclude-members: points, triangles
     :undoc-members:
     :show-inheritance:
 
-ratcave.texture module
-----------------------
+Camera
+++++++
+.. automodule:: ratcave.camera
+    :members: Camera
+    :undoc-members:
+    :show-inheritance:
 
+
+Texture
++++++++
 .. automodule:: ratcave.texture
-    :members:
+    :members: Texture
     :undoc-members:
     :show-inheritance:
 
-ratcave.wavefront module
-------------------------
-
-.. automodule:: ratcave.wavefront
-    :members:
+Scene
++++++
+.. automodule:: ratcave.scene
+    :members: Scene
     :undoc-members:
     :show-inheritance:
+
+
+Shader
+++++++
+.. automodule:: ratcave.shader
+    :members: Shader
+    :undoc-members:
+    :show-inheritance:
+
+
+
+.. .. automodule:: ratcave
+..     :members: Mesh, Scene, Shader, Camera
+..     :undoc-members:
+..     :show-inheritance:
+
+
+Main Topic Details
+------------------
+
+.. toctree::
+    :maxdepth: 2
+
+    mesh
+    cameras
+    texture
+    relations
+    shader
+    other
