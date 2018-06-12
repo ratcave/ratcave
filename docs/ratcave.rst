@@ -58,6 +58,6 @@ Main Topic Details
     mesh
     cameras
     texture
-    relations
+    relationships
     shader
     other
