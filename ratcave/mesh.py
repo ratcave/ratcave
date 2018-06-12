@@ -1,11 +1,7 @@
 
 
 """
-    mesh
-    ~~~~
-
-    This module contains the Mesh, MeshData, and Material classes.
-    This documentation was auto-generated from the mesh.py file.
+This module contains the Mesh and Empty classes.
 """
 
 import numpy as np
@@ -26,12 +22,14 @@ def gen_fullscreen_quad(name='FullScreenQuad'):
 
 
 class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
-    """An object that occupies physical space and uniforms, but doesn't actually draw anything when draw() is called."""
+    """Returns an EmptyEntity object that occupies physical space and uniforms, but doesn't draw anything when draw() is called."""
 
     def draw(self, *args, **kwargs):
+        """Passes all given arguments"""
         pass
 
     def reset_uniforms(self):
+        """Passes alll given arguments"""
         pass
 
 
@@ -52,9 +50,13 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         .. note:: Meshes are not usually instantiated directly, but from a 3D file, like the WavefrontReader .obj and .mtl files.
 
         Args:
-            name (str): the mesh's name.
             arrays (tuple): a list of 2D arrays to be rendered.  All arrays should have same number of rows. Arrays will be accessible in shader in same attrib location order.
+            mean_center (bool):
             texture (Texture): a Texture instance, which is linked when the Mesh is rendered.
+            gl_states:
+            drawmode: specifies the OpenGL draw mode
+            point_size (int): 
+            dynamic (bool): enables dynamic manipulation of vertices
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
 
         Returns:
@@ -98,18 +100,21 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
     def copy(self):
+        """Returns copy of the Mesh object"""
         return Mesh(arrays=deepcopy([arr.copy() for arr in [self.vertices, self.normals, self.texcoords]]), texture=self.textures, mean_center=deepcopy(self._mean_center),
                     position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]), scale=self.scale.xyz,
                     drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic, visible=self.visible,
                     gl_states=deepcopy(self.gl_states))
 
     def reset_uniforms(self):
+        """ Resets the uniforms to the Mesh object to the ""global"" coordinate system"""
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
 
 
     @property
     def dynamic(self):
+        """dynamic property of the mesh. If set to True, enables the user to modify vertices dynamically."""
         return self._dynamic
 
     @dynamic.setter
@@ -121,7 +126,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
     @property
     def vertices(self):
-        """Mesh vertices, centered around 0,0,0"""
+        """Mesh vertices, centered around 0,0,0."""
         return self.arrays[0][:, :3].view()
 
     @vertices.setter
@@ -139,6 +144,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
     @property
     def texcoords(self):
+        """UV coordinates"""
         return self.arrays[2][:, :2].view()
 
     @texcoords.setter
@@ -181,6 +187,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
                 self.vao.assign_vertex_attrib_location(vbo, loc)
 
     def draw(self):
+        """ Draw the mesh if it's visible, from the perspective of the camera and lit by the light. The function sends the uniforms"""
         if not self.vao:
             self.vao = VAO(indices=self.array_indices)
             self._fill_vao()

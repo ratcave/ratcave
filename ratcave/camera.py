@@ -220,6 +220,15 @@ class PerspectiveProjection(ProjectionBase):
 class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
     def __init__(self, projection=None, orientation0=(0, 0, -1), **kwargs):
+        """Returns a camera object
+
+        Args:
+            projection (obj): the projection type for the camera. It can either be an instance of OrthoProjection or PerspeectiveProjection
+            orientation0 (tuple): 
+
+        Returns:
+            Camera instance
+        """
         kwargs['orientation0'] = orientation0
         super(Camera, self).__init__(**kwargs)
         self.projection = PerspectiveProjection() if not projection else projection
@@ -238,6 +247,7 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
 
     @property
     def projection(self):
+        """Projection type of the camera"""
         return self._projection
 
     @projection.setter
