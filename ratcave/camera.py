@@ -248,10 +248,7 @@ class Camera(PhysicalGraph, HasUniformsUpdater, NameLabelMixin):
         with open(filename, 'rb') as f:
             cam = pickle.load(f)
 
-        projection = cam.projection.__class__()
-        for attr in ['z_near', 'z_far', 'fov_y', 'aspect', 'x_shift', 'y_shift', 'origin', 'coords']:
-            if hasattr(cam.projection, attr):
-                setattr(projection, attr, getattr(cam.projection, attr))
+        projection = cam.projection.copy()
         return cls(projection=projection, position=cam.position.xyz, rotation=cam.rotation.__class__(*cam.rotation[:]))
 
     @property

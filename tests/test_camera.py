@@ -267,3 +267,15 @@ if sys.platform == 'linux':
             phys2.projection.fov_y = 30
             assert not np.isclose(phys.projection.projection_matrix, phys2.projection.projection_matrix).all()
             assert np.isclose(phys2.projection.projection_matrix, phys2.uniforms['projection_matrix']).all()
+
+
+def test_projection_copy_works():
+    proj = PerspectiveProjection(fov_y=30)
+    proj2 = proj.copy()
+    assert proj.fov_y == proj2.fov_y
+    proj.x_shift = 3
+    proj2.x_shift = 5
+    assert proj.x_shift != proj2.x_shift
+    assert proj._get_shift_matrix()[0, 2] == proj.x_shift
+    assert proj2._get_shift_matrix()[0, 2] == proj2.x_shift
+    assert not np.isclose(proj.projection_matrix, proj2.projection_matrix).all()
