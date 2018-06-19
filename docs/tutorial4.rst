@@ -2,10 +2,10 @@ Tutorial 4: Using Cubemapping to Render a CAVE VR System
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-CAVE VR relies on position updates from head trackers to render a virtual scene from the subject's perspective in virtual space, then to warp a video projection so that to the viewer the virtual scene appears to be geometrically correct  We use a cubemapping approach to do just that:
+CAVE VR relies on position updates from head trackers to render a virtual scene from the subject's perspective in virtual space, then to warp a video projection so that to the viewer the virtual scene appears to be geometrically correct.  We use a cubemapping approach to do just that:
   - Two different :py:class:`.Scene` objects are used:
     - a virtual Scene, which contains the virtual environment to be cubemapped which is rendered from the subject's perspective (meaning, the camera goes where the subject is)
-    - a "real" Scene, which contains just the model (also a :py:class:`.Mesh`) of the screen on which the VR is being projected, seen from the perspective of teh video projector.
+    - a "real" Scene, which contains just the model (also a :py:class:`.Mesh`) of the screen on which the VR is being projected, seen from the perspective of the video projector.
 
 While this is difficult to show without having an actual tracking system, we'll illustrate this effect and the code needed to run it by making an animation:
 
@@ -49,7 +49,7 @@ Note that we have one object at the origin (0, 0, 0).  Since our light is also a
 Create the Projected Scene
 --------------------------
 
-The Projected Scene is what is actually sent to the display.  It will contain the screen (or rodent arena, if you're in a rodent neuroscience lab like us!).  Here, let's just use a flat plane to be used as our screen, and use a monkey to show where the subject is looking from (note: the subject isn't necessary for actual VR, it's just used here for illustration of the cubemapping approach).  ::
+The Projected Scene is what is actually sent to the display.  It will contain the screen (or rodent arena, if you're in a rodent neuroscience lab like us!).  Here, let's just use a flat plane as our screen and use a monkey to show where the subject is looking from (note: the subject isn't necessary for actual VR, it's just used here for illustration of the cubemapping approach).  ::
 
     monkey = obj_reader.get_mesh("Monkey", position=(0, 0, -1), scale=0.8)
     screen = obj_reader.get_mesh("Plane", position=(0, 0, 1), rotation=(1.5, 180, 0))
