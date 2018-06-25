@@ -1,7 +1,8 @@
 import abc
 import numpy as np
+from . import mesh
 
-class CollisionCheckerBase(object):
+class CollisionCheckerBase(mesh.Mesh):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
