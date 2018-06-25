@@ -1,8 +1,12 @@
 import abc
 import numpy as np
-from . import mesh
+import pyglet.gl as gl
+from . import resources
+from .wavefront import WavefrontReader
+from .mesh import Mesh
 
-class CollisionCheckerBase(mesh.Mesh):
+
+class CollisionCheckerBase(Mesh):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
@@ -16,7 +20,6 @@ class SphereCollisionChecker(CollisionCheckerBase):
 
     def __init__(self, mesh, **kwargs):
         """
-
         Parameters
         ----------
         mesh: Mesh instance
@@ -24,14 +27,27 @@ class SphereCollisionChecker(CollisionCheckerBase):
 
         Returns
         -------
-
         """
+        super(Mesh, self).__init__(**kwargs)
+        self.draw_mode = gl.GL_POINTS
         self.mesh = mesh
+
+        obj_filename = resources.obj_primitives
+        obj_reader = WavefrontReader(obj_filename)
+
         self.collision_radius = np.linalg.norm(mesh.vertices[:, :3], axis=1).max()
+
+
+
+
+    def draw(self):
+        super(Mesh, self).draw(self)
 
     def collides_with(self, xyz):
         """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
-        return np.linalg.norm(xyz - self.mesh.position_global) < self.collision_radius
+        print(xyz, self.mesh.position_global)
+        print(np.subtract(xyz, self.mesh.position_global))
+        return np.linalg.norm(np.subtract(xyz, self.mesh.position_global)) < self.collision_radius
 
 
 class CylinderCollisionChecker(CollisionCheckerBase):
