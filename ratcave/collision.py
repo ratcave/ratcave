@@ -6,7 +6,7 @@ from .wavefront import WavefrontReader
 from .mesh import Mesh
 
 
-class CollisionCheckerBase(Mesh):
+class CollisionCheckerBase(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
@@ -15,10 +15,10 @@ class CollisionCheckerBase(Mesh):
         pass
 
 
-class SphereCollisionChecker(CollisionCheckerBase):
+class SphereCollisionChecker(Mesh, CollisionCheckerBase):
     """Calculates collision by checking if a point is inside a sphere around the mesh vertices."""
 
-    def __init__(self, mesh, **kwargs):
+    def __init__(self, mesh, visible=False, **kwargs):
         """
         Parameters
         ----------
@@ -29,39 +29,35 @@ class SphereCollisionChecker(CollisionCheckerBase):
         -------
         """
         super(Mesh, self).__init__(**kwargs)
-        # self.draw_mode = gl.GL_POINTS
-        self.draw_mode = gl.GL_LINES
-        # self.visible = visible or False
 
         self.mesh = mesh
+        # calculate the center of the mesh
         center_x = ((self.mesh.vertices[:, :1]).max() + (self.mesh.vertices[:, :1]).min())/2
         center_y = ((self.mesh.vertices[:, :2]).max() + (self.mesh.vertices[:, :2]).min())/2
         center_z = ((self.mesh.vertices[:, :3]).max() + (self.mesh.vertices[:, :3]).min())/2
 
-        scale = np.linalg.norm(self.mesh.vertices[:, :3], axis=1).max()
-
+        # setup of the sphere
         obj_filename = resources.obj_primitives
         obj_reader = WavefrontReader(obj_filename)
 
-        self.sphere = obj_reader.get_mesh("Sphere")
-        self.sphere.draw_mode = self.sphere.points
+        # self.sphere = obj_reader.get_mesh("Sphere", visible=self.visible)
+        self.sphere = obj_reader.get_mesh("Sphere", visible=visible)
+        self.sphere.draw_mode = gl.GL_LINE_LOOP
         self.sphere.position.xyz = (center_x, center_y, center_z)
-        self.sphere.scale = np.linalg.norm(mesh.vertices[:, :3], axis=1).max()
+
+        # collision radius
+        self.collision_radius = np.linalg.norm(mesh.vertices[:, :3], axis=1).max()
+        self.sphere.scale = self.collision_radius
 
         mesh.add_child(self.sphere, modify=False)
 
 
-        self.collision_radius = np.linalg.norm(mesh.vertices[:, :3], axis=1).max()
-
-
     def collides_with(self, xyz):
         """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
-        print(xyz, self.mesh.position_global)
-        print(np.subtract(xyz, self.mesh.position_global))
         return np.linalg.norm(np.subtract(xyz, self.mesh.position_global)) < self.collision_radius
 
 
-class CylinderCollisionChecker(CollisionCheckerBase):
+class CylinderCollisionChecker(Mesh, CollisionCheckerBase):
 
     _non_up_columns = {'x': (1, 2), 'y': (0, 2), 'z': (1, 2)}
 

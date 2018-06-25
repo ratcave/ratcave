@@ -21,17 +21,7 @@ obj_reader = rc.WavefrontReader(obj_filename)
 z_glob = -10
 
 # Create Meshes
-monkey = obj_reader.get_mesh("Monkey", scale=2, position=(0, 0, z_glob))
-# center_x = ((monkey.vertices[:, :1]).max() + (monkey.vertices[:, :1]).min())/2
-# center_y = ((monkey.vertices[:, :2]).max() + (monkey.vertices[:, :2]).min())/2
-# center_z = ((monkey.vertices[:, :3]).max() + (monkey.vertices[:, :3]).min())/2
-
-
-# scale = np.linalg.norm(monkey.vertices[:, :3], axis=1).max()
-# sphere = obj_reader.get_mesh("Sphere",  scale=scale)
-# sphere.draw_mode = sphere.points
-# sphere.position.xyz = (center_x, center_y, center_z)
-# monkey.add_child(sphere, modify=False)
+monkey = obj_reader.get_mesh("Monkey", scale=1.5, position=(0, 0, z_glob))
 
 # Create Collision Sphere
 col_sphere = rc.SphereCollisionChecker(mesh=monkey, visible=True)
@@ -48,6 +38,7 @@ def move_camera(dt):
         monkey.position.y += speed * dt
 pyglet.clock.schedule(move_camera)
 
+
 @window.event
 def on_mouse_press(x, y, button, modifiers):
     if button == mouse.LEFT:
@@ -60,7 +51,6 @@ def on_mouse_press(x, y, button, modifiers):
             # change color on collision
             monkey.uniforms['diffuse'][0] = np.random.randint(1, high = 5)
             monkey.uniforms['diffuse'][1] = np.random.randint(1, high = 5)
-        print('The left mouse button was pressed.', collide)
 
 @window.event
 def on_draw():
