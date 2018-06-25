@@ -30,18 +30,22 @@ class SphereCollisionChecker(CollisionCheckerBase):
         """
         super(Mesh, self).__init__(**kwargs)
         self.draw_mode = gl.GL_POINTS
+        self.visible = False
+
         self.mesh = mesh
+
+
 
         obj_filename = resources.obj_primitives
         obj_reader = WavefrontReader(obj_filename)
+        sphere = obj_reader.get_mesh("Sphere")
+        mesh.add_child(sphere)
+
 
         self.collision_radius = np.linalg.norm(mesh.vertices[:, :3], axis=1).max()
 
-
-
-
-    def draw(self):
-        super(Mesh, self).draw(self)
+    # def draw(self):
+        # super(Mesh, self).draw(self)
 
     def collides_with(self, xyz):
         """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
