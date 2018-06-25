@@ -31,19 +31,16 @@ class SphereCollisionChecker(Mesh, CollisionCheckerBase):
         super(Mesh, self).__init__(**kwargs)
 
         self.mesh = mesh
-        # calculate the center of the mesh
-        center_x = ((self.mesh.vertices[:, :1]).max() + (self.mesh.vertices[:, :1]).min())/2
-        center_y = ((self.mesh.vertices[:, :2]).max() + (self.mesh.vertices[:, :2]).min())/2
-        center_z = ((self.mesh.vertices[:, :3]).max() + (self.mesh.vertices[:, :3]).min())/2
 
         # setup of the sphere
         obj_filename = resources.obj_primitives
         obj_reader = WavefrontReader(obj_filename)
 
-        # self.sphere = obj_reader.get_mesh("Sphere", visible=self.visible)
         self.sphere = obj_reader.get_mesh("Sphere", visible=visible)
         self.sphere.draw_mode = gl.GL_LINE_LOOP
-        self.sphere.position.xyz = (center_x, center_y, center_z)
+
+        # self.sphere.position.xyz = (center_x, center_y, center_z)
+        self.sphere.position.xyz = self.find_center(self.mesh)
 
         # collision radius
         self.collision_radius = np.linalg.norm(mesh.vertices[:, :3], axis=1).max()
@@ -51,6 +48,13 @@ class SphereCollisionChecker(Mesh, CollisionCheckerBase):
 
         mesh.add_child(self.sphere, modify=False)
 
+    @classmethod
+    def find_center(cls, mesh):
+        """Returns a tuple with the center of the Mesh"""
+        center_x = ((mesh.vertices[:, :1]).max() + (mesh.vertices[:, :1]).min())/2
+        center_y = ((mesh.vertices[:, :2]).max() + (mesh.vertices[:, :2]).min())/2
+        center_z = ((mesh.vertices[:, :3]).max() + (mesh.vertices[:, :3]).min())/2
+        return (center_x, center_y, center_z)
 
     def collides_with(self, xyz):
         """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
