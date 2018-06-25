@@ -38,8 +38,6 @@ class SphereCollisionChecker(Mesh, CollisionCheckerBase):
 
         self.sphere = obj_reader.get_mesh("Sphere", visible=visible)
         self.sphere.draw_mode = gl.GL_LINE_LOOP
-
-        # self.sphere.position.xyz = (center_x, center_y, center_z)
         self.sphere.position.xyz = self.find_center(self.mesh)
 
         # collision radius
