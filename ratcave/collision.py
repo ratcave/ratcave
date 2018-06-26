@@ -63,7 +63,7 @@ class CylinderCollisionChecker(Mesh, CollisionCheckerBase):
     _non_up_columns = {'x': (1, 2), 'y': (0, 2), 'z': (1, 2)}
     _coords = {'x': 0, 'y': 1, 'z': 2}
 
-    def __init__(self, mesh, up_axis='y'):
+    def __init__(self, mesh, up_axis='y', visible=False, **kwargs):
         """
         Parameters:
         mesh: Mesh instance
@@ -80,10 +80,11 @@ class CylinderCollisionChecker(Mesh, CollisionCheckerBase):
         self.cylinder = obj_reader.get_mesh("Cylinder", visible=visible)
 
         self.cylinder.draw_mode = self.cylinder.points
-        self.cylinder.position.xyz = find_center(self.mesh)
+        self.cylinder.position.xyz = self.find_center(self.mesh)
         self.cylinder.scale = np.linalg.norm(self.mesh.vertices[:, :3], axis=1).max()
-        self.cylinder.rotation[_coords[up_axis]] += 90
+        self.cylinder.rotation[self._coords[up_axis]] += 90
 
+        mesh.add_child(self.cylinder, modify=False)
 
         self._collision_columns = self._non_up_columns[up_axis]
         self.collision_radius = np.linalg.norm(self.mesh.vertices[:, self._collision_columns], axis=1).max()
