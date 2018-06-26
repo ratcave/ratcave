@@ -38,6 +38,7 @@ Here is a script which displays the monkey on your screen::
 
 
 .. image:: _static/tut6_monkey.png
+	:align: center
 
 When the light is reflected from the monkey's face we get a feeling that the monkey is a 3D object. But are we seeing 3D? No.
 
@@ -98,9 +99,10 @@ Now if we apply this color filter with its correspinding camera, the :py:func:`.
 
 	@window.event
 	def on_draw():
+	    gl.glColorMask(True, True, True, True)
 	    window.clear()
-	    with rc.default_shader, rc.default_states:
 
+	    with rc.default_shader, rc.default_states:
 	        with camera.right:
 	            gl.glColorMask(False, True, True, True)
 	            monkey.draw()
@@ -109,7 +111,6 @@ Now if we apply this color filter with its correspinding camera, the :py:func:`.
 
 	        with camera.left:
 	            gl.glColorMask(True, False, False, True)
-	            window.clear()
 	            monkey.draw()
 
 Make sure to add :py:class:`glClear(gl.GL_DEPTH_BUFFER_BIT)` before drawing the scene of the second camera. This ensures that the depth information of the previously drawn object is removed and the color information of both camera scenes are drawn on the screen without the interruption of depth testing.
@@ -166,4 +167,5 @@ Now you can use your anaglyph glasses and enjoy the 3D view. Here is the complet
 	pyglet.app.run()
 
 
-.. image:: _static/tut6_stereomonkey.png
+.. image:: _static/tut6_stereomonkey.gif
+	:align: center
