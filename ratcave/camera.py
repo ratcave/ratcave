@@ -327,7 +327,7 @@ class CameraGroup(PhysicalGraph):
 
 class StereoCameraGroup(CameraGroup):
 
-    def __init__(self, distance=.1, projection=None, convergence=0., *args, **kwargs):
+    def __init__(self, distance=.1, projection=None, convergence=.02, *args, **kwargs):
         """ Creates a group of cameras that behave dependently"""
         cameras = [Camera(projection=projection) for _ in range(2)]
         super(StereoCameraGroup, self).__init__(cameras=cameras, *args, **kwargs)

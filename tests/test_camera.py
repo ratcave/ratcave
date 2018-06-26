@@ -115,6 +115,10 @@ def test_cameras_are_cameragroup_childrens():
     for camera in cam.cameras:   
         assert camera in cam.children
 
+def test_stereocameragroup_defaults():
+    cam = StereoCameraGroup()
+    assert cam.distance == np.float32(.1)
+    assert cam.convergence == .02
 
 def test_stereocameragroup_contains_two_cameras():
     cam = StereoCameraGroup()
