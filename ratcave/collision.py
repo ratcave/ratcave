@@ -20,13 +20,12 @@ class SphereCollisionChecker(Mesh, CollisionCheckerBase):
 
     def __init__(self, mesh, visible=False, **kwargs):
         """
-        Parameters
-        ----------
+        Parameters:
         mesh: Mesh instance
         kwargs
 
-        Returns
-        -------
+        Returns:
+
         """
         super(Mesh, self).__init__(**kwargs)
 
@@ -62,23 +61,40 @@ class SphereCollisionChecker(Mesh, CollisionCheckerBase):
 class CylinderCollisionChecker(Mesh, CollisionCheckerBase):
 
     _non_up_columns = {'x': (1, 2), 'y': (0, 2), 'z': (1, 2)}
+    _coords = {'x': 0, 'y': 1, 'z': 2}
 
     def __init__(self, mesh, up_axis='y'):
         """
-
-        Parameters
-        ----------
+        Parameters:
         mesh: Mesh instance
         up_axis: ('x', 'y', 'z'): Which direction is 'up', which won't factor in the distance calculation.
 
-        Returns
-        -------
-
+        Returns:
         """
         self.mesh = mesh
         self.up_axis = up_axis
+
+        obj_filename = resources.obj_primitives
+        obj_reader = WavefrontReader(obj_filename)
+
+        self.cylinder = obj_reader.get_mesh("Cylinder", visible=visible)
+
+        self.cylinder.draw_mode = self.cylinder.points
+        self.cylinder.position.xyz = find_center(self.mesh)
+        self.cylinder.scale = np.linalg.norm(self.mesh.vertices[:, :3], axis=1).max()
+        self.cylinder.rotation[_coords[up_axis]] += 90
+
+
         self._collision_columns = self._non_up_columns[up_axis]
         self.collision_radius = np.linalg.norm(self.mesh.vertices[:, self._collision_columns], axis=1).max()
+
+    @classmethod
+    def find_center(cls, mesh):
+        """Returns a tuple with the center of the Mesh"""
+        center_x = ((mesh.vertices[:, :1]).max() + (mesh.vertices[:, :1]).min())/2
+        center_y = ((mesh.vertices[:, :2]).max() + (mesh.vertices[:, :2]).min())/2
+        center_z = ((mesh.vertices[:, :3]).max() + (mesh.vertices[:, :3]).min())/2
+        return (center_x, center_y, center_z)
 
     def collides_with(self, xyz):
         cc = self._collision_columns
