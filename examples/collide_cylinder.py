@@ -43,7 +43,7 @@ monkey = obj_reader.get_mesh("Monkey", scale=1.5, position=(0, 0, z_glob))
 # monkey.add_child(cylinder, modify=False)
 
 # Create Collision Sphere
-col_cylinder = rc.CylinderCollisionChecker(mesh=monkey, visible=True, up_axis='z')
+col_cylinder = rc.CylinderCollisionChecker(mesh=monkey, visible=True, up_axis='y')
 
 # Create Scene
 scene = rc.Scene(meshes=monkey, bgColor=(0,0,0))
@@ -64,7 +64,7 @@ def on_mouse_press(x, y, button, modifiers):
         # adjust coordinates
         x = (x-400)/100
         y = (y-300)/100
-        collide = col_sphere.collides_with(xyz=(x,y,z_glob))
+        collide = col_cylinder.collides_with(xyz=(x,y,z_glob))
 
         if collide:
             # change color on collision
@@ -73,7 +73,7 @@ def on_mouse_press(x, y, button, modifiers):
 
 @window.event
 def on_draw():
-    monkey.rotation.y += 0.5
+    # monkey.rotation.y += 0.5
     with rc.default_shader:
         scene.draw()
 

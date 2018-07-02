@@ -51,7 +51,8 @@ class SphereCollisionChecker(Mesh, CollisionCheckerBase):
         center_x = ((mesh.vertices[:, :1]).max() + (mesh.vertices[:, :1]).min())/2
         center_y = ((mesh.vertices[:, :2]).max() + (mesh.vertices[:, :2]).min())/2
         center_z = ((mesh.vertices[:, :3]).max() + (mesh.vertices[:, :3]).min())/2
-        return (center_x, center_y, center_z)
+        return (0, 0, 0)
+        # return (center_x, center_y, center_z)
 
     def collides_with(self, xyz):
         """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
@@ -79,7 +80,7 @@ class CylinderCollisionChecker(Mesh, CollisionCheckerBase):
 
         self.cylinder = obj_reader.get_mesh("Cylinder", visible=visible)
 
-        self.cylinder.draw_mode = self.cylinder.points
+        self.cylinder.draw_mode = gl.GL_LINE_LOOP
         self.cylinder.position.xyz = self.find_center(self.mesh)
         self.cylinder.scale = np.linalg.norm(self.mesh.vertices[:, :3], axis=1).max()
         self.cylinder.rotation[self._coords[up_axis]] += 90
@@ -99,4 +100,8 @@ class CylinderCollisionChecker(Mesh, CollisionCheckerBase):
 
     def collides_with(self, xyz):
         cc = self._collision_columns
-        return np.linalg.norm(xyz[:, cc] - self.mesh.position_global[cc]) < self.collision_radius
+
+        xyz_new = np.take(xyz, cc)
+        glob_pos = np.take(self.mesh.position_global, cc)
+
+        return np.linalg.norm(np.subtract(xyz_new, glob_pos)) < self.collision_radius
