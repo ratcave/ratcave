@@ -18,10 +18,10 @@ class CollisionCheckerBase(object):
 class SphereCollisionChecker(Mesh, CollisionCheckerBase):
     """Calculates collision by checking if a point is inside a sphere around the mesh vertices."""
 
-    def __init__(self, mesh, visible=False, **kwargs):
+    def __init__(self, parent, visible=False, **kwargs):
         """
         Parameters:
-        mesh: Mesh instance
+        parent: Mesh instance
         kwargs
 
         Returns:
@@ -29,21 +29,22 @@ class SphereCollisionChecker(Mesh, CollisionCheckerBase):
         """
         super(Mesh, self).__init__(**kwargs)
 
-        self.mesh = mesh
+        self.parent = parent
 
         # setup of the sphere
         obj_filename = resources.obj_primitives
         obj_reader = WavefrontReader(obj_filename)
 
-        self.sphere = obj_reader.get_mesh("Sphere", visible=visible)
-        self.sphere.draw_mode = gl.GL_LINE_LOOP
-        self.sphere.position.xyz = self.find_center(self.mesh)
+        self.collider = obj_reader.get_mesh("Sphere", visible=visible)
+        self.collider.draw_mode = gl.GL_LINE_LOOP
+        self.collider.position.xyz = self.find_center(self.parent)
+        self.collider.position.xyz = 0, 0, 0
 
         # collision radius
-        self.collision_radius = np.linalg.norm(mesh.vertices[:, :3], axis=1).max()
-        self.sphere.scale = self.collision_radius
+        self.collision_radius = np.linalg.norm(parent.vertices[:, :3], axis=1).max()
+        self.collider.scale = self.collision_radius
 
-        mesh.add_child(self.sphere, modify=False)
+        parent.add_child(self.collider, modify=False)
 
     @classmethod
     def find_center(cls, mesh):
@@ -56,7 +57,7 @@ class SphereCollisionChecker(Mesh, CollisionCheckerBase):
 
     def collides_with(self, xyz):
         """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
-        return np.linalg.norm(np.subtract(xyz, self.mesh.position_global)) < self.collision_radius
+        return np.linalg.norm(np.subtract(xyz, self.parent.position_global)) < self.collision_radius
 
 
 class CylinderCollisionChecker(Mesh, CollisionCheckerBase):
@@ -64,31 +65,35 @@ class CylinderCollisionChecker(Mesh, CollisionCheckerBase):
     _non_up_columns = {'x': (1, 2), 'y': (0, 2), 'z': (1, 2)}
     _coords = {'x': 0, 'y': 1, 'z': 2}
 
-    def __init__(self, mesh, up_axis='y', visible=False, **kwargs):
+    def __init__(self, parent, up_axis='y', visible=False, **kwargs):
         """
         Parameters:
-        mesh: Mesh instance
+        parent: Mesh instance
         up_axis: ('x', 'y', 'z'): Which direction is 'up', which won't factor in the distance calculation.
 
         Returns:
         """
-        self.mesh = mesh
+        self._parent = parent
+
         self.up_axis = up_axis
 
         obj_filename = resources.obj_primitives
         obj_reader = WavefrontReader(obj_filename)
 
-        self.cylinder = obj_reader.get_mesh("Cylinder", visible=visible)
+        self.collider = obj_reader.get_mesh("Cylinder", visible=visible)
 
-        self.cylinder.draw_mode = gl.GL_LINE_LOOP
-        self.cylinder.position.xyz = self.find_center(self.mesh)
-        self.cylinder.scale = np.linalg.norm(self.mesh.vertices[:, :3], axis=1).max()
-        self.cylinder.rotation[self._coords[up_axis]] += 90
+        self.collider.draw_mode = gl.GL_LINE_LOOP
+        # self.collider.position.xyz = self.find_center(self.parent)
+        self.collider.position.xyz = 0, 0, 0
+        self.collider.scale = np.linalg.norm(self.parent.vertices[:, :3], axis=1).max()
 
-        mesh.add_child(self.cylinder, modify=False)
+        self.collider.rotation[self._coords[up_axis]] += 90
+
+
+        parent.add_child(self.collider, modify=False)
 
         self._collision_columns = self._non_up_columns[up_axis]
-        self.collision_radius = np.linalg.norm(self.mesh.vertices[:, self._collision_columns], axis=1).max()
+        self.collision_radius = np.linalg.norm(self.parent.vertices[:, self._collision_columns], axis=1).max()
 
     @classmethod
     def find_center(cls, mesh):
@@ -100,8 +105,7 @@ class CylinderCollisionChecker(Mesh, CollisionCheckerBase):
 
     def collides_with(self, xyz):
         cc = self._collision_columns
-
         xyz_new = np.take(xyz, cc)
-        glob_pos = np.take(self.mesh.position_global, cc)
+        glob_pos = np.take(self.parent.position_global, cc)
 
         return np.linalg.norm(np.subtract(xyz_new, glob_pos)) < self.collision_radius

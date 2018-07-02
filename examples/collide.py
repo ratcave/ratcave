@@ -24,7 +24,7 @@ z_glob = -10
 monkey = obj_reader.get_mesh("Torus", scale=1.5, position=(0, 0, z_glob))
 
 # Create Collision Sphere
-col_sphere = rc.SphereCollisionChecker(mesh=monkey, visible=True)
+col_sphere = rc.SphereCollisionChecker(parent=monkey, visible=True)
 
 # Create Scene
 scene = rc.Scene(meshes=monkey, bgColor=(0,0,0))

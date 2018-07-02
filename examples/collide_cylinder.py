@@ -43,7 +43,7 @@ monkey = obj_reader.get_mesh("Monkey", scale=1.5, position=(0, 0, z_glob))
 # monkey.add_child(cylinder, modify=False)
 
 # Create Collision Sphere
-col_cylinder = rc.CylinderCollisionChecker(mesh=monkey, visible=True, up_axis='y')
+col_cylinder = rc.CylinderCollisionChecker(parent=monkey, visible=True, up_axis='z')
 
 # Create Scene
 scene = rc.Scene(meshes=monkey, bgColor=(0,0,0))
