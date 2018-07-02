@@ -19,10 +19,8 @@ class CollisionCheckerBase(Mesh, CollisionCheckerMixin):
     def __init__(self, primitive, parent, visible=False, *args, **kwargs):
         self._parent = parent
 
-        obj_filename = resources.obj_primitives
-        obj_reader = WavefrontReader(obj_filename)
-
-        self.collider_mesh = obj_reader.get_mesh(primitive, visible=visible)
+        self.reader = WavefrontReader(resources.obj_primitives)
+        self.collider_mesh = self.reader.get_mesh(primitive, visible=visible)
         self.collider_mesh.draw_mode = gl.GL_LINE_LOOP
         self.collider_mesh.position.xyz = parent.vertices.mean(axis=0)
 
