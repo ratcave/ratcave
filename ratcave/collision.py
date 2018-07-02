@@ -30,15 +30,17 @@ class CollisionCheckerBase(Mesh, CollisionCheckerMixin):
 
 
 class SphereCollisionChecker(CollisionCheckerBase):
-    """Calculates collision by checking if a point is inside a sphere around the mesh vertices."""
-
-    def __init__(self, parent, visible=False, *args, **kwargs):
+    def __init__(self, parent, visible=False,  **kwargs):
         """
-        Parameters:
-        parent: Mesh instance
+        Returns a SphereCollisionChecker instance, that is responsible for checking whether the parented object has collided with anything.
+        Collision is occuring if a point is inside a sphere around the mesh vertices.
+
+        Args:
+            parent (Mesh): Mesh instance, that is going to be checked for collisions.
+            visible (bool): defines whether the CollissionChecker is available to be rendered. To make visible, set to False.
 
         Returns:
-
+            SphereCollisionInstance
         """
         super(SphereCollisionChecker, self).__init__(parent=parent, primitive='Sphere', visible=visible, **kwargs)
 
@@ -58,11 +60,15 @@ class CylinderCollisionChecker(CollisionCheckerBase):
 
     def __init__(self, parent, up_axis='y', visible=False, **kwargs):
         """
-        Parameters:
-        parent: Mesh instance
-        up_axis: ('x', 'y', 'z'): Which direction is 'up', which won't factor in the distance calculation.
+        Returns a CylinderCollisionChecker instance, that is responsible for checking whether the parented object has collided with anything.
+        Collision is occuring if a point is inside a cylinder around the mesh vertices.
 
+        Args:
+            parent (Mesh): Mesh instance, that is going to be checked for collisions.
+            visible (bool): defines whether the CollissionChecker is available to be rendered. To make visible, set to False.
+            up_axis (str):  ('x', 'y', 'z'): Which direction is 'up', which won't factor in the distance calculation.
         Returns:
+            CylinderCollisionChecker
         """
         super(CylinderCollisionChecker, self).__init__(parent=parent, primitive='Cylinder',visible=visible, **kwargs)
 
