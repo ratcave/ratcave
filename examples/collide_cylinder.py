@@ -32,18 +32,8 @@ z_glob = -10
 # Create Meshes
 monkey = obj_reader.get_mesh("Monkey", scale=1.5, position=(0, 0, z_glob))
 
-# local cylinder def
-# cylinder = obj_reader.get_mesh("Cylinder")
-# cylinder.draw_mode = cylinder.points
-# cylinder.position.xyz = find_center(monkey)
-# cylinder.scale = np.linalg.norm(monkey.vertices[:, :3], axis=1).max()
-# up_axis='y'
-# _coords = {'x': 0, 'y': 1, 'z': 2}
-# cylinder.rotation[_coords[up_axis]] += 90
-# monkey.add_child(cylinder, modify=False)
-
 # Create Collision Sphere
-col_cylinder = rc.CylinderCollisionChecker(parent=monkey, visible=True, up_axis='z')
+col_cylinder = rc.CylinderCollisionChecker(parent=monkey, visible=True, up_axis='x')
 
 # Create Scene
 scene = rc.Scene(meshes=monkey, bgColor=(0,0,0))
