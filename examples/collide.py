@@ -21,7 +21,7 @@ obj_reader = rc.WavefrontReader(obj_filename)
 z_glob = -10
 
 # Create Meshes
-monkey = obj_reader.get_mesh("Monkey", scale=1.5, position=(0, 0, z_glob))
+monkey = obj_reader.get_mesh("Cube", scale=1.5, position=(0, 0, z_glob))
 
 # Create Collision Sphere
 col_sphere = rc.SphereCollisionChecker(parent=monkey, visible=True)

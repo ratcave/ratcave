@@ -53,7 +53,7 @@ class SphereCollisionChecker(CollisionCheckerBase):
 
 class CylinderCollisionChecker(CollisionCheckerBase):
 
-    _non_up_columns = {'x': (1, 2), 'y': (0, 2), 'z': (1, 2)}
+    _non_up_columns = {'x': (1, 2), 'y': (0, 2), 'z': (0, 1)}
     _coords = {'x': 0, 'y': 1, 'z': 2}
 
     def __init__(self, parent, up_axis='y', visible=False, **kwargs):
