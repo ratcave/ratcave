@@ -21,7 +21,6 @@ At the beginning of the script::
     from ratcave.resources import cube_shader
 
     window = pyglet.window.Window(resizable=True)
-    shader = rc.Shader.from_file(*rc.resources.genShader)
 
 At the end of the script::
 
