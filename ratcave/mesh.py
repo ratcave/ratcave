@@ -40,7 +40,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
 
     def __init__(self, arrays, textures=(), mean_center=True,
-                 gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, dynamic=False, visible=True, **kwargs):
+                 gl_states=(), draw_mode=gl.GL_TRIANGLES, point_size=15, dynamic=False, visible=True, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -54,8 +54,8 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
             mean_center (bool):
             texture (Texture): a Texture instance, which is linked when the Mesh is rendered.
             gl_states:
-            drawmode: specifies the OpenGL draw mode
-            point_size (int): 
+            draw_mode: specifies the OpenGL draw mode
+            point_size (int):
             dynamic (bool): enables dynamic manipulation of vertices
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
 
@@ -89,7 +89,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         self.textures = list(textures)
         self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
-        self.drawmode = drawmode
+        self.draw_mode = draw_mode
         self.point_size = point_size
         self.dynamic = dynamic
         self.visible = visible
@@ -103,7 +103,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         """Returns a copy of the Mesh."""
         return Mesh(arrays=deepcopy([arr.copy() for arr in [self.vertices, self.normals, self.texcoords]]), texture=self.textures, mean_center=deepcopy(self._mean_center),
                     position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]), scale=self.scale.xyz,
-                    drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic, visible=self.visible,
+                    draw_mode=self.draw_mode, point_size=self.point_size, dynamic=self.dynamic, visible=self.visible,
                     gl_states=deepcopy(self.gl_states))
 
     def to_pickle(self, filename):
@@ -209,7 +209,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
                 for vbo in self.vbos:
                     vbo._buffer_subdata()
 
-            if self.drawmode == gl.GL_POINTS:
+            if self.draw_mode == gl.GL_POINTS:
                 gl.glPointSize(self.point_size)
 
             for texture in self.textures:
@@ -217,7 +217,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
             with self.vao as vao:
                 self.uniforms.send()
-                vao.draw(mode=self.drawmode)
+                vao.draw(mode=self.draw_mode)
 
             for texture in self.textures:
                 texture.unbind()

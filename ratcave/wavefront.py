@@ -1,7 +1,7 @@
 from .mesh import Mesh
 from six import iteritems
 from wavefront_reader import read_wavefront
-from . import Texture
+from .texture import Texture
 
 class WavefrontReader(object):
 
