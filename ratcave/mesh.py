@@ -14,6 +14,7 @@ from copy import deepcopy
 from warnings import warn
 
 
+
 def gen_fullscreen_quad(name='FullScreenQuad'):
     verts = np.array([[-1, -1, -.5], [-1, 1, -.5], [1, 1, -.5], [-1, -1, -.5], [1, 1, -.5], [1, -1, -.5]], dtype=np.float32)
     normals=np.array([[0, 0, 1]] * 6, dtype=np.float32)
@@ -94,6 +95,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         self.dynamic = dynamic
         self.visible = visible
         self.vbos = []
+
 
 
     def __repr__(self):
@@ -230,3 +232,15 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
             for texture in self.textures:
                 texture.unbind()
+
+    @property
+    def collider(self):
+        return self._collider
+
+    @collider.setter
+    def collider(self, value):
+        from .collision import ColliderBase
+        if not isinstance(value, ColliderBase):
+            raise TypeError("collider must inherit from ColliderBase.")
+        self._collider = value
+        self._collider.parent = self
