@@ -68,7 +68,20 @@ class ColliderSphere(ColliderBase):
         return np.linalg.norm(self.view_matrix_global.dot((x, y, z, 1))[:3]) <= 1.
 
 
+class ColliderCube(ColliderBase):
+    primitive_shape = 'Cube'
 
+    def _fit_to_parent_vertices(self, vertices):
+        return np.ptp(vertices, axis=0) / 2
+
+    def collides_with(self, other):
+        """Returns True/False if 'other' (a PhysicalGraph or 3-tuple) is inside the collider."""
+        try:
+            x, y, z = other.position_global
+        except AttributeError:
+            x, y, z = np.array(other, dtype=np.float32)
+
+        return np.all(self.view_matrix_global.dot((x, y, z, 1))[:3] <= 1.)
 
 
 # class CylinderCollisionChecker(CollisionCheckerMixin):

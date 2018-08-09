@@ -8,13 +8,13 @@ window = pyglet.window.Window()
 
 cube = rc.Mesh.from_primitive('Cube')
 cube.position.z = -3
-cube.scale.xyz = .5
+cube.scale.xyz = .3
 # cube.visible = False
 
-collider = rc.ColliderSphere(visible=True, position=(0, 0, -.2))
-collider.parent = cube
+cube.collider = rc.ColliderCube(visible=True)
 
-sphere = rc.Mesh.from_primitive('Sphere', position=(1.01, 0, 0))
+
+sphere = rc.Mesh.from_primitive('Sphere', position=(0.99, 0, 0))
 sphere.scale.xyz = 1.00, 1, 1
 sphere.parent = cube
 sphere.collider = rc.ColliderSphere(visible=True, position=(0, 0, 0))
@@ -23,9 +23,7 @@ sphere.collider = rc.ColliderSphere(visible=True, position=(0, 0, 0))
 
 def update(dt):
     cube.rotation.y += 60 * dt
-    print(np.subtract(cube.position_global, sphere.position_global),
-          sphere.collider.collides_with(cube)
-          )
+    print(sphere.collider.collides_with(cube), cube.collider.collides_with(sphere))
 
 pyglet.clock.schedule(update)
 

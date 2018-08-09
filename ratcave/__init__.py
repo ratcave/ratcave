@@ -9,7 +9,7 @@ except ImportError:
     pass
 from . import utils
 from .camera import Camera, PerspectiveProjection, OrthoProjection, CameraGroup, StereoCameraGroup
-from .collision import ColliderSphere
+from .collision import ColliderSphere, ColliderCube
 from .fbo import FBO
 from .gl_states import GLStateManager, default_states
 from .light import Light
