@@ -118,6 +118,15 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
             mesh = pickle.load(f).copy()
         return mesh
 
+    @classmethod
+    def from_primitive(cls, name, position=(0, 0, 0), **kwargs):
+        """Returns a Mesh from the obj_primtives.obj file."""
+        from .wavefront import WavefrontReader
+        from .resources import obj_primitives
+        reader = WavefrontReader(obj_primitives)
+        mesh = reader.get_mesh(name, position=position, **kwargs)
+        return mesh
+
     def reset_uniforms(self):
         """ Resets the uniforms to the Mesh object to the ""global"" coordinate system"""
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
