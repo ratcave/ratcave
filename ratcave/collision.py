@@ -9,9 +9,7 @@ class ColliderBase(Mesh):
     primitive_shape = 'Sphere'
 
     def __init__(self, parent=None, visible=True, drawmode=gl.GL_LINES, position=(0, 0, 0), **kwargs):
-        """
-        Calculates collision by checking if a point is inside a sphere around the mesh vertices.
-        """
+        """Calculates collision by checking if a point is inside a sphere around the mesh vertices."""
         # kwargs['scale'] = np.ptp(parent.vertices, axis=0).max() / 2 if 'scale' not in kwargs else kwargs['scale']
         # kwargs['']
 
@@ -84,27 +82,27 @@ class ColliderCube(ColliderBase):
         return np.all(self.view_matrix_global.dot((x, y, z, 1))[:3] <= 1.)
 
 
-# class CylinderCollisionChecker(CollisionCheckerMixin):
-#
-#     _non_up_columns = {'x': (1, 2), 'y': (0, 2), 'z': (1, 2)}
-#
-#     def __init__(self, mesh, up_axis='y'):
-#         """
-#
-#         Parameters
-#         ----------
-#         mesh: Mesh instance
-#         up_axis: ('x', 'y', 'z'): Which direction is 'up', which won't factor in the distance calculation.
-#
-#         Returns
-#         -------
-#
-#         """
-#         self.mesh = mesh
-#         self.up_axis = up_axis
-#         self._collision_columns = self._non_up_columns[up_axis]
-#         self.collision_radius = np.linalg.norm(self.mesh.vertices[:, self._collision_columns], axis=1).max()
-#
-#     def collides_with(self, xyz):
-#         cc = self._collision_columns
-#         return np.linalg.norm(xyz[:, cc] - self.mesh.position_global[cc]) < self.collision_radius
+class ColliderCylinder(ColliderBase):
+    primitive_shape = 'Cylinder'
+
+    def __init__(self, ignore_axis=1, **kwargs):
+        self.ignore_axis = ignore_axis
+        super(ColliderCylinder, self).__init__(**kwargs)
+        if self.ignore_axis == 0:
+            self.rotation.z = 90
+        elif self.ignore_axis == 2:
+            self.rotation.x = 90
+
+    def _fit_to_parent_vertices(self, vertices, scale_gain=1000):
+        axes = [a for a in range(3) if a != self.ignore_axis]
+        x, z = np.ptp(vertices[:, axes], axis=0) / 2
+        return x, scale_gain, z  # scale_gain makes it clear in the display that one dimension is being ignored.
+
+    def collides_with(self, other):
+        """Returns True/False if 'other' (a PhysicalGraph or 3-tuple) is inside the collider."""
+        try:
+            x, y, z = other.position_global
+        except AttributeError:
+            x, y, z = np.array(other, dtype=np.float32)
+
+        return np.linalg.norm(self.view_matrix_global.dot((x, y, z, 1))[[0, 2]]) <= 1.

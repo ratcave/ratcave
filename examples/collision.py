@@ -11,7 +11,7 @@ cube.position.z = -3
 cube.scale.xyz = .3, .3, .3
 # cube.visible = False
 
-cube.collider = rc.ColliderCube(visible=True)
+cube.collider = rc.ColliderCylinder(visible=True, ignore_axis=1)
 
 
 sphere = rc.Mesh.from_primitive('Sphere', position=(0.99, 0, 0))
@@ -28,6 +28,7 @@ def update(dt):
     sphere.rotation.y += 25 * dt
     cube.rotation.y += 60 * dt
     sphere.uniforms['diffuse'] = (0., 1., 0.) if sphere.collider.collides_with(cube) else (0., 0., 1.)
+    cube.uniforms['diffuse'] = (0., 1., 0.) if cube.collider.collides_with(sphere) else (0., 0., 1.)
     print(sphere.position.xyz)
     # print(sphere.collider.collides_with(cube), cube.collider.collides_with(sphere))
 
