@@ -212,6 +212,10 @@ class Scale(Coordinates):
     def to_matrix(self):
         return np.diag((self._array[0], self._array[1], self._array[2], 1.))
 
+    @classmethod
+    def from_matrix(cls, matrix):
+        return cls(*np.linalg.norm(matrix[:3, :3], axis=0))
+
 
 
 def cross_product_matrix(vec):
