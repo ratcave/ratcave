@@ -14,7 +14,7 @@ Full Documentation and Tutorials can be found at http://ratcave.readthedocs.io/
 
 ## Installation
 ```
-pip install pyglet numpy ratcave
+pip install ratcave
 ```
 
 ## Features
