@@ -13,9 +13,8 @@ cube.scale.xyz = .3, .3, .3
 
 cube.collider = rc.ColliderCylinder(visible=True, ignore_axis=1)
 
-
 sphere = rc.Mesh.from_primitive('Sphere', position=(0.99, 0, 0))
-sphere.scale.xyz = 1.00, 1, 2
+sphere.scale.xyz = 1.00, 1, 4
 sphere.parent = cube
 sphere.collider = rc.ColliderSphere(visible=True, position=(0, 0, 0))
 
@@ -24,8 +23,8 @@ tt = 0.
 def update(dt):
     global tt
     tt += dt
-    sphere.position.x = np.sin(3. * tt) * 3
-    sphere.rotation.y += 25 * dt
+    sphere.position.x = np.sin(1.5 * tt) * 5
+    sphere.rotation.y += 210 * dt
     cube.rotation.y += 60 * dt
     sphere.uniforms['diffuse'] = (0., 1., 0.) if sphere.collider.collides_with(cube) else (0., 0., 1.)
     cube.uniforms['diffuse'] = (0., 1., 0.) if cube.collider.collides_with(sphere) else (0., 0., 1.)

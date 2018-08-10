@@ -43,8 +43,16 @@ class ColliderBase(Mesh):
         pass
         """An algorithm to return a 3-element estimate for setting the scale to a parent Mesh's vertices."""
 
+    @staticmethod
+    def _extract_coord(obj):
+        try:
+            x, y, z = obj.position_global
+        except AttributeError:
+            x, y, z = np.array(obj, dtype=np.float32)
+        return x, y, z
+
     @abc.abstractmethod
-    def collides_with(self, xyz):
+    def collides_with(self, other):
         """Returns True if 3-value coordinate 'xyz' is inside the mesh's collision cube."""
         pass
 
@@ -58,11 +66,7 @@ class ColliderSphere(ColliderBase):
 
     def collides_with(self, other):
         """Returns True/False if 'other' (a PhysicalGraph or 3-tuple) is inside the collider."""
-        try:
-            x, y, z = other.position_global
-        except AttributeError:
-            x, y, z = np.array(other, dtype=np.float32)
-
+        x, y, z = self._extract_coord(other)
         return np.linalg.norm(self.view_matrix_global.dot((x, y, z, 1))[:3]) <= 1.
 
 
@@ -74,11 +78,7 @@ class ColliderCube(ColliderBase):
 
     def collides_with(self, other):
         """Returns True/False if 'other' (a PhysicalGraph or 3-tuple) is inside the collider."""
-        try:
-            x, y, z = other.position_global
-        except AttributeError:
-            x, y, z = np.array(other, dtype=np.float32)
-
+        x, y, z = self._extract_coord(other)
         return np.all(self.view_matrix_global.dot((x, y, z, 1))[:3] <= 1.)
 
 
@@ -93,16 +93,12 @@ class ColliderCylinder(ColliderBase):
         elif self.ignore_axis == 2:
             self.rotation.x = 90
 
-    def _fit_to_parent_vertices(self, vertices, scale_gain=1000):
+    def _fit_to_parent_vertices(self, vertices, scale_gain=1e5):
         axes = [a for a in range(3) if a != self.ignore_axis]
         x, z = np.ptp(vertices[:, axes], axis=0) / 2
         return x, scale_gain, z  # scale_gain makes it clear in the display that one dimension is being ignored.
 
     def collides_with(self, other):
         """Returns True/False if 'other' (a PhysicalGraph or 3-tuple) is inside the collider."""
-        try:
-            x, y, z = other.position_global
-        except AttributeError:
-            x, y, z = np.array(other, dtype=np.float32)
-
+        x, y, z = self._extract_coord(other)
         return np.linalg.norm(self.view_matrix_global.dot((x, y, z, 1))[[0, 2]]) <= 1.
