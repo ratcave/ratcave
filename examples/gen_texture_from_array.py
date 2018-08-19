@@ -11,9 +11,9 @@ window = pyglet.window.Window()
 
 cube = rc.Mesh.from_primitive('Cube', position=(0, 0, -3), rotation=(45, 45, 0))
 
-arr = np.random.randint(0, 255, size=(1024, 1024, 4))
+arr = np.random.randint(0, 255, size=(128, 128, 4))
 
-tex2 = rc.Texture(width=arr.shape[1], height=arr.shape[0], values=arr)
+tex2 = rc.Texture(values=arr)
 
 cube.textures.append(tex2)
 
@@ -25,7 +25,7 @@ def on_draw():
 
 
 def randomize_texture(dt):
-    tex2.values = np.random.randint(0, 255, size=(1024, 1024, 4))
+    tex2.values = np.random.randint(0, 255, size=(128, 128, 4))
 pyglet.clock.schedule(randomize_texture)
 
 pyglet.app.run()

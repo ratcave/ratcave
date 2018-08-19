@@ -31,6 +31,8 @@ class Texture(HasUniforms, BindTargetMixin):
             self.data = data  # This is used for anything that might be garbage collected (i.e. pyglet textures)
         else:
             self.id = create_opengl_object(gl.glGenTextures)
+            if type(values) != type(None):
+                width, height = values.shape[1], values.shape[0]
             self.width = width
             self.height = height
             self.bind()
