@@ -17,6 +17,9 @@ obj_reader = rc.WavefrontReader(obj_filename)
 monkey = obj_reader.get_mesh("Monkey")
 monkey.position.xyz = 0, 0, -3
 
+tex = rc.Texture.from_image(rc.resources.img_colorgrid)
+monkey.textures.append(tex)
+
 # Create Scene
 scene = rc.Scene(meshes=[monkey])
 

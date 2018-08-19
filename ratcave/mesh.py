@@ -14,6 +14,7 @@ from copy import deepcopy
 from warnings import warn
 
 
+
 def gen_fullscreen_quad(name='FullScreenQuad'):
     verts = np.array([[-1, -1, -.5], [-1, 1, -.5], [1, 1, -.5], [-1, -1, -.5], [1, 1, -.5], [1, -1, -.5]], dtype=np.float32)
     normals=np.array([[0, 0, 1]] * 6, dtype=np.float32)
@@ -96,6 +97,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         self.vbos = []
 
 
+
     def __repr__(self):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
 
@@ -116,6 +118,15 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         """Loads and Returns a Mesh from a pickle file, given a filename."""
         with open(filename, 'rb') as f:
             mesh = pickle.load(f).copy()
+        return mesh
+
+    @classmethod
+    def from_primitive(cls, name, position=(0, 0, 0), **kwargs):
+        """Returns a Mesh from the obj_primtives.obj file."""
+        from .wavefront import WavefrontReader
+        from .resources import obj_primitives
+        reader = WavefrontReader(obj_primitives)
+        mesh = reader.get_mesh(name, position=position, **kwargs)
         return mesh
 
     def reset_uniforms(self):
@@ -221,3 +232,15 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
             for texture in self.textures:
                 texture.unbind()
+
+    @property
+    def collider(self):
+        return self._collider
+
+    @collider.setter
+    def collider(self, value):
+        from .collision import ColliderBase
+        if not isinstance(value, ColliderBase):
+            raise TypeError("collider must inherit from ColliderBase.")
+        self._collider = value
+        self._collider.parent = self

@@ -1,8 +1,19 @@
 from setuptools import setup, find_packages, Extension
-try:
-    import numpy
-except ImportError:
-    raise ImportError("numpy not found.  Please install numpy (e.g. 'pip install numpy') before installing ratcave.")
+from setuptools.command.build_ext import build_ext as _build_ext
+
+
+class build_ext(_build_ext):
+    def finalize_options(self):
+        """
+        only import numpy when it is actually needed for building an extension. By then, it should already be installed.
+        From https://stackoverflow.com/questions/19919905/how-to-bootstrap-numpy-installation-in-setup-py
+        """
+        _build_ext.finalize_options(self)
+        # Prevent numpy from thinking it is still in its setup process:
+        __builtins__.__NUMPY_SETUP__ = False
+        import numpy
+        self.include_dirs.append(numpy.get_include())
+
 
 
 setup(name='ratcave',
@@ -18,7 +29,8 @@ setup(name='ratcave',
                         ['../shaders/*/*'+el for el in ['vert', 'frag']]
                     },
       install_requires=['pyglet', 'numpy', 'wavefront_reader', 'future', 'six'],
-      ext_modules=[Extension('_transformations', sources=['third_party/transformations.c'], include_dirs=[numpy.get_include()])],
+      cmdclass={'build_ext':build_ext},
+      ext_modules=[Extension('_transformations', sources=['third_party/transformations.c'])],#, include_dirs=[numpy.get_include()])],
       setup_requires=['numpy', 'pytest-runner'],
       tests_require = ['pytest'],
       keywords='graphics 3D pyglet psychopy python virtual reality VR',

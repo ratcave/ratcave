@@ -196,6 +196,11 @@ class Translation(Coordinates):
     def to_matrix(self):
         return trans.translation_matrix(self._array)
 
+    @classmethod
+    def from_matrix(cls, matrix):
+        """Returns a Translation from a 4x4 model matrix (the first three rows of the last column)."""
+        return cls(*matrix[:3, 3])
+
 
 class Scale(Coordinates):
 
@@ -206,6 +211,10 @@ class Scale(Coordinates):
 
     def to_matrix(self):
         return np.diag((self._array[0], self._array[1], self._array[2], 1.))
+
+    @classmethod
+    def from_matrix(cls, matrix):
+        return cls(*np.linalg.norm(matrix[:3, :3], axis=0))
 
 
 
