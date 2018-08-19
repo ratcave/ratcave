@@ -2,6 +2,7 @@ import itertools
 from .utils import BindTargetMixin, BindingContextMixin, create_opengl_object
 import pyglet
 import pyglet.gl as gl
+import numpy as np
 from .shader import HasUniforms
 
 
@@ -52,6 +53,18 @@ class Texture(HasUniforms, BindTargetMixin):
         self.uniforms[name] = self._slot
         self.uniforms[name + '_isBound'] = False
         self._name = name
+
+    @property
+    def values(self):
+        if hasattr(self, 'data'):
+            data = self.data.get_image_data()
+            arr = np.ndarray(buffer=data.data,
+                       shape=(data.height, data.width, len(data.format)),
+                       dtype=np.uint8)
+            return arr
+        else:
+            raise NotImplementedError("Textures currently only have a 'values' if created from_image().")
+
 
 
     def bind(self):
