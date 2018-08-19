@@ -16,8 +16,7 @@ class Texture(HasUniforms, BindTargetMixin):
     _slot_counter = itertools.count(start=1)
     bindfun = gl.glBindTexture
 
-    def __init__(self, id=None, name='TextureMap', width=1024, height=1024, data=None, mipmap=False, values=None,
-                 **kwargs):
+    def __init__(self, values=None, name='TextureMap', width=1024, height=1024, mipmap=False, **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
         super(Texture, self).__init__(**kwargs)
 
@@ -27,20 +26,15 @@ class Texture(HasUniforms, BindTargetMixin):
         self.name = name
         self.mipmap = mipmap
 
-        if id != None:
-            self.id = id
-            self.data = data  # This is used for anything that might be garbage collected (i.e. pyglet textures)
-        else:
-            self.id = create_opengl_object(gl.glGenTextures)
-            if type(values) != type(None):
-                width, height = values.shape[1], values.shape[0]
-            self.width = width
-            self.height = height
-            self.bind()
+
+        self.id = create_opengl_object(gl.glGenTextures)
+        if type(values) != type(None):
+            width, height = values.shape[1], values.shape[0]
+        self.width = width
+        self.height = height
+        with self:
             self._genTex2D()
             self._apply_filter_settings()
-
-        self.unbind()
 
         if type(values) != type(None):
             self.values = values
@@ -64,7 +58,7 @@ class Texture(HasUniforms, BindTargetMixin):
     def values(self):
         if hasattr(self, 'data'):
             data = self.data.get_image_data()
-            return np.ndarray(buffer=data.data, shape=(data.height, data.width, len(data.format)), dtype=np.uint8)
+            return np.ndarray(buffer=data.data, shape=(data.height, data.width, len(data.format)), dtype=np.uint8)#, order='C')
         else:
             raise NotImplementedError("Textures currently only have a 'values' if created from_image().")
 
@@ -73,11 +67,13 @@ class Texture(HasUniforms, BindTargetMixin):
         arr = np.array(values).astype(np.uint8)
         if arr.shape != (self.height, self.height, 4):
             raise ValueError("Texture.values shape must match shape: width x height x 4 (RGBA)")
+
         with self:
             gl.glTexSubImage2D(gl.GL_TEXTURE_2D, 0, 0, 0, self.width, self.height,
                                gl.GL_RGBA, gl.GL_UNSIGNED_INT_8_8_8_8,
-                               (gl.GLubyte * arr.size)(*arr.flatten().astype('uint8'))
+                               (gl.GLubyte * arr.size)(*np.flip(arr, axis=2).flatten())
                                )
+        self._values = arr
 
     def bind(self):
         gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
@@ -147,9 +143,8 @@ class Texture(HasUniforms, BindTargetMixin):
         """Uses Pyglet's image.load function to generate a Texture from an image file. If 'mipmap', then texture will
         have mipmap layers calculated."""
         img = pyglet.image.load(img_filename)
-        tex = img.get_mipmapped_texture() if mipmap else img.get_texture()
-        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
-        return cls(id=tex.id, data=tex, mipmap=mipmap, **kwargs)
+        arr = np.ndarray(buffer=img.get_image_data().data, shape=(img.height, img.width, 4), dtype=np.uint8)
+        return cls(values=arr, **kwargs)
 
     def reset_uniforms(self):
         pass
