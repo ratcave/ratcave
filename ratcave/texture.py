@@ -16,7 +16,7 @@ class Texture(HasUniforms, BindTargetMixin):
     _slot_counter = itertools.count(start=1)
     bindfun = gl.glBindTexture
 
-    def __init__(self, id=None, name='TextureMap', width=1024, height=1024, data=None, mipmap=False, **kwargs):
+    def __init__(self, id=None, name='TextureMap', width=1024, height=1024, data=None, mipmap=False, values=None, **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
         super(Texture, self).__init__(**kwargs)
 
@@ -38,6 +38,9 @@ class Texture(HasUniforms, BindTargetMixin):
             self._apply_filter_settings()
 
         self.unbind()
+
+        if type(values) != type(None):
+            self.values = values
 
     @property
     def name(self):
@@ -64,6 +67,19 @@ class Texture(HasUniforms, BindTargetMixin):
             return arr
         else:
             raise NotImplementedError("Textures currently only have a 'values' if created from_image().")
+
+    @values.setter
+    def values(self, values):
+        arr = np.array(values).astype(np.uint8)
+        if arr.shape != (self.height, self.height, 4):
+            raise ValueError("Texture.values shape must match shape: width x height x 4 (RGBA)")
+        with self:
+            gl.glTexSubImage2D(gl.GL_TEXTURE_2D, 0, 0, 0, self.width, self.height,
+                               gl.GL_RGBA, gl.GL_UNSIGNED_INT_8_8_8_8,
+                               (gl.GLubyte * arr.size)(*arr.flatten().astype('uint8'))
+                               )
+
+
 
 
 

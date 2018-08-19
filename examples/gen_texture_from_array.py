@@ -2,24 +2,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyglet
 import ratcave as rc
+from pyglet.extlibs import png
+import pyglet.gl as gl
+
 
 
 window = pyglet.window.Window()
 
-cube = rc.Mesh.from_primitive('Cube', position=(0, 0, -3))
+cube = rc.Mesh.from_primitive('Cube', position=(0, 0, -3), rotation=(45, 45, 0))
 
+arr = np.random.randint(0, 255, size=(1024, 1024, 4))
 
-# image = pyglet.image.load(rc.resources.img_colorgrid)
-# data = image.get_image_data()
-# arr = np.ndarray(buffer=data.data,
-#            shape=(image.height, image.width, len(image.format)),
-#            dtype=np.uint8)
+tex2 = rc.Texture(width=arr.shape[1], height=arr.shape[0], values=arr)
 
-tex = rc.Texture.from_image(rc.resources.img_colorgrid)
-arr = tex.values
-print("Texture Array Shape: {}".format(arr.shape))
-
-cube.textures.append(tex)
+cube.textures.append(tex2)
 
 @window.event
 def on_draw():
@@ -28,9 +24,8 @@ def on_draw():
         cube.draw()
 
 
-def rotate_cube(dt):
-    cube.rotation.x += 15 * dt
-    cube.rotation.y += 30 * dt
-pyglet.clock.schedule(rotate_cube)
+def randomize_texture(dt):
+    tex2.values = np.random.randint(0, 255, size=(1024, 1024, 4))
+pyglet.clock.schedule(randomize_texture)
 
 pyglet.app.run()
