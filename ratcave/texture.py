@@ -12,11 +12,12 @@ class Texture(HasUniforms, BindTargetMixin):
     target0 = gl.GL_TEXTURE_2D
     attachment_point = gl.GL_COLOR_ATTACHMENT0_EXT
     internal_fmt = gl.GL_RGBA
-    pixel_fmt=gl.GL_RGBA
+    pixel_fmt = gl.GL_RGBA
     _slot_counter = itertools.count(start=1)
     bindfun = gl.glBindTexture
 
-    def __init__(self, id=None, name='TextureMap', width=1024, height=1024, data=None, mipmap=False, values=None, **kwargs):
+    def __init__(self, id=None, name='TextureMap', width=1024, height=1024, data=None, mipmap=False, values=None,
+                 **kwargs):
         """2D Color Texture class. Width and height can be set, and will generate a new OpenGL texture if no id is given."""
         super(Texture, self).__init__(**kwargs)
 
@@ -63,10 +64,7 @@ class Texture(HasUniforms, BindTargetMixin):
     def values(self):
         if hasattr(self, 'data'):
             data = self.data.get_image_data()
-            arr = np.ndarray(buffer=data.data,
-                       shape=(data.height, data.width, len(data.format)),
-                       dtype=np.uint8)
-            return arr
+            return np.ndarray(buffer=data.data, shape=(data.height, data.width, len(data.format)), dtype=np.uint8)
         else:
             raise NotImplementedError("Textures currently only have a 'values' if created from_image().")
 
@@ -81,17 +79,13 @@ class Texture(HasUniforms, BindTargetMixin):
                                (gl.GLubyte * arr.size)(*arr.flatten().astype('uint8'))
                                )
 
-
-
-
-
     def bind(self):
         gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
         super(Texture, self).bind()
         self.uniforms['{}_isBound'.format(self.name)] = True
         try:
             self.uniforms.send()
-        except UnboundLocalError:  # TODO: Find a way to make binding and uniform-sending simple without requiring a bound shader.
+        except UnboundLocalError:
             pass
 
     def unbind(self):
@@ -99,7 +93,7 @@ class Texture(HasUniforms, BindTargetMixin):
         self.uniforms['{}_isBound'.format(self.name)] = False
         try:
             self.uniforms.send()
-        except UnboundLocalError:  # TODO: Find a way to make binding and uniform-sending simple without requiring a bound shader.
+        except UnboundLocalError:
             pass
 
         gl.glActiveTexture(gl.GL_TEXTURE0)
