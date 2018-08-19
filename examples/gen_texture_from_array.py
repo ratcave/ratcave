@@ -12,8 +12,7 @@ arr = np.zeros_like(arr)# + 255
 arr[:, :, 0] = 255
 
 tex2 = rc.Texture(values=arr)
-# tex2.values = np.random.randint(0, 255, size=(128, 128, 4))
-
+tex2.values = np.random.randint(0, 255, size=(128, 128, 4))
 
 cube.textures.append(tex2)
 
@@ -24,8 +23,8 @@ def on_draw():
         cube.draw()
 
 
-# def randomize_texture(dt):
-#     tex2.values = np.random.randint(0, 255, size=(128, 128, 4))
-# pyglet.clock.schedule(randomize_texture)
+def randomize_texture(dt):
+    tex2.values = np.random.randint(0, 255, size=(128, 128, 4))
+pyglet.clock.schedule(randomize_texture)
 
 pyglet.app.run()

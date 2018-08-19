@@ -56,15 +56,13 @@ class Texture(HasUniforms, BindTargetMixin):
 
     @property
     def values(self):
-        if hasattr(self, 'data'):
-            data = self.data.get_image_data()
-            return np.ndarray(buffer=data.data, shape=(data.height, data.width, len(data.format)), dtype=np.uint8)#, order='C')
-        else:
-            raise NotImplementedError("Textures currently only have a 'values' if created from_image().")
+        return self._values
 
     @values.setter
     def values(self, values):
         arr = np.array(values).astype(np.uint8)
+        arr.setflags(write=False)
+
         if arr.shape != (self.height, self.height, 4):
             raise ValueError("Texture.values shape must match shape: width x height x 4 (RGBA)")
 
