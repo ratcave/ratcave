@@ -1,10 +1,6 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pyglet
 import ratcave as rc
-from pyglet.extlibs import png
-import pyglet.gl as gl
-
 
 
 window = pyglet.window.Window()
