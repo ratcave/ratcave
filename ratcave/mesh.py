@@ -6,13 +6,10 @@ import pickle
 import numpy as np
 from .utils import vertices as vertutils
 from .utils import NameLabelMixin
-from . import physical, shader
+from . import physical, shader, gl
 from .texture import Texture
 from .vertex import VAO, VBO
-import pyglet.gl as gl
 from copy import deepcopy
-from warnings import warn
-
 
 
 def gen_fullscreen_quad(name='FullScreenQuad'):
@@ -35,9 +32,6 @@ class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMi
 
 
 class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
-
-    triangles = gl.GL_TRIANGLES
-    points = gl.GL_POINTS
 
 
     def __init__(self, arrays, textures=(), mean_center=True,
@@ -117,8 +111,9 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
     def from_pickle(cls, filename):
         """Loads and Returns a Mesh from a pickle file, given a filename."""
         with open(filename, 'rb') as f:
-            mesh = pickle.load(f).copy()
-        return mesh
+            mesh = pickle.load(f)
+            mesh2 = mesh.copy()
+        return mesh2
 
     @classmethod
     def from_primitive(cls, name, position=(0, 0, 0), **kwargs):

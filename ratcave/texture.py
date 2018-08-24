@@ -1,7 +1,7 @@
 import itertools
 from .utils import BindTargetMixin, BindingContextMixin, create_opengl_object
 import pyglet
-import pyglet.gl as gl
+from . import gl
 import numpy as np
 from .shader import HasUniforms
 

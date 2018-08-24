@@ -1,4 +1,4 @@
-import pyglet.gl as gl
+from . import gl
 
 
 class GLStateManager(object):
