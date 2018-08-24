@@ -1,5 +1,5 @@
 import numpy as np
-import pyglet.gl as gl
+from . import gl
 from .utils import BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
 from sys import platform
 

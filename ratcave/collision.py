@@ -1,6 +1,6 @@
 import abc
 import numpy as np
-import pyglet.gl as gl
+from . import gl
 from .mesh import Mesh
 
 

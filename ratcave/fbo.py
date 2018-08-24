@@ -2,7 +2,7 @@
 from .utils import BindingContextMixin, create_opengl_object, get_viewport, Viewport
 from .texture import DepthTexture, RenderBuffer
 
-import pyglet.gl as gl
+from . import gl
 
 
 class FBO(BindingContextMixin):
