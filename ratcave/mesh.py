@@ -33,9 +33,6 @@ class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMi
 
 class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
-    triangles = gl.GL_TRIANGLES
-    points = gl.GL_POINTS
-
 
     def __init__(self, arrays, textures=(), mean_center=True,
                  gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, dynamic=False, visible=True, **kwargs):

@@ -12,6 +12,7 @@ cam.projection = rc.OrthoProjection(coords='relative', origin='corner')
 
 @window.event
 def on_draw():
+    window.clear()
     with rc.default_shader, rc.default_states, cam:
         cube.draw()
 

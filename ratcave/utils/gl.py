@@ -3,11 +3,6 @@ from ctypes import byref
 from collections import namedtuple
 import itertools as it
 
-POINTS = pyglet_gl.GL_POINTS
-TRIANGLES = pyglet_gl.GL_TRIANGLES
-LINE_LOOP = pyglet_gl.GL_LINE_LOOP
-LINES = pyglet_gl.GL_LINES
-
 
 class Enum(int):
     """Prints enum name, instead of the int value.  Makes working with OpenGL easier."""

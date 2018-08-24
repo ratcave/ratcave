@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from . import utils
 from .utils import gl as gl
-from .utils.gl import POINTS, LINE_LOOP, LINES, TRIANGLES, clear_color
+from .utils.gl import clear_color
 try:
     from . import resources
     from .resources import default_shader, default_camera, default_light
