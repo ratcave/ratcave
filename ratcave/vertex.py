@@ -23,7 +23,6 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
         # Create Vertex Array Object and Bind it
         super(VAO, self).__init__(**kwargs)
         self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
-        self.n_verts = None
 
         self.drawfun = self._draw_arrays
     #     self.__element_array_buffer = None
@@ -52,7 +51,7 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
     #         self.drawfun = self._draw_arrays
 
     def _draw_arrays(self, mode=gl.GL_TRIANGLES):
-        gl.glDrawArrays(mode, 0, self.n_verts)
+        gl.glDrawArrays(mode, 0, self.vbos[0].data.shape[0])
     #
     # def _draw_elements(self, mode=gl.GL_TRIANGLES):
     #     with self.element_array_buffer as el_array:
@@ -62,12 +61,6 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
     def assign_vertex_attrib_location(self, vbo, location):
         """Load data into a vbo"""
         with vbo:
-            if self.n_verts:
-                assert vbo.data.shape[0] == self.n_verts
-            else:
-                self.n_verts = vbo.data.shape[0]
-
-            # vbo.buffer_data()
             gl.glVertexAttribPointer(location, vbo.data.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
             gl.glEnableVertexAttribArray(location)
 
@@ -84,15 +77,14 @@ class VBO(BindingContextMixin, BindTargetMixin):
         super(VBO, self).__init__(*args, **kwargs)
         self.id = create_opengl_object(gl.glGenBuffers)
         self.data = data
-        self._buffer_data()
-
-    def _buffer_data(self):
         with self:
-            gl.glBufferData(self.target, 4 * self.data.size, vec(self.data.ravel()), gl.GL_STATIC_DRAW)
+            gl.glBufferData(self.target, 4 * self.data.size,
+                            vec(self.data.ravel()), gl.GL_STATIC_DRAW)
 
-    def _buffer_subdata(self):
-        with self:
-            gl.glBufferSubData(self.target, 0, 4 * self.data.size, vec(self.data.ravel()))
+    # def _buffer_subdata(self):
+    #     with self:
+    #         gl.glBufferSubData(self.target, 0, 4 * self.data.size,
+    #                            vec(self.data.ravel()))
 
 #
 # class ElementArrayBuffer(VBO):
