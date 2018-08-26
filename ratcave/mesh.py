@@ -68,10 +68,11 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         self.reset_uniforms()
 
         arrays = tuple(np.array(array, dtype=np.float32) for array in arrays)
-        self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
-
+        # self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
+        self.arrays, self.array_indices = arrays, None
         # Mean-center vertices and move position to vertex mean.
-        vertex_mean = self.arrays[0][self.array_indices, :].mean(axis=0)
+        # vertex_mean = self.arrays[0][self.array_indices, :].mean(axis=0)
+        vertex_mean = self.arrays[0].mean(axis=0)
 
         if mean_center:
             self.arrays[0][:] -= vertex_mean
