@@ -167,16 +167,6 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Ve
         """Vertex position, in world coordinate space (modified by model_matrix)"""
         return np.dot(self.model_matrix_global, np.append(self.vertices, np.ones(self.vertices.shape[0], 1), axis=1))[:3]
 
-    @property
-    def texture(self):
-        raise DeprecationWarning(
-            "Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
-
-    @texture.setter
-    def texture(self, value):
-        raise DeprecationWarning(
-            "Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
-
     @classmethod
     def from_incomplete_data(cls, vertices, normals=(), texcoords=(), **kwargs):
         """Return a Mesh with (vertices, normals, texcoords) as arrays, in that order.
