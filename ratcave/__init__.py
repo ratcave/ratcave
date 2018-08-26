@@ -23,6 +23,7 @@ from .scenegraph import SceneGraph
 from .utils.gl import POINTS, LINE_LOOP, LINES, TRIANGLES, clear_color
 from . import experimental
 from .wavefront import WavefrontReader
+from .vertex import VertexBuffer
 
 
 import pkg_resources

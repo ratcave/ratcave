@@ -8,20 +8,19 @@ from .utils import vertices as vertutils
 from .utils import NameLabelMixin, BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
 from . import physical, shader
 from .texture import Texture
-from .vertex import VBO
+from .vertex import VertexBuffer
 import pyglet.gl as gl
 from copy import deepcopy
 from sys import platform
 
-
 from warnings import warn
 
 
-
 def gen_fullscreen_quad(name='FullScreenQuad'):
-    verts = np.array([[-1, -1, -.5], [-1, 1, -.5], [1, 1, -.5], [-1, -1, -.5], [1, 1, -.5], [1, -1, -.5]], dtype=np.float32)
-    normals=np.array([[0, 0, 1]] * 6, dtype=np.float32)
-    texcoords=np.array([[0, 0], [0, 1], [1, 1], [0, 0], [1, 1], [1, 0]], dtype=np.float32)
+    verts = np.array([[-1, -1, -.5], [-1, 1, -.5], [1, 1, -.5], [-1, -1, -.5], [1, 1, -.5], [1, -1, -.5]],
+                     dtype=np.float32)
+    normals = np.array([[0, 0, 1]] * 6, dtype=np.float32)
+    texcoords = np.array([[0, 0], [0, 1], [1, 1], [0, 0], [1, 1], [1, 0]], dtype=np.float32)
     return Mesh(name=name, arrays=(verts, normals, texcoords), mean_center=False)
 
 
@@ -38,12 +37,10 @@ class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMi
 
 
 class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, BindingContextMixin, BindNoTargetMixin):
-
     triangles = gl.GL_TRIANGLES
     points = gl.GL_POINTS
 
     bindfun = gl.glBindVertexArray if platform != 'darwin' else gl.glBindVertexArrayAPPLE
-
 
     def __init__(self, arrays, textures=(), mean_center=True,
                  gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, visible=True, **kwargs):
@@ -101,12 +98,15 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
         self._loaded = False
 
     def __repr__(self):
-        return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
+        return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(
+            self=self)
 
     def copy(self):
         """Returns a copy of the Mesh."""
-        return Mesh(arrays=deepcopy([arr.copy() for arr in [self.vertices, self.normals, self.texcoords]]), texture=self.textures, mean_center=deepcopy(self._mean_center),
-                    position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]), scale=self.scale.xyz,
+        return Mesh(arrays=deepcopy([arr.copy() for arr in [self.vertices, self.normals, self.texcoords]]),
+                    texture=self.textures, mean_center=deepcopy(self._mean_center),
+                    position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]),
+                    scale=self.scale.xyz,
                     drawmode=self.drawmode, point_size=self.point_size, visible=self.visible,
                     gl_states=deepcopy(self.gl_states))
 
@@ -175,25 +175,28 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
 
     @property
     def texture(self):
-        raise DeprecationWarning("Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
+        raise DeprecationWarning(
+            "Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
 
     @texture.setter
     def texture(self, value):
-        raise DeprecationWarning("Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
+        raise DeprecationWarning(
+            "Mesh.texture no longer exists.  Instead, please append textures to the Mesh.textures list.")
 
     @classmethod
     def from_incomplete_data(cls, vertices, normals=(), texcoords=(), **kwargs):
         """Return a Mesh with (vertices, normals, texcoords) as arrays, in that order.
            Useful for when you want a standardized array location format across different amounts of info in each mesh."""
         normals = normals if hasattr(texcoords, '__iter__') and len(normals) else vertutils.calculate_normals(vertices)
-        texcoords = texcoords if hasattr(texcoords, '__iter__') and len(texcoords) else np.zeros((vertices.shape[0], 2), dtype=np.float32)
+        texcoords = texcoords if hasattr(texcoords, '__iter__') and len(texcoords) else np.zeros((vertices.shape[0], 2),
+                                                                                                 dtype=np.float32)
         return cls(arrays=(vertices, normals, texcoords), **kwargs)
 
     def load_vertex_array(self):
         self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
         with self:
             for loc, verts in enumerate(self.arrays):
-                vbo = verts.view(type=VBO)
+                vbo = verts.view(type=VertexBuffer)
                 with vbo:
                     gl.glVertexAttribPointer(loc, verts.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
                     gl.glEnableVertexAttribArray(loc)
