@@ -1,7 +1,7 @@
 #version 150
 #extension GL_ARB_explicit_attrib_location : enable
 
-layout(location = 0) in vec4 vertexPosition;
+layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec3 normalPosition;
 layout(location = 2) in vec2 uvTexturePosition;
 
@@ -30,7 +30,7 @@ float diffuse_weight = .5;
 void main()
   {
     //Calculate Vertex World Position and Normal Direction
-    vVertex = model_matrix * vertexPosition;
+    vVertex = model_matrix * vec4(vertexPosition, 1.0);
     normal = normalize(normal_matrix * vec4(normalPosition, 1.0)).xyz;
 
     //Calculate Vertex Position on Screen

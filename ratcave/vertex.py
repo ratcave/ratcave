@@ -1,17 +1,21 @@
 import numpy as np
 import pyglet.gl as gl
-from .utils import BindingContextMixin, BindTargetMixin, create_opengl_object, vec
+from .utils import BindingContextMixin, BindTargetMixin, BindNoTargetMixin, create_opengl_object, vec
 from sys import platform
 
 
-class VertexArray(object):
+class VertexArray(BindingContextMixin, BindNoTargetMixin):
+
+    bindfun = gl.glBindVertexArray if platform != 'darwin' else gl.glBindVertexArrayAPPLE
 
     def __init__(self, arrays, indices=None, drawmode=gl.GL_TRIANGLES, **kwargs):
         super(VertexArray, self).__init__(**kwargs)
+        self.id = None
         self.arrays = [np.array(vert, dtype=np.float32) for vert in arrays]
         self.indices = np.array(indices, dtype=np.uint32).view(type=ElementArrayBuffer) if not indices is None else indices
         self._loaded = False
         self.drawmode = drawmode
+
 
     def load_vertex_array(self):
         self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)

@@ -5,13 +5,12 @@ This module contains the Mesh and EmptyEntity classes.
 import pickle
 import numpy as np
 from .utils import vertices as vertutils
-from .utils import NameLabelMixin, BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
+from .utils import NameLabelMixin
 from . import physical, shader
 from .texture import Texture
 from .vertex import VertexArray
 import pyglet.gl as gl
 from copy import deepcopy
-from sys import platform
 
 
 def gen_fullscreen_quad(name='FullScreenQuad'):
@@ -34,11 +33,10 @@ class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMi
         pass
 
 
-class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, BindingContextMixin, BindNoTargetMixin, VertexArray):
+class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, VertexArray):
     triangles = gl.GL_TRIANGLES
     points = gl.GL_POINTS
 
-    bindfun = gl.glBindVertexArray if platform != 'darwin' else gl.glBindVertexArrayAPPLE
 
     def __init__(self, arrays, textures=(), mean_center=True,
                  gl_states=(), point_size=15, visible=True, **kwargs):
@@ -62,19 +60,15 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
         Returns:
             Mesh instance
         """
-        # Change vertices from an Nx3 to an Nx4 array by appending ones.  This makes some calculations more efficient.
-        arrays = list(arrays)
-        arrays[0] = np.append(arrays[0], np.ones((arrays[0].shape[0], 1), dtype=np.float32), axis=1)
         # arrays, indices = vertutils.reindex_vertices(self.arrays)  # Indexing
         super(Mesh, self).__init__(arrays=arrays, **kwargs)
         self.reset_uniforms()
 
         # Mean-center vertices and move position to vertex mean.
-        vertex_mean = self.arrays[0][:, :3].mean(axis=0)  # No indexing
-        # vertex_mean = self.arrays[0][self.indices, :].mean(axis=0)  # Indexing
+        vertex_mean = self.vertices.mean(axis=0) #if not self.indices is None else self.vertices[self.indices, :].mean(axis=0)
 
         if mean_center:
-            self.arrays[0][:, :3] -= vertex_mean
+            self.arrays[0] -= vertex_mean
         if 'position' in kwargs:
             self.position.xyz = kwargs['position']
         elif mean_center:
@@ -86,7 +80,6 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
         self.gl_states = gl_states
         self.point_size = point_size
         self.visible = visible
-        self.id = None
 
     def __repr__(self):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(
@@ -130,39 +123,39 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
     @property
     def vertices(self):
         """Mesh vertices, centered around 0,0,0."""
-        return self.arrays[0][:, :3].view()
+        return self.arrays[0].view()
 
     @vertices.setter
     def vertices(self, value):
-        self.arrays[0][:, :3] = value
+        self.arrays[0] = value
 
     @property
     def normals(self):
         """Mesh normals array."""
-        return self.arrays[1][:, :3].view()
+        return self.arrays[1].view()
 
     @normals.setter
     def normals(self, value):
-        self.arrays[1][:, :3] = value
+        self.arrays[1] = value
 
     @property
     def texcoords(self):
         """UV coordinates"""
-        return self.arrays[2][:, :2].view()
+        return self.arrays[2].view()
 
     @texcoords.setter
     def texcoords(self, value):
-        self.arrays[2][:, :2] = value
+        self.arrays[2] = value
 
     @property
     def vertices_local(self):
         """Vertex position, in local coordinate space (modified by model_matrix)"""
-        return np.dot(self.model_matrix, self.vertices)
+        return np.dot(self.model_matrix, np.append(self.vertices, np.ones(self.vertices.shape[0], 1), axis=1))[:3]
 
     @property
     def vertices_global(self):
         """Vertex position, in world coordinate space (modified by model_matrix)"""
-        return np.dot(self.model_matrix_global, self.vertices)
+        return np.dot(self.model_matrix_global, np.append(self.vertices, np.ones(self.vertices.shape[0], 1), axis=1))[:3]
 
     @property
     def texture(self):
