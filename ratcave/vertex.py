@@ -7,7 +7,7 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
 
     bindfun = gl.glBindVertexArray if platform != 'darwin' else gl.glBindVertexArrayAPPLE
 
-    def __init__(self, indices=None, **kwargs):
+    def __init__(self, *arrays, indices=None, **kwargs):
         """
         OpenGL Vertex Array Object.  Sends array data in a Vertex Buffer to the GPU.  This data can be accessed in
         the vertex shader using the 'layout(location = N)' header line, where N = the index of the array given the VAO.
@@ -28,6 +28,14 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
         self.drawfun = self._draw_arrays
     #     self.__element_array_buffer = None
     #     self.element_array_buffer = indices
+
+        with self:
+            self.vbos = []
+            for loc, verts in enumerate(arrays):
+                vbo = VBO(verts)
+                self.vbos.append(vbo)
+                self.assign_vertex_attrib_location(vbo, loc)
+
     #
     # @property
     # def element_array_buffer(self):

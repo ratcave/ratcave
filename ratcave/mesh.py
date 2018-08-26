@@ -201,25 +201,15 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         texcoords = texcoords if hasattr(texcoords, '__iter__') and len(texcoords) else np.zeros((vertices.shape[0], 2), dtype=np.float32)
         return cls(arrays=(vertices, normals, texcoords), **kwargs)
 
-    def _fill_vao(self):
-        """Put array location in VAO for shader in same order as arrays given to Mesh."""
-        with self.vao:
-            self.vbos = []
-            for loc, verts in enumerate(self.arrays):
-                vbo = VBO(verts)
-                self.vbos.append(vbo)
-                self.vao.assign_vertex_attrib_location(vbo, loc)
-
     def draw(self):
         """ Draw the Mesh if it's visible, from the perspective of the camera and lit by the light. The function sends the uniforms"""
         if not self.vao:
-            self.vao = VAO(indices=self.array_indices)
-            self._fill_vao()
+            self.vao = VAO(*self.arrays)#indices=self.array_indices)
 
         if self.visible:
-            if self.dynamic:
-                for vbo in self.vbos:
-                    vbo._buffer_subdata()
+            # if self.dynamic:
+            #     for vbo in self.vbos:
+            #         vbo._buffer_subdata()
 
             if self.drawmode == gl.GL_POINTS:
                 gl.glPointSize(self.point_size)
