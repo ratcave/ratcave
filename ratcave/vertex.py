@@ -21,12 +21,14 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
         """
 
         # Create Vertex Array Object and Bind it
+        if not indices is None:
+            raise NotImplementedError("ElementArrays have been temporarily removed for refactoring.")  # TODO: re-implement ElementArrays and indexing
+
+
         super(VAO, self).__init__(**kwargs)
         self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
 
         self.drawfun = self._draw_arrays
-    #     self.__element_array_buffer = None
-    #     self.element_array_buffer = indices
 
         with self:
             self.vbos = []
@@ -37,31 +39,8 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
                     gl.glEnableVertexAttribArray(loc)
                 self.vbos.append(vbo)
 
-    #
-    # @property
-    # def element_array_buffer(self):
-    #     return self.__element_array_buffer
-    #
-    # @element_array_buffer.setter
-    # def element_array_buffer(self, value):
-    #     assert isinstance(value, (np.ndarray, type(None)))
-    #     if isinstance(value, np.ndarray):
-    #         self.__element_array_buffer = ElementArrayBuffer(value)
-    #         self.drawfun = self._draw_elements
-    #     else:
-    #         self.__element_array_buffer = None
-    #         self.drawfun = self._draw_arrays
-
-    def _draw_arrays(self, mode=gl.GL_TRIANGLES):
-        gl.glDrawArrays(mode, 0, self.vbos[0].shape[0])
-
-    # def _draw_elements(self, mode=gl.GL_TRIANGLES):
-    #     with self.element_array_buffer as el_array:
-    #         gl.glDrawElements(mode, el_array.data.shape[0],
-    #                           gl.GL_UNSIGNED_INT, 0)
-
     def draw(self, mode=gl.GL_TRIANGLES):
-        self.drawfun(mode)
+        gl.glDrawArrays(mode, 0, self.vbos[0].shape[0])
 
 
 class VBO(BindingContextMixin, BindTargetMixin, np.ndarray):
@@ -80,12 +59,3 @@ class VBO(BindingContextMixin, BindTargetMixin, np.ndarray):
     #     with self:
     #         gl.glBufferSubData(self.target, 0, 4 * self.data.size,
     #                            vec(self.data.ravel()))
-
-#
-# class ElementArrayBuffer(VBO):
-#
-#     target = gl.GL_ELEMENT_ARRAY_BUFFER
-#
-#     def _buffer_data(self):
-#         with self:
-#             gl.glBufferData(self.target, 4 * self.data.size, vec(self.data.ravel(), int), gl.GL_STATIC_DRAW)
