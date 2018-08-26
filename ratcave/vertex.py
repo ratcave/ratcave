@@ -28,8 +28,6 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
         super(VAO, self).__init__(**kwargs)
         self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
 
-        self.drawfun = self._draw_arrays
-
         with self:
             self.vbos = []
             for loc, verts in enumerate(arrays):
