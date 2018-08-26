@@ -8,7 +8,7 @@ from .utils import vertices as vertutils
 from .utils import NameLabelMixin, BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
 from . import physical, shader
 from .texture import Texture
-from .vertex import VertexBuffer
+from .vertex import VertexBuffer, ElementArrayBuffer
 import pyglet.gl as gl
 from copy import deepcopy
 from sys import platform
@@ -69,11 +69,12 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
         self.reset_uniforms()
 
         arrays = tuple(np.array(array, dtype=np.float32) for array in arrays)
-        # self.arrays, self.array_indices = vertutils.reindex_vertices(arrays)
-        self.arrays, self.array_indices = arrays, None
+        # self.arrays, self.array_indices = arrays, None  # No indexing
+        self.arrays, self.indices = vertutils.reindex_vertices(arrays)  # Indexing
+
         # Mean-center vertices and move position to vertex mean.
-        # vertex_mean = self.arrays[0][self.array_indices, :].mean(axis=0)
-        vertex_mean = self.arrays[0].mean(axis=0)
+        # vertex_mean = self.arrays[0].mean(axis=0)  # No indexing
+        vertex_mean = self.arrays[0][self.indices, :].mean(axis=0)  # Indexing
 
         if mean_center:
             self.arrays[0][:] -= vertex_mean
@@ -203,6 +204,14 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
                 self.arrays[loc] = vbo
         self._loaded = True
 
+    @property
+    def indices(self):
+        return self._indices if hasattr(self, '_indices') else None
+
+    @indices.setter
+    def indices(self, int_array):
+        self._indices = int_array.view(type=ElementArrayBuffer)
+
     def draw(self):
         """ Draw the Mesh if it's visible, from the perspective of the camera and lit by the light. The function sends the uniforms"""
         if not self._loaded:
@@ -217,7 +226,11 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
 
             self.uniforms.send()
             with self:
-                gl.glDrawArrays(self.drawmode, 0, self.arrays[0].shape[0])
+                if self.indices is None:
+                    gl.glDrawArrays(self.drawmode, 0, self.arrays[0].shape[0])
+                else:
+                    with self.indices as indices:
+                        gl.glDrawElements(self.drawmode, indices.shape[0], gl.GL_UNSIGNED_INT, 0)
 
             for texture in self.textures:
                 texture.unbind()

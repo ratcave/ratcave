@@ -19,3 +19,7 @@ class VertexBuffer(BindingContextMixin, BindTargetMixin, np.ndarray):
         super(VertexBuffer, self).__setitem__(key, value)
         with self:
             gl.glBufferSubData(self.target, 0, 4 * self.size, vec(self.ravel()))
+
+
+class ElementArrayBuffer(VertexBuffer):
+    target = gl.GL_ELEMENT_ARRAY_BUFFER

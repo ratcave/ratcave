@@ -1,7 +1,7 @@
 import pyglet.gl as gl
 from ctypes import byref
 from collections import namedtuple
-
+import numpy as np
 
 POINTS = gl.GL_POINTS
 TRIANGLES = gl.GL_TRIANGLES
@@ -19,10 +19,16 @@ def create_opengl_object(gl_gen_function, n=1):
         return handle.value  # Return handle value
 
 
-def vec(data, dtype=float):
+def vec(data, dtype=None):
         """ Makes GLfloat or GLuint vector containing float or uint args.
         By default, newtype is 'float', but can be set to 'int' to make
         uint list. """
+
+        if dtype is None and isinstance(data, np.ndarray):
+            dtype = float if 'f' in data.dtype.kind else int
+        elif dtype is None:
+            dtype = float
+
         gl_types = {float: gl.GLfloat, int: gl.GLuint}
         try:
             gl_dtype = gl_types[dtype]
