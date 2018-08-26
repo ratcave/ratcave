@@ -92,23 +92,13 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
         arrays[0] = np.append(self.arrays[0], np.ones((self.arrays[0].shape[0], 1), dtype=np.float32), axis=1)
         self.arrays = arrays
 
-        self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
-        with self:
-            for loc, verts in enumerate(arrays):
-                vbo = verts.view(type=VBO)
-                with vbo:
-                    gl.glVertexAttribPointer(loc, verts.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-                    gl.glEnableVertexAttribArray(loc)
-                self.arrays[loc] = vbo
-
         self.textures = list(textures)
         self.gl_states = gl_states
         self.drawmode = drawmode
         self.point_size = point_size
         self.visible = visible
-
-
-
+        self.id = None
+        self._loaded = False
 
     def __repr__(self):
         return "<Mesh(name='{self.name}', position_rel={self.position}, position_glob={self.position_global}, rotation={self.rotation})".format(self=self)
@@ -199,10 +189,21 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Bi
         texcoords = texcoords if hasattr(texcoords, '__iter__') and len(texcoords) else np.zeros((vertices.shape[0], 2), dtype=np.float32)
         return cls(arrays=(vertices, normals, texcoords), **kwargs)
 
+    def load_vertex_array(self):
+        self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
+        with self:
+            for loc, verts in enumerate(self.arrays):
+                vbo = verts.view(type=VBO)
+                with vbo:
+                    gl.glVertexAttribPointer(loc, verts.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+                    gl.glEnableVertexAttribArray(loc)
+                self.arrays[loc] = vbo
+        self._loaded = True
+
     def draw(self):
         """ Draw the Mesh if it's visible, from the perspective of the camera and lit by the light. The function sends the uniforms"""
-        # if not self.vao:
-        #     self.vao = VAO(*self.arrays)#indices=self.array_indices)
+        if not self._loaded:
+            self.load_vertex_array()
 
         if self.visible:
             if self.drawmode == gl.GL_POINTS:

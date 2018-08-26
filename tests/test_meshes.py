@@ -102,25 +102,6 @@ def test_mesh_copying_works(cube):
 
 
 
-def test_mesh_can_draw():
-    print('testing the draw process..')
-    mesh = cube()
-    assert not mesh.vbos
-    assert not mesh.vao
-
-#     with pytest.raises(UnboundLocalError):
-#         mesh.draw()
-
-#     with default_shader:
-#         mesh.draw()
-
-#     assert mesh.vao
-#     assert mesh.vbos
-#     assert len(mesh.vbos) == 3  # vertices, texcoords, and normals
-
-
-
-
 if sys.platform == 'linux':
     def test_mesh_is_picklable():
         for _ in range(2):
