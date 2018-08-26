@@ -5,12 +5,15 @@ This module contains the Mesh and EmptyEntity classes.
 import pickle
 import numpy as np
 from .utils import vertices as vertutils
-from .utils import NameLabelMixin
+from .utils import NameLabelMixin, BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
 from . import physical, shader
 from .texture import Texture
-from .vertex import VAO, VBO
+from .vertex import VBO
 import pyglet.gl as gl
 from copy import deepcopy
+from sys import platform
+
+
 from warnings import warn
 
 
@@ -34,14 +37,16 @@ class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMi
         pass
 
 
-class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
+class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, BindingContextMixin, BindNoTargetMixin):
 
     triangles = gl.GL_TRIANGLES
     points = gl.GL_POINTS
 
+    bindfun = gl.glBindVertexArray if platform != 'darwin' else gl.glBindVertexArrayAPPLE
+
 
     def __init__(self, arrays, textures=(), mean_center=True,
-                 gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, dynamic=False, visible=True, **kwargs):
+                 gl_states=(), drawmode=gl.GL_TRIANGLES, point_size=15, visible=True, **kwargs):
         """
         Returns a Mesh object, containing the position, rotation, and color info of an OpenGL Mesh.
 
@@ -56,8 +61,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
             texture (Texture): a Texture instance, which is linked when the Mesh is rendered.
             gl_states:
             drawmode: specifies the OpenGL draw mode
-            point_size (int): 
-            dynamic (bool): enables dynamic manipulation of vertices
+            point_size (int):
             visible (bool): whether the Mesh is available to be rendered.  To make hidden (invisible), set to False.
 
         Returns:
@@ -86,16 +90,23 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         # Change vertices from an Nx3 to an Nx4 array by appending ones.  This makes some calculations more efficient.
         arrays = list(self.arrays)
         arrays[0] = np.append(self.arrays[0], np.ones((self.arrays[0].shape[0], 1), dtype=np.float32), axis=1)
-        self.arrays = tuple(arrays)
+        self.arrays = arrays
+
+        self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
+        with self:
+            for loc, verts in enumerate(arrays):
+                vbo = verts.view(type=VBO)
+                with vbo:
+                    gl.glVertexAttribPointer(loc, verts.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+                    gl.glEnableVertexAttribArray(loc)
+                self.arrays[loc] = vbo
 
         self.textures = list(textures)
-        self.vao = None  # Will be created upon first draw, when OpenGL context is available.
         self.gl_states = gl_states
         self.drawmode = drawmode
         self.point_size = point_size
-        self.dynamic = dynamic
         self.visible = visible
-        self.vbos = []
+
 
 
 
@@ -106,7 +117,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         """Returns a copy of the Mesh."""
         return Mesh(arrays=deepcopy([arr.copy() for arr in [self.vertices, self.normals, self.texcoords]]), texture=self.textures, mean_center=deepcopy(self._mean_center),
                     position=self.position.xyz, rotation=self.rotation.__class__(*self.rotation[:]), scale=self.scale.xyz,
-                    drawmode=self.drawmode, point_size=self.point_size, dynamic=self.dynamic, visible=self.visible,
+                    drawmode=self.drawmode, point_size=self.point_size, visible=self.visible,
                     gl_states=deepcopy(self.gl_states))
 
     def to_pickle(self, filename):
@@ -134,19 +145,6 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
         """ Resets the uniforms to the Mesh object to the ""global"" coordinate system"""
         self.uniforms['model_matrix'] = self.model_matrix_global.view()
         self.uniforms['normal_matrix'] = self.normal_matrix_global.view()
-
-
-    @property
-    def dynamic(self):
-        """dynamic property of the mesh. If set to True, enables the user to modify vertices dynamically."""
-        return self._dynamic
-
-    @dynamic.setter
-    def dynamic(self, value):
-        for array in self.arrays:
-            array.setflags(write=True if value else False)
-        self._dynamic = value
-
 
     @property
     def vertices(self):
@@ -203,23 +201,19 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin):
 
     def draw(self):
         """ Draw the Mesh if it's visible, from the perspective of the camera and lit by the light. The function sends the uniforms"""
-        if not self.vao:
-            self.vao = VAO(*self.arrays)#indices=self.array_indices)
+        # if not self.vao:
+        #     self.vao = VAO(*self.arrays)#indices=self.array_indices)
 
         if self.visible:
-            # if self.dynamic:
-            #     for vbo in self.vbos:
-            #         vbo._buffer_subdata()
-
             if self.drawmode == gl.GL_POINTS:
                 gl.glPointSize(self.point_size)
 
             for texture in self.textures:
                 texture.bind()
 
-            with self.vao as vao:
-                self.uniforms.send()
-                vao.draw(mode=self.drawmode)
+            self.uniforms.send()
+            with self:
+                gl.glDrawArrays(self.drawmode, 0, self.arrays[0].shape[0])
 
             for texture in self.textures:
                 texture.unbind()
