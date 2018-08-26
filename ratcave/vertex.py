@@ -31,11 +31,11 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
         with self:
             self.vbos = []
             for loc, verts in enumerate(arrays):
-                vbo = VBO(verts)
-                self.vbos.append(vbo)
+                vbo = verts.view(type=VBO)
                 with vbo:
                     gl.glVertexAttribPointer(loc, verts.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
                     gl.glEnableVertexAttribArray(loc)
+                self.vbos.append(vbo)
 
     #
     # @property
@@ -53,8 +53,8 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
     #         self.drawfun = self._draw_arrays
 
     def _draw_arrays(self, mode=gl.GL_TRIANGLES):
-        gl.glDrawArrays(mode, 0, self.vbos[0].data.shape[0])
-    #
+        gl.glDrawArrays(mode, 0, self.vbos[0].shape[0])
+
     # def _draw_elements(self, mode=gl.GL_TRIANGLES):
     #     with self.element_array_buffer as el_array:
     #         gl.glDrawElements(mode, el_array.data.shape[0],
@@ -64,18 +64,17 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
         self.drawfun(mode)
 
 
-class VBO(BindingContextMixin, BindTargetMixin):
+class VBO(BindingContextMixin, BindTargetMixin, np.ndarray):
 
     target = gl.GL_ARRAY_BUFFER
     bindfun = gl.glBindBuffer
 
-    def __init__(self, data, *args, **kwargs):
-        super(VBO, self).__init__(*args, **kwargs)
-        self.id = create_opengl_object(gl.glGenBuffers)
-        self.data = data
-        with self:
-            gl.glBufferData(self.target, 4 * self.data.size,
-                            vec(self.data.ravel()), gl.GL_STATIC_DRAW)
+    def __array_finalize__(self, obj):
+        if not isinstance(obj, VBO):
+            self.id = create_opengl_object(gl.glGenBuffers)
+            with self:
+                gl.glBufferData(self.target, 4 * self.size, vec(self.ravel()), gl.GL_STATIC_DRAW)
+        return self
 
     # def _buffer_subdata(self):
     #     with self:
