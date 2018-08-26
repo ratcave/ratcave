@@ -33,7 +33,9 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
             for loc, verts in enumerate(arrays):
                 vbo = VBO(verts)
                 self.vbos.append(vbo)
-                self.assign_vertex_attrib_location(vbo, loc)
+                with vbo:
+                    gl.glVertexAttribPointer(loc, verts.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+                    gl.glEnableVertexAttribArray(loc)
 
     #
     # @property
@@ -57,12 +59,6 @@ class VAO(BindingContextMixin, BindNoTargetMixin):
     #     with self.element_array_buffer as el_array:
     #         gl.glDrawElements(mode, el_array.data.shape[0],
     #                           gl.GL_UNSIGNED_INT, 0)
-
-    def assign_vertex_attrib_location(self, vbo, location):
-        """Load data into a vbo"""
-        with vbo:
-            gl.glVertexAttribPointer(location, vbo.data.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-            gl.glEnableVertexAttribArray(location)
 
     def draw(self, mode=gl.GL_TRIANGLES):
         self.drawfun(mode)
