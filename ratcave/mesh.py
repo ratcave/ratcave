@@ -4,13 +4,24 @@ This module contains the Mesh and EmptyEntity classes.
 
 import pickle
 import numpy as np
-from .utils import vertices as vertutils
 from .utils import NameLabelMixin
 from . import physical, shader
 from .texture import Texture
-from .vertex import VertexArray
+from .vertex import VertexArray, pairwise
 import pyglet.gl as gl
 from copy import deepcopy
+
+
+def calculate_normals(vertices):
+    """Return Nx3 normal array from Nx3 vertex array."""
+    verts = np.array(vertices, dtype=float)
+    normals = np.zeros_like(verts)
+    for start, end in pairwise(np.arange(0, verts.shape[0] + 1, 3)):
+        vecs = np.vstack((verts[start + 1] - verts[start], verts[start + 2] - verts[start]))  # Get triangle of vertices and calculate 2-1 and 3-1
+        vecs /= np.linalg.norm(vecs, axis=1, keepdims=True)  # normalize vectors
+        normal = np.cross(*vecs)  # normal is the cross products of vectors.
+        normals[start:end, :] = normal / np.linalg.norm(normal)
+    return normals
 
 
 def gen_fullscreen_quad(name='FullScreenQuad'):
@@ -60,7 +71,6 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Ve
         Returns:
             Mesh instance
         """
-        # arrays, indices = vertutils.reindex_vertices(self.arrays)  # Indexing
         super(Mesh, self).__init__(arrays=arrays, **kwargs)
         self.reset_uniforms()
 
@@ -171,7 +181,7 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Ve
     def from_incomplete_data(cls, vertices, normals=(), texcoords=(), **kwargs):
         """Return a Mesh with (vertices, normals, texcoords) as arrays, in that order.
            Useful for when you want a standardized array location format across different amounts of info in each mesh."""
-        normals = normals if hasattr(texcoords, '__iter__') and len(normals) else vertutils.calculate_normals(vertices)
+        normals = normals if hasattr(texcoords, '__iter__') and len(normals) else calculate_normals(vertices)
         texcoords = texcoords if hasattr(texcoords, '__iter__') and len(texcoords) else np.zeros((vertices.shape[0], 2),
                                                                                                  dtype=np.float32)
         return cls(arrays=(vertices, normals, texcoords), **kwargs)

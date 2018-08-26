@@ -1,15 +1,41 @@
+import itertools
 import numpy as np
 import pyglet.gl as gl
 from .utils import BindingContextMixin, BindTargetMixin, BindNoTargetMixin, create_opengl_object, vec
 from sys import platform
 
 
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def reindex_vertices(arrays=None):
+    all_arrays = np.hstack(arrays)
+    array_ncols = tuple(array.shape[1] for array in arrays)
+
+    # Build a new array list, composed of only the unique combinations  (no redundant data)
+    row_searchable_array = all_arrays.view(all_arrays.dtype.descr * all_arrays.shape[1])
+    unique_combs = np.sort(np.unique(row_searchable_array))
+
+    new_indices = np.array([np.searchsorted(unique_combs, vert) for vert in row_searchable_array]).flatten().astype(np.uint32)
+
+    ucombs = unique_combs.view(unique_combs.dtype[0]).reshape((unique_combs.shape[0], -1))
+    new_arrays = tuple(ucombs[:, start:end] for start, end in pairwise(np.append(0, np.cumsum(array_ncols))))
+    new_arrays = tuple(np.array(array, dtype=np.float32) for array in new_arrays)
+    return new_arrays, new_indices
+
+
 class VertexArray(BindingContextMixin, BindNoTargetMixin):
 
     bindfun = gl.glBindVertexArray if platform != 'darwin' else gl.glBindVertexArrayAPPLE
 
-    def __init__(self, arrays, indices=None, drawmode=gl.GL_TRIANGLES, **kwargs):
+    def __init__(self, arrays, indices=None, drawmode=gl.GL_TRIANGLES, reindex=True, **kwargs):
         super(VertexArray, self).__init__(**kwargs)
+        if indices is None and reindex:
+            arrays, indices = reindex_vertices(arrays)  # Indexing
         self.id = None
         self.arrays = [np.array(vert, dtype=np.float32) for vert in arrays]
         self.indices = np.array(indices, dtype=np.uint32).view(type=ElementArrayBuffer) if not indices is None else indices
