@@ -13,7 +13,7 @@ def lerp(vecA, vecB, time):
 
 win = pyglet.window.Window()
 reader = rc.WavefrontReader(rc.resources.obj_primitives)
-mesh = reader.get_mesh('MonkeySmooth', position=(0, 0, -2), scale=.2, dynamic=True)
+mesh = reader.get_mesh('MonkeySmooth', position=(0, 0, -2), scale=.2)
 
 scene = rc.Scene(meshes=[mesh], bgColor=(0.5, 0, 0), camera=rc.Camera(projection=rc.OrthoProjection()))
 

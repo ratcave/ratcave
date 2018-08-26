@@ -1,6 +1,39 @@
 import numpy as np
 import pyglet.gl as gl
 from .utils import BindingContextMixin, BindTargetMixin, create_opengl_object, vec
+from sys import platform
+
+
+class VertexArray(object):
+
+    def __init__(self, arrays, indices=None, drawmode=gl.GL_TRIANGLES, **kwargs):
+        super(VertexArray, self).__init__(**kwargs)
+        self.arrays = [np.array(vert, dtype=np.float32) for vert in arrays]
+        self.indices = np.array(indices, dtype=np.uint32).view(type=ElementArrayBuffer) if not indices is None else indices
+        self._loaded = False
+        self.drawmode = drawmode
+
+    def load_vertex_array(self):
+        self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
+        with self:
+            for loc, verts in enumerate(self.arrays):
+                vbo = verts.view(type=VertexBuffer)
+                with vbo:
+                    gl.glVertexAttribPointer(loc, verts.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+                    gl.glEnableVertexAttribArray(loc)
+                self.arrays[loc] = vbo
+        self._loaded = True
+
+    def draw(self):
+        if not self._loaded:
+            self.load_vertex_array()
+
+        with self:
+            if self.indices is None:
+                gl.glDrawArrays(self.drawmode, 0, self.arrays[0].shape[0])
+            else:
+                with self.indices as indices:
+                    gl.glDrawElements(self.drawmode, indices.shape[0], gl.GL_UNSIGNED_INT, 0)
 
 
 class VertexBuffer(BindingContextMixin, BindTargetMixin, np.ndarray):
