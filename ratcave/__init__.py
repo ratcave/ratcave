@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from . import utils
 from .utils import gl as gl
-from .utils.gl import clear_color
+from .utils.gl import clear_color, GL_POINTS, GL_TRIANGLES
 try:
     from . import resources
     from .resources import default_shader, default_camera, default_light
@@ -23,6 +23,7 @@ from .texture import Texture, TextureCube, DepthTexture
 from .scenegraph import SceneGraph
 from . import experimental
 from .wavefront import WavefrontReader
+from .vertex import VertexBuffer
 
 
 import pkg_resources

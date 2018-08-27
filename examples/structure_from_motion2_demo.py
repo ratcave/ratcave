@@ -14,7 +14,6 @@ cylinder.uniforms['flat_shading'] = True
 cylinder.point_size = .02
 cylinder.position.x = -.3
 cylinder.scale.xyz = .5
-cylinder.dynamic = True
 
 cyl2 = cylinder.copy()
 cyl2.position.x = 0

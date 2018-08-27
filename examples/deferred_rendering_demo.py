@@ -4,7 +4,7 @@ import ratcave as rc
 win = pyglet.window.Window(resizable=True)
 
 reader = rc.WavefrontReader(rc.resources.obj_primitives)
-stars = reader.get_mesh('Torus', drawmode=rc.POINTS)
+stars = reader.get_mesh('Torus', drawmode=rc.GL_POINTS)
 stars.point_size = 3
 stars.uniforms['diffuse'] = 1., 1., 1.
 stars.position.xyz = 0, 0, -2

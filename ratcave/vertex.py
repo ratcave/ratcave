@@ -1,96 +1,88 @@
+import itertools
 import numpy as np
 from . import gl
 from .utils import BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
 from sys import platform
 
-class VAO(BindingContextMixin, BindNoTargetMixin):
+
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def reindex_vertices(arrays=None):
+    all_arrays = np.hstack(arrays)
+    array_ncols = tuple(array.shape[1] for array in arrays)
+
+    # Build a new array list, composed of only the unique combinations  (no redundant data)
+    row_searchable_array = all_arrays.view(all_arrays.dtype.descr * all_arrays.shape[1])
+    unique_combs = np.sort(np.unique(row_searchable_array))
+
+    new_indices = np.array([np.searchsorted(unique_combs, vert) for vert in row_searchable_array]).flatten().astype(np.uint32)
+
+    ucombs = unique_combs.view(unique_combs.dtype[0]).reshape((unique_combs.shape[0], -1))
+    new_arrays = tuple(ucombs[:, start:end] for start, end in pairwise(np.append(0, np.cumsum(array_ncols))))
+    new_arrays = tuple(np.array(array, dtype=np.float32) for array in new_arrays)
+    return new_arrays, new_indices
+
+
+class VertexArray(BindingContextMixin, BindNoTargetMixin):
 
     bindfun = gl.glBindVertexArray if platform != 'darwin' else gl.glBindVertexArrayAPPLE
 
-    def __init__(self, indices=None, **kwargs):
-        """
-        OpenGL Vertex Array Object.  Sends array data in a Vertex Buffer to the GPU.  This data can be accessed in
-        the vertex shader using the 'layout(location = N)' header line, where N = the index of the array given the VAO.
+    def __init__(self, arrays, indices=None, drawmode=gl.GL_TRIANGLES, reindex=True, **kwargs):
+        super(VertexArray, self).__init__(**kwargs)
+        if indices is None and reindex:
+            arrays, indices = reindex_vertices(arrays)  # Indexing
+        self.id = None
+        self.arrays = [np.array(vert, dtype=np.float32) for vert in arrays]
+        self.indices = np.array(indices, dtype=np.uint32).view(type=ElementArrayBuffer) if not indices is None else indices
+        self._loaded = False
+        self.drawmode = drawmode
 
-        Example:  VAO(vertices, normals, texcoords):
 
-        Fragshader:
-        layout(location = 0) in vec3 vertexCoord;
-        layout(location = 1) in vec2 texCoord;
-        layout(location = 2) in vec3 normalCoord;
-        """
-
-        # Create Vertex Array Object and Bind it
-        super(VAO, self).__init__(**kwargs)
+    def load_vertex_array(self):
         self.id = create_opengl_object(gl.glGenVertexArrays if platform != 'darwin' else gl.glGenVertexArraysAPPLE)
-        self.n_verts = None
+        with self:
+            for loc, verts in enumerate(self.arrays):
+                vbo = verts.view(type=VertexBuffer)
+                with vbo:
+                    gl.glVertexAttribPointer(loc, verts.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+                    gl.glEnableVertexAttribArray(loc)
+                self.arrays[loc] = vbo
+        self._loaded = True
 
-        self.drawfun = self._draw_arrays
-        self.__element_array_buffer = None
-        self.element_array_buffer = indices
+    def draw(self):
+        if not self._loaded:
+            self.load_vertex_array()
 
-    @property
-    def element_array_buffer(self):
-        return self.__element_array_buffer
-
-    @element_array_buffer.setter
-    def element_array_buffer(self, value):
-        assert isinstance(value, (np.ndarray, type(None)))
-        if isinstance(value, np.ndarray):
-            self.__element_array_buffer = ElementArrayBuffer(value)
-            self.drawfun = self._draw_elements
-        else:
-            self.__element_array_buffer = None
-            self.drawfun = self._draw_arrays
-
-    def _draw_arrays(self, mode=gl.GL_TRIANGLES):
-        gl.glDrawArrays(mode, 0, self.n_verts)
-
-    def _draw_elements(self, mode=gl.GL_TRIANGLES):
-        with self.element_array_buffer as el_array:
-            gl.glDrawElements(mode, el_array.data.shape[0],
-                              gl.GL_UNSIGNED_INT, 0)
-
-    def assign_vertex_attrib_location(self, vbo, location):
-        """Load data into a vbo"""
-        with vbo:
-            if self.n_verts:
-                assert vbo.data.shape[0] == self.n_verts
+        with self:
+            if self.indices is None:
+                gl.glDrawArrays(self.drawmode, 0, self.arrays[0].shape[0])
             else:
-                self.n_verts = vbo.data.shape[0]
-
-            # vbo.buffer_data()
-            gl.glVertexAttribPointer(location, vbo.data.shape[1], gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-            gl.glEnableVertexAttribArray(location)
-
-    def draw(self, mode=gl.GL_TRIANGLES):
-        self.drawfun(mode)
+                with self.indices as indices:
+                    gl.glDrawElements(self.drawmode, indices.shape[0], gl.GL_UNSIGNED_INT, 0)
 
 
-class VBO(BindingContextMixin, BindTargetMixin):
+class VertexBuffer(BindingContextMixin, BindTargetMixin, np.ndarray):
 
     target = gl.GL_ARRAY_BUFFER
     bindfun = gl.glBindBuffer
 
-    def __init__(self, data, *args, **kwargs):
-        super(VBO, self).__init__(*args, **kwargs)
-        self.id = create_opengl_object(gl.glGenBuffers)
-        self.data = data
-        self._buffer_data()
+    def __array_finalize__(self, obj):
+        if not isinstance(obj, VertexBuffer):  # only do this when creating from arrays (e.g. array.view(type=VBO))
+            self.id = create_opengl_object(gl.glGenBuffers)
+            with self:
+                gl.glBufferData(self.target, 4 * self.size, vec(self.ravel()), gl.GL_STATIC_DRAW)
+        return self
 
-    def _buffer_data(self):
+    def __setitem__(self, key, value):
+        super(VertexBuffer, self).__setitem__(key, value)
         with self:
-            gl.glBufferData(self.target, 4 * self.data.size, vec(self.data.ravel()), gl.GL_STATIC_DRAW)
-
-    def _buffer_subdata(self):
-        with self:
-            gl.glBufferSubData(self.target, 0, 4 * self.data.size, vec(self.data.ravel()))
+            gl.glBufferSubData(self.target, 0, 4 * self.size, vec(self.ravel()))
 
 
-class ElementArrayBuffer(VBO):
-
+class ElementArrayBuffer(VertexBuffer):
     target = gl.GL_ELEMENT_ARRAY_BUFFER
-
-    def _buffer_data(self):
-        with self:
-            gl.glBufferData(self.target, 4 * self.data.size, vec(self.data.ravel(), int), gl.GL_STATIC_DRAW)

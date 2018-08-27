@@ -8,7 +8,7 @@ layout(location = 2) in vec2 uvTexturePosition;
 out vec2 texCoord;
 
 void main()
-  {
+  {k
 
 	//Calculate Vertex Position on Screen
 	gl_Position = vec4(vertexPosition, 1.0);

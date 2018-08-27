@@ -53,7 +53,7 @@ def on_draw():
                 for x, y in it.product([-2, -1, 0, 1, 2], [-2, -1, 0, 1, 2]):
                     monkey.position.x = x
                     monkey.position.y = y
-                    monkey.drawmode = rc.POINTS if x % 2 and y % 2 else rc.TRIANGLES
+                    monkey.drawmode = rc.GL_POINTS if x % 2 and y % 2 else rc.GL_TRIANGLES
                     monkey.uniforms['diffuse'][0] = (x + 1) / 4.
                     monkey.uniforms['diffuse'][1:] = (y + 1) / 4.
                     monkey.scale.z = np.linalg.norm((x, y)) / 10. + .03
