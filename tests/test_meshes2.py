@@ -34,10 +34,10 @@ def test_dynamic_mode_reflects_array_writability():
     cube = reader.get_mesh("Cube")
     old_vert = cube.vertices[0, 0]
     cube.vertices[:] += 1.
-    assert np.isclose(cube.vertices[0, 0], old_vert + 1).all()
+    assert np.isclose(cube.vertices[0, 0], old_vert + 1)
     cube.vertices[:] += 1.
-    assert np.isclose(cube.vertices[0][0], old_vert + 2).all()
-
+    assert np.isclose(cube.vertices[0][0], old_vert + 2)
+        
 
 def test_wavefront_objects_get_name():
     reader = WavefrontReader(resources.obj_primitives)
