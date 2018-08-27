@@ -8,7 +8,7 @@ width, height = 0.2, 0.5
 theta = random(n_points) * np.pi * 2
 verts = np.vstack((np.sin(theta) * width, (random(n_points) - .5) * height, np.cos(theta) * width)).T
 
-cylinder = rc.Mesh.from_incomplete_data(verts, position=(0, 0, -2), mean_center=False, drawmode=rc.POINTS, point_size=.02)
+cylinder = rc.Mesh.from_incomplete_data(verts, position=(0, 0, -2), mean_center=False, drawmode=rc.gl.GL_POINTS, point_size=.02)
 cylinder.uniforms['diffuse'] = 1., 1., 1.
 cylinder.uniforms['flat_shading'] = True
 cylinder.rotation.x = 20

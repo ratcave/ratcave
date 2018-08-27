@@ -1,4 +1,4 @@
-import pyglet.gl as gl
+from . import gl
 from . import Camera, Light, Mesh, EmptyEntity
 from .texture import TextureCube
 from .utils import mixins, clear_color

@@ -5,10 +5,9 @@ This module contains the Mesh and EmptyEntity classes.
 import pickle
 import numpy as np
 from .utils import NameLabelMixin
-from . import physical, shader
+from . import physical, shader, gl
 from .texture import Texture
 from .vertex import VertexArray, pairwise
-import pyglet.gl as gl
 from copy import deepcopy
 
 
@@ -45,9 +44,6 @@ class EmptyEntity(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMi
 
 
 class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, VertexArray):
-    triangles = gl.GL_TRIANGLES
-    points = gl.GL_POINTS
-
 
     def __init__(self, arrays, textures=(), mean_center=True,
                  gl_states=(), point_size=15, visible=True, **kwargs):
@@ -113,8 +109,9 @@ class Mesh(shader.HasUniformsUpdater, physical.PhysicalGraph, NameLabelMixin, Ve
     def from_pickle(cls, filename):
         """Loads and Returns a Mesh from a pickle file, given a filename."""
         with open(filename, 'rb') as f:
-            mesh = pickle.load(f).copy()
-        return mesh
+            mesh = pickle.load(f)
+            mesh2 = mesh.copy()
+        return mesh2
 
     @classmethod
     def from_primitive(cls, name, position=(0, 0, 0), **kwargs):

@@ -1,7 +1,7 @@
 import itertools
 import numpy as np
-import pyglet.gl as gl
-from .utils import BindingContextMixin, BindTargetMixin, BindNoTargetMixin, create_opengl_object, vec
+from . import gl
+from .utils import BindingContextMixin, BindNoTargetMixin, BindTargetMixin, create_opengl_object, vec
 from sys import platform
 
 

@@ -1,4 +1,4 @@
-import pyglet.gl as gl
+from . import gl
 
 
 def draw_vr_anaglyph(cube_fbo, vr_scene, active_scene, eye_poses=(.035, -.035)):

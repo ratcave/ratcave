@@ -1,7 +1,7 @@
 import _transformations as trans
 
 import numpy as np
-import pyglet.gl as gl
+from . import gl
 
 from . import coordinates
 from .utils import AutoRegisterObserver
