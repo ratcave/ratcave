@@ -1,7 +1,7 @@
 #version 120
 #extension GL_NV_shadow_samplers_cube : enable
 
-uniform int flat_shading, TextureMap_isBound, CubeMap_isBound, DepthMap_isBound;
+uniform int flat_shading, TextureMap_isBound, DepthMap_isBound;
 uniform float spec_weight, opacity;
 uniform vec3 camera_position, light_position;
 uniform vec3 diffuse, specular, ambient;
@@ -18,29 +18,15 @@ varying vec4 vVertex, ShadowCoord;
 void main()
 {
 
-    vec4 final_color = vec4(0., 0., 0., 0.);
-
     //If lighting is turned off, just use the diffuse color and return. (Flat lighting)
     if (flat_shading > 0) {
             if (TextureMap_isBound > 0){
-                final_color = vec4(diffuse * texture2D(TextureMap, texCoord).rgb, 1.0);
-                return;
-            //} else if (CubeMap_isBound > 0) {
-            //    final_color = vec4((diffuse * textureCube(CubeMap, eyeVec).rgb), 1.0);
-            //    return;
+                gl_FragColor = vec4(diffuse * texture2D(TextureMap, texCoord).rgb, 1.0);
             } else {
-                 final_color = vec4(diffuse, 1.0);
-                 return;
+                 gl_FragColor = vec4(diffuse, 1.0);
             }
+        return;
     }
-
-    //Shade Cube Map and return, if needed
-    //if (CubeMap_isBound > 0){
-    //        final_color = textureCube(CubeMap, eyeVec);// * lightAmount;
-    //        final_color[3] = 1.0;
-    //        gl_FragColor = final_color;
-    //        return;
-    //}
 
     // Ambient Lighting
     float ambient_coeff = .25;
@@ -66,7 +52,7 @@ void main()
         specular_coeff = pow(cosAngle, spec_weight);
     }
 
-//    // Depth-Map Shadows
+    // Depth-Map Shadows
     float shadow_coeff = 1.;
 //    if (DepthMap_isBound > 0){
 //        if (ShadowCoord.w > 0.0){
