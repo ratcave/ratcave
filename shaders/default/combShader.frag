@@ -15,55 +15,45 @@ varying vec3 normal, eyeVec;
 varying vec4 vVertex, ShadowCoord;
 
 
+vec4 PhongLighting(vec3 vertex, vec3 normal, vec3 light_position, vec3 camera_position, vec3 ambient, vec3 diffuse, vec3 specular, float spec_weight){
+    vec4 color = vec4(ambient, 1.);
+    vec3 light_direction = normalize(light_position - vertex);
+    float diffuse_coeff = clamp(max(dot(normalize(normal), light_direction), 0), 0.0, 1.0);
+    color.rgb += diffuse_coeff * diffuse;
+
+    if (spec_weight > 1.0) {
+        vec3 reflectionVector = reflect(light_direction, normalize(normal));
+        float cosAngle = max(0.0, -dot(normalize(camera_position - vertex), reflectionVector));
+        float specular_coeff = pow(cosAngle, spec_weight);
+        color.rgb += 1.5 * (specular_coeff * specular);
+    }
+    return clamp(color, 0, 1);
+}
+
+
 void main()
 {
+    // Apply Lighting
+    if (flat_shading > 0) {
+        gl_FragColor = vec4(diffuse, 1.0);
+    } else {
+        gl_FragColor = PhongLighting(vVertex.xyz, normal, light_position, camera_position, ambient, diffuse, specular, spec_weight);
+    }
 
     // Depth-Map Shadows
-    float shadow_coeff = 1.;
     if (DepthMap_isBound > 0){
         if (ShadowCoord.w > 0.0){
             vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w;
             shadowCoordinateWdivide.z -= .0001; // to prevent "shadow acne" caused from precision errors
             float distanceFromLight = texture(DepthMap, shadowCoordinateWdivide.xyz);
-            shadow_coeff = 0.65 + (0.35 * distanceFromLight);
+            gl_FragColor.rgb *= 0.65 + (0.35 * distanceFromLight);
         }
     }
 
     // UV Texture
-    vec3 texture_coeff = vec3(1.0);
     if (TextureMap_isBound > 0){
-        texture_coeff = texture2D(TextureMap, texCoord).rgb;
+        gl_FragColor.rgb *= texture2D(TextureMap, texCoord).rgb;
     }
 
-    //If lighting is turned off, just use the diffuse color and return. (Flat lighting)
-    if (flat_shading > 0) {
-        gl_FragColor = vec4(diffuse, 1.0) * shadow_coeff * vec4(texture_coeff, 1.);
-        return;
-    }
-
-    // Ambient Lighting
-    float ambient_coeff = 0.;
-
-    // Phong Model
-    vec3 normal = normalize(normal);
-    vec3 light_direction = normalize(light_position - vVertex.xyz);
-
-    // Phong Diffuse
-    float diffuse_coeff = clamp(max(dot(normal,light_direction),0), 0.0, 1.0);
-
-    // Phong Specularity
-    float specular_coeff = 0.;
-    if (spec_weight > 1.0) {
-        vec3 reflectionVector = reflect(light_direction, normal);
-        float cosAngle = max(0.0, -dot(normalize(camera_position - vVertex.xyz), reflectionVector));
-        specular_coeff = pow(cosAngle, spec_weight);
-    }
-
-    // Calculate Final Color and Opacity
-    vec3 color = shadow_coeff * texture_coeff *
-                 (1.5 * (specular_coeff * specular) +
-                 (diffuse_coeff * diffuse) +
-                 (ambient_coeff * ambient));
-    gl_FragColor = vec4(clamp(color, 0, 1), 1.0);
-
+    return;
  }
