@@ -18,24 +18,31 @@ varying vec4 vVertex, ShadowCoord;
 void main()
 {
 
-    //If lighting is turned off, just use the diffuse color and return. (Flat lighting)
-    if (flat_shading > 0) {
-            if (TextureMap_isBound > 0){
-                gl_FragColor = vec4(diffuse * texture2D(TextureMap, texCoord).rgb, 1.0);
-            } else {
-                 gl_FragColor = vec4(diffuse, 1.0);
-            }
-        return;
+    // Depth-Map Shadows
+    float shadow_coeff = 1.;
+    if (DepthMap_isBound > 0){
+        if (ShadowCoord.w > 0.0){
+            vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w;
+            shadowCoordinateWdivide.z -= .0001; // to prevent "shadow acne" caused from precision errors
+            float distanceFromLight = texture(DepthMap, shadowCoordinateWdivide.xyz);
+            shadow_coeff = 0.65 + (0.35 * distanceFromLight);
+        }
     }
-
-    // Ambient Lighting
-    float ambient_coeff = .25;
 
     // UV Texture
     vec3 texture_coeff = vec3(1.0);
     if (TextureMap_isBound > 0){
         texture_coeff = texture2D(TextureMap, texCoord).rgb;
     }
+
+    //If lighting is turned off, just use the diffuse color and return. (Flat lighting)
+    if (flat_shading > 0) {
+        gl_FragColor = vec4(diffuse, 1.0) * shadow_coeff * vec4(texture_coeff, 1.);
+        return;
+    }
+
+    // Ambient Lighting
+    float ambient_coeff = 0.;
 
     // Phong Model
     vec3 normal = normalize(normal);
@@ -50,17 +57,6 @@ void main()
         vec3 reflectionVector = reflect(light_direction, normal);
         float cosAngle = max(0.0, -dot(normalize(camera_position - vVertex.xyz), reflectionVector));
         specular_coeff = pow(cosAngle, spec_weight);
-    }
-
-    // Depth-Map Shadows
-    float shadow_coeff = 1.;
-    if (DepthMap_isBound > 0){
-        if (ShadowCoord.w > 0.0){
-            vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w;
-            shadowCoordinateWdivide.z -= .0001; // to prevent "shadow acne" caused from precision errors
-            float distanceFromLight = texture(DepthMap, shadowCoordinateWdivide.xyz);
-            shadow_coeff = 0.65 + (0.35 * distanceFromLight);
-        }
     }
 
     // Calculate Final Color and Opacity
