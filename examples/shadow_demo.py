@@ -14,6 +14,7 @@ window = pyglet.window.Window(resizable=True, vsync=False)
 obj_filename = rc.resources.obj_primitives
 obj_reader = rc.WavefrontReader(obj_filename)
 monkey = obj_reader.get_mesh("Monkey")
+monkey.uniforms['flat_shading'] = False
 
 monkey.position.xyz = 0, 0, -4
 monkey.scale.xyz = .25

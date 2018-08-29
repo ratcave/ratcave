@@ -1,5 +1,5 @@
-#version 130
-#extension GL_NV_shadow_samplers_cube : enable
+#version 120
+//#extension GL_NV_shadow_samplers_cube : enable
 
 uniform int flat_shading, TextureMap_isBound, DepthMap_isBound;
 uniform float spec_weight, opacity;
@@ -45,8 +45,8 @@ void main()
         if (ShadowCoord.w > 0.0){
             vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w;
             shadowCoordinateWdivide.z -= .0001; // to prevent "shadow acne" caused from precision errors
-            float distanceFromLight = texture(DepthMap, shadowCoordinateWdivide.xyz);
-            gl_FragColor.rgb *= 0.65 + (0.35 * distanceFromLight);
+            vec4 distanceFromLight = shadow2D(DepthMap, shadowCoordinateWdivide.xyz);
+            gl_FragColor.rgb *= 0.65 + (0.35 * distanceFromLight.rgb);
         }
     }
 
