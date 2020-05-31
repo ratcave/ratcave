@@ -8,13 +8,12 @@ width, height = 0.2, 0.5
 theta = random(n_points) * np.pi * 2
 verts = np.vstack((np.sin(theta) * width, (random(n_points) - .5) * height, np.cos(theta) * width)).T
 
-cylinder = rc.Mesh.from_incomplete_data(verts, drawmode=rc.POINTS, position=(0, 0, -2), point_size=2, mean_center=False)
+cylinder = rc.Mesh.from_incomplete_data(verts, drawmode=rc.gl.GL_POINTS, position=(0, 0, -2), point_size=2, mean_center=False)
 cylinder.uniforms['diffuse'] = 1., 1., 1.
 cylinder.uniforms['flat_shading'] = True
 cylinder.point_size = .02
 cylinder.position.x = -.3
 cylinder.scale.xyz = .5
-cylinder.dynamic = True
 
 cyl2 = cylinder.copy()
 cyl2.position.x = 0

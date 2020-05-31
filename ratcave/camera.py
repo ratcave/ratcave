@@ -2,7 +2,6 @@ import pickle
 import abc
 import numpy as np
 from .physical import PhysicalGraph
-import pyglet.gl as gl
 from collections import namedtuple
 from .shader import HasUniformsUpdater
 from .utils import NameLabelMixin, get_viewport

@@ -13,7 +13,7 @@ This tutorial will show the process of displaying a 3D object onscreen. This wil
 Starting an OpenGL Context and a Window
 ---------------------------------------
 
-ratcave depends on their already being an OpenGL context set up before loading objects.  This can be done by any OpenGL manager (Pyglet and PsychoPy are useful, but PyGame and Qt OpenGL windows should work fine as well).
+ratcave depends on there already being an OpenGL context set up before loading objects.  This can be done by any OpenGL manager (Pyglet and PsychoPy are useful, but PyGame and Qt OpenGL windows should work fine as well).
 So, before doing anything in ratcave, a window must first be created.  In these tutorials, I'll show it with Pyglet::
 
   import pyglet

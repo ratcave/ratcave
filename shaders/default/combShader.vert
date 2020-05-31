@@ -1,6 +1,6 @@
 #version 120
 
-attribute vec4 vertexPosition;
+attribute vec3 vertexPosition;
 attribute vec3 normalPosition;
 attribute vec2 uvTexturePosition;
 
@@ -30,7 +30,7 @@ void main()
   {
 
     //Calculate Vertex World Position and Normal Direction
-    vVertex = model_matrix * vertexPosition;
+    vVertex = model_matrix * vec4(vertexPosition, 1.0);
     normal = normalize(normal_matrix * vec4(normalPosition, 1.0)).xyz;
 
     //Calculate Vertex Position on Screen

@@ -1,8 +1,6 @@
 Tutorial 5: Parenting objects together - Solar System
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This tutorial is based on previous.
-
 In this tutorial you will learn how to use ratcave to create solar system animation.
 We will show how to create layout dependencies (in between parent and children objects), by defining relationships between objects.
 Additionally the :py:class:`.Empty Entity` objects will be introduced.

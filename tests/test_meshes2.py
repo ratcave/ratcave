@@ -31,19 +31,13 @@ def test_mesh_copying_works(cube):
 
 def test_dynamic_mode_reflects_array_writability():
     reader = WavefrontReader(resources.obj_primitives)
-    cube = reader.get_mesh("Cube", dynamic=True)
+    cube = reader.get_mesh("Cube")
     old_vert = cube.vertices[0, 0]
     cube.vertices[:] += 1.
-    assert cube.vertices[0, 0] == old_vert + 1
-    assert cube.dynamic
-    cube.dynamic = False
-    assert not cube.dynamic
-    with pytest.raises(ValueError):
-        cube.vertices[:] += 1.
-    cube.dynamic = True
+    assert np.isclose(cube.vertices[0, 0], old_vert + 1)
     cube.vertices[:] += 1.
-    assert cube.vertices[0][0] == old_vert + 2
-
+    assert np.isclose(cube.vertices[0][0], old_vert + 2)
+        
 
 def test_wavefront_objects_get_name():
     reader = WavefrontReader(resources.obj_primitives)

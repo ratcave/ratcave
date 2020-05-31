@@ -1,15 +1,16 @@
 from __future__ import absolute_import
 
-from .coordinates import RotationEulerDegrees, RotationQuaternion, RotationEulerRadians, Translation, Scale
-
+from . import utils
+from .utils import gl as gl
+from .utils.gl import clear_color, GL_POINTS, GL_TRIANGLES
 try:
     from . import resources
     from .resources import default_shader, default_camera, default_light
 except ImportError:
     pass
-from . import utils
+from .coordinates import RotationEulerDegrees, RotationQuaternion, RotationEulerRadians, Translation, Scale
 from .camera import Camera, PerspectiveProjection, OrthoProjection, CameraGroup, StereoCameraGroup
-from .collision import CylinderCollisionChecker, SphereCollisionChecker
+from .collision import ColliderSphere, ColliderCube, ColliderCylinder
 from .fbo import FBO
 from .gl_states import GLStateManager, default_states
 from .light import Light
@@ -20,9 +21,9 @@ from .scene import Scene
 from .shader import Shader, UniformCollection
 from .texture import Texture, TextureCube, DepthTexture
 from .scenegraph import SceneGraph
-from .utils.gl import POINTS, LINE_LOOP, LINES, TRIANGLES, clear_color
 from . import experimental
 from .wavefront import WavefrontReader
+from .vertex import VertexBuffer
 
 
 import pkg_resources

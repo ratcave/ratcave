@@ -37,7 +37,8 @@ Here is a script which displays the monkey on your screen::
 	pyglet.app.run()
 
 
-.. image:: _images/tut6_monkey.png
+.. image:: _static/tut6_monkey.png
+	:align: center
 
 When the light is reflected from the monkey's face we get a feeling that the monkey is a 3D object. But are we seeing 3D? No.
 
@@ -98,9 +99,10 @@ Now if we apply this color filter with its correspinding camera, the :py:func:`.
 
 	@window.event
 	def on_draw():
+	    gl.glColorMask(True, True, True, True)
 	    window.clear()
-	    with rc.default_shader, rc.default_states:
 
+	    with rc.default_shader, rc.default_states:
 	        with camera.right:
 	            gl.glColorMask(False, True, True, True)
 	            monkey.draw()
@@ -109,7 +111,6 @@ Now if we apply this color filter with its correspinding camera, the :py:func:`.
 
 	        with camera.left:
 	            gl.glColorMask(True, False, False, True)
-	            window.clear()
 	            monkey.draw()
 
 Make sure to add :py:class:`glClear(gl.GL_DEPTH_BUFFER_BIT)` before drawing the scene of the second camera. This ensures that the depth information of the previously drawn object is removed and the color information of both camera scenes are drawn on the screen without the interruption of depth testing.
@@ -117,39 +118,54 @@ Make sure to add :py:class:`glClear(gl.GL_DEPTH_BUFFER_BIT)` before drawing the 
 Now you can use your anaglyph glasses and enjoy the 3D view. Here is the complete code, and its output::
 
 	import pyglet
-	from pyglet.gl import gl
 	import ratcave as rc
+	from pyglet.gl import gl
+	from pyglet.window import key
 
 	window = pyglet.window.Window(resizable=True)
+	keys = key.KeyStateHandler()
+	window.push_handlers(keys)
 
-	# import an object
+	# get an object
 	model_file = rc.resources.obj_primitives
 	monkey = rc.WavefrontReader(model_file).get_mesh('Monkey')
 	monkey.position.xyz = 0, 0, -2.5
 
-	# create a stereopsis camera group object
 	camera = rc.StereoCameraGroup()
 
 	@window.event
 	def on_draw():
+	    gl.glColorMask(True, True, True, True)
 	    window.clear()
+
 	    with rc.default_shader, rc.default_states:
 	        with camera.right:
 	            gl.glColorMask(False, True, True, True)
 	            monkey.draw()
 
 	        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-	        
+
 	        with camera.left:
 	            gl.glColorMask(True, False, False, True)
 	            monkey.draw()
 
-
+	t = 0
 	def update(dt):
-	    pass
+	    if keys[key.UP]:
+	        monkey.position.z -= .01
+	    elif keys[key.DOWN]:
+	        monkey.position.z += .01
+	    
+	    global t
+	    t += .5
+	    monkey.rotation.y = t
+	    for cam in camera.cameras:
+	        cam.uniforms['projection_matrix'] = cam.projection_matrix
 
 	pyglet.clock.schedule(update)
 
 	pyglet.app.run()
 
-.. image:: _images/tut6_stereomonkey.png
+
+.. image:: _static/tut6_stereomonkey.gif
+	:align: center
