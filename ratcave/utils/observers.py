@@ -1,5 +1,5 @@
 
-class Observable(object):
+class Observable:
 
     def __init__(self, **kwargs):
         super(Observable, self).__init__(**kwargs)
@@ -27,7 +27,7 @@ class IterObservable(Observable):
         self.notify_observers()
 
 
-class Observer(object):
+class Observer:
 
     def __init__(self, **kwargs):
         super(Observer, self).__init__(**kwargs)

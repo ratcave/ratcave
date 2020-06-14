@@ -1,9 +1,8 @@
 from .mesh import Mesh
-from six import iteritems
 from wavefront_reader import read_wavefront
 from . import Texture
 
-class WavefrontReader(object):
+class WavefrontReader:
 
     material_property_map = {'Kd': 'diffuse',
                              'Ka': 'ambient',
@@ -38,8 +37,8 @@ class WavefrontReader(object):
 
         uniforms = kwargs['uniforms'] if 'uniforms' in kwargs else {}
         if 'material' in body:
-            material_props = {self.material_property_map[key]: value for key, value in iteritems(body['material'])}
-            for key, value in iteritems(material_props):
+            material_props = {self.material_property_map[key]: value for key, value in body['material'].items()}
+            for key, value in material_props.items():
                 if isinstance(value, str):
                     if key == 'map_Kd':
                         if not value in self.textures:

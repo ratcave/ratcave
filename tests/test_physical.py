@@ -146,7 +146,7 @@ class TestModelViewNormalMatrices(unittest.TestCase):
             phys = Physical(position=np.random.uniform(-3, 3, size=3), rotation=np.random.uniform(-3, 3, size=3), scale=np.random.uniform(-5, 5, size=3))
             x, y, z = np.random.uniform(-5, 5, size=3)
             phys.look_at(x, y, z)
-            view_projection = np.dot(phys.view_matrix, np.matrix([x, y, z, 1]).T)
+            view_projection = np.dot(phys.view_matrix, np.array([[x, y, z, 1]]).T)
             self.assertTrue(np.isclose(view_projection[:2], 0, atol=1e-4).all())
 
 
