@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='ratcave',
-      version='0.9.0',
+      version='1.0.0',
       url='https://www.github.com/neuroneuro15/ratcave',
       description='3D Graphics Engine for Scientific, Video Game, and VR Applications.',
       author='Nicholas A. Del Grosso',
