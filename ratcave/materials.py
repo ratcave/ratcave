@@ -1,5 +1,5 @@
 
-class Material(object):
+class Material:
 
     def __init__(self, diffuse=[.8, .8, .8], spec_weight=0., specular=[0., 0., 0.],
                  ambient=[0., 0., 0.], opacity=1., flat_shading=False, texture_file=None):

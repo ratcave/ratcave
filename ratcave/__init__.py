@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from . import utils
 from .utils import gl as gl
 from .utils.gl import clear_color, GL_POINTS, GL_TRIANGLES

@@ -3,11 +3,7 @@ from pyglet import gl
 from ctypes import byref, create_string_buffer, c_char, c_char_p, c_int, c_float, c_double, cast, pointer, POINTER
 import numpy as np
 from .utils import BindingContextMixin, BindNoTargetMixin
-try:
-    from UserDict import IterableUserDict  # Python 2
-except ImportError:
-    from collections import UserDict as IterableUserDict  # Python 3
-from six import iteritems
+from collections import UserDict as IterableUserDict  # Python 3
 
 
 class UniformArray(np.ndarray): pass
@@ -46,7 +42,7 @@ class UniformCollection(IterableUserDict, object):
         """
 
         super(UniformCollection, self).__init__()
-        for key, value in iteritems(kwargs):
+        for key, value in kwargs.items():
             self.data[key] = value
 
     def __setitem__(self, key, value):
@@ -77,7 +73,7 @@ class UniformCollection(IterableUserDict, object):
         These uniform variables will be available in the currently-bound shader.
         """
 
-        for name, array in iteritems(self):
+        for name, array in self.items():
 
             shader_id = c_int(0)
             gl.glGetIntegerv(gl.GL_CURRENT_PROGRAM, byref(shader_id))
@@ -108,12 +104,9 @@ class UniformCollection(IterableUserDict, object):
             else:
                 sendfun = self._sendfuns[array.dtype.kind][len(array) - 1]  # Find correct glUniform function
                 sendfun(array.loc[0], *array)
-    #
-    # def update(self, other_dict):
-    #     for key, value in iteritems(other_dict):
-    #         self[key] = value
 
-class HasUniforms(object):
+
+class HasUniforms:
     """Interface for drawing.  Ensures that there is a uniforms attribute to the class, which can be reset upond demand."""
     __metaclass__ = abc.ABCMeta
 

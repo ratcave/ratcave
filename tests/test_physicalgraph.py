@@ -3,7 +3,6 @@ import unittest
 import numpy as np
 
 from ratcave import PhysicalGraph
-from _transformations import inverse_matrix as inv
 
 np.random.seed(100)
 np.set_printoptions(suppress=True, precision=5)
@@ -16,8 +15,8 @@ class TestPhysicalGraph(unittest.TestCase):
         for _ in range(200):
             child =  PhysicalGraph(position=np.random.randint(0, 360, 3), rotation=np.random.randint(0, 360, 3))
             parent = PhysicalGraph(position=np.random.randint(0, 360, 3), rotation=np.random.randint(0, 360, 3))
-            new_mm = np.dot(inv(parent.model_matrix), child.model_matrix)
-            self.assertTrue( np.isclose(child.model_matrix, np.dot(parent.model_matrix, new_mm)).all())
+            new_mm = np.dot(np.linalg.inv(parent.model_matrix), child.model_matrix)
+            self.assertTrue( np.isclose(child.model_matrix, np.dot(parent.model_matrix, new_mm), rtol=1e-5, atol=1e-5).all())
 
 
     def test_add_child_connection(self):

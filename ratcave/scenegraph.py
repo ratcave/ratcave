@@ -1,7 +1,7 @@
 from collections import deque
 
 # TODO: Check for loops and duplicate nodes in the Scene graph
-class SceneGraph(object):
+class SceneGraph:
 
     def __init__(self, parent=None, children=None, **kwargs):
         """A Node of the Scenegraph.  Has children, but no parent."""

@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from ratcave.utils.observers import IterObservable
 import itertools
 from operator import setitem
-from  scipy.spatial.transform import Rotation as R
+from scipy.spatial.transform import Rotation as R
 
 class Coordinates(IterObservable):
 

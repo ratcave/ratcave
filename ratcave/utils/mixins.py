@@ -1,13 +1,13 @@
 
 
-class NameLabelMixin(object):
+class NameLabelMixin:
 
     def __init__(self, name=None, **kwargs):
         super(NameLabelMixin, self).__init__(**kwargs)
         self.name = str(name) if name else 'Unnamed{}'.format(self.__class__.__name__)
 
 
-class BindingContextMixin(object):
+class BindingContextMixin:
     """Mixin that calls self.bind() and self.unbind() when used in a context manager."""
 
     def __enter__(self):
@@ -18,7 +18,7 @@ class BindingContextMixin(object):
         self.unbind()
 
 
-class BindTargetMixin(object):
+class BindTargetMixin:
     """Mixin that speifices a bind() and unbind() interface by taking advantage of the OpenGL bind format:
     bind: bindfun(target, id)
     unbind: bindfun(target, 0)
