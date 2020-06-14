@@ -1,9 +1,9 @@
 import numpy as np
-import _transformations as trans
 from abc import ABCMeta, abstractmethod
 from ratcave.utils.observers import IterObservable
 import itertools
 from operator import setitem
+from  scipy.spatial.transform import Rotation as R
 
 class Coordinates(IterObservable):
 
@@ -88,10 +88,12 @@ class RotationEulerRadians(RotationEuler):
         return RotationEulerDegrees(*np.degrees(self._array), axes=self.axes)
 
     def to_quaternion(self):
-        return RotationQuaternion(*trans.quaternion_from_euler(*self._array, axes=self.axes))
+        return RotationQuaternion(*R.from_euler(self._axes[1:],self._array,degrees=False).as_quat())
 
     def to_matrix(self):
-        return trans.euler_matrix(*self._array, axes=self.axes)
+        mat = np.eye(4)
+        mat[:3, :3] = R.from_euler(self.axes[1:],self._array,degrees=False).as_dcm() # scipy as_matrix() not available
+        return mat
 
     def to_euler(self, units='rad'):
         assert units.lower() in ['rad', 'deg']
@@ -102,12 +104,7 @@ class RotationEulerRadians(RotationEuler):
 
     @classmethod
     def from_matrix(cls, matrix, axes='rxyz'):
-        # Change to 4x4 if 3x3 rotation matrix is given
-        if matrix.shape[0] == 3:
-            mat = np.identity(4)
-            mat[:3, :3] = matrix
-            matrix = mat
-        coords = trans.euler_from_matrix(matrix, axes=axes)
+        coords = R.from_matrix(matrix[:3, :3]).as_euler(axes[1:], degrees=False)
         return cls(*coords)
 
 
@@ -130,14 +127,8 @@ class RotationEulerDegrees(RotationEuler):
 
     @classmethod
     def from_matrix(cls, matrix, axes='rxyz'):
-        # Change to 4x4 if 3x3 rotation matrix is given
-        if matrix.shape[0] == 3:
-            mat = np.identity(4)
-            mat[:3, :3] = matrix
-            matrix = mat
-        coords = trans.euler_from_matrix(matrix, axes=axes)
-        return cls(*np.degrees(coords))
-
+        coords = R.from_matrix(matrix[:3, :3]).as_euler(axes[1:], degrees=True)
+        return cls(*coords)
 
 class RotationQuaternion(RotationBase, Coordinates):
 
@@ -154,10 +145,12 @@ class RotationQuaternion(RotationBase, Coordinates):
         return self
 
     def to_matrix(self):
-        return trans.quaternion_matrix(self._array)
+        mat = np.eye(4, 4)
+        mat[:3, :3] = R.from_quat(self).as_matrix()
+        return mat
 
     def to_euler(self, units='rad'):
-        euler_data = trans.euler_from_matrix(self.to_matrix(), axes='rxyz')
+        euler_data = R.from_quat(self).as_euler(axes='xyz',degrees=False)
         assert units.lower() in ['rad', 'deg']
         if units.lower() == 'rad':
             return RotationEulerRadians(*euler_data)
@@ -166,14 +159,7 @@ class RotationQuaternion(RotationBase, Coordinates):
 
     @classmethod
     def from_matrix(cls, matrix):
-        # Change to 4x4 if 3x3 rotation matrix is given
-        if matrix.shape[0] == 3:
-            mat = np.identity(4)
-            mat[:3, :3] = matrix
-            matrix = mat
-        coords = trans.quaternion_from_matrix(matrix)
-        return cls(*coords)
-
+        return cls(*R.from_matrix(matrix[:3, :3]).as_quat())
 
 class Translation(Coordinates):
 
@@ -194,7 +180,9 @@ class Translation(Coordinates):
         return Translation(*tuple(a - b for (a, b) in zip(self.xyz, other.xyz)))
 
     def to_matrix(self):
-        return trans.translation_matrix(self._array)
+        mat = np.eye(4,4)
+        mat[:3,3] = self._array
+        return mat
 
     @classmethod
     def from_matrix(cls, matrix):
@@ -230,7 +218,7 @@ def rotation_matrix_between_vectors(from_vec, to_vec):
     Returns a rotation matrix to rotate from 3d vector "from_vec" to 3d vector "to_vec".
     Equation from https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
     """
-    a, b = (trans.unit_vector(vec) for vec in (from_vec, to_vec))
+    a, b = (vec/np.linalg.norm(vec) for vec in (from_vec, to_vec))
 
     v = np.cross(a, b)
     cos = np.dot(a, b)
