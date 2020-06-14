@@ -12,7 +12,7 @@ setup(name='ratcave',
       package_data={'': ['../assets/*.'+el for el in ['png', 'obj', 'mtl']] +
                         ['../shaders/*/*'+el for el in ['vert', 'frag']]
                     },
-      install_requires=['pyglet==1.3.3', 'numpy', 'scipy', 'wavefront_reader', 'future'],
+      install_requires=['pyglet==1.3.3', 'numpy', 'scipy', 'wavefront_reader'],
       setup_requires=['pytest-runner'],
       tests_require = ['pytest'],
       keywords='graphics 3D pyglet psychopy python virtual reality VR',

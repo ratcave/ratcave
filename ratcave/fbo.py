@@ -1,4 +1,3 @@
-
 from .utils import BindingContextMixin, create_opengl_object, get_viewport, Viewport
 from .texture import DepthTexture, RenderBuffer
 
