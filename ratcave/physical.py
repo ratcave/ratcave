@@ -1,5 +1,3 @@
-import _transformations as trans
-
 import numpy as np
 from . import gl
 
@@ -112,7 +110,7 @@ class Physical(AutoRegisterObserver):
     def orientation0(self, vector):
         if len(vector) != 3:
             raise ValueError("Orientation vector should be an xyz vector.")
-        self._orientation0 = trans.unit_vector(vector)
+        self._orientation0 = vector/np.linalg.norm(vector)
 
     @property
     def orientation(self):
@@ -138,9 +136,9 @@ class Physical(AutoRegisterObserver):
 
     def on_change(self):
         self.model_matrix = np.dot(self.position.to_matrix(), self.rotation.to_matrix())
-        self.view_matrix = trans.inverse_matrix(self._model_matrix)
+        self.view_matrix = np.linalg.inv(self._model_matrix)
         self.model_matrix = np.dot(self._model_matrix, self.scale.to_matrix())
-        self.normal_matrix = trans.inverse_matrix(self._model_matrix.T)
+        self.normal_matrix = np.linalg.inv(self._model_matrix.T)
 
 
 class PhysicalGraph(Physical, SceneGraph):
@@ -193,7 +191,7 @@ class PhysicalGraph(Physical, SceneGraph):
 
         self.model_matrix_global = mm_pg.dot(mm_t).dot(mm)
         self.normal_matrix_global = nn_pg.dot(nn_t).dot(nn)
-        self.view_matrix_global = trans.inverse_matrix(self._model_matrix_global)
+        self.view_matrix_global = np.linalg.inv(self._model_matrix_global)
 
     def notify(self):
         super(Physical, self).notify()
@@ -206,8 +204,8 @@ class PhysicalGraph(Physical, SceneGraph):
         SceneGraph.add_child(self, child)
         self.notify()
         if modify:
-            child._model_matrix_transform[:] = trans.inverse_matrix(self.model_matrix_global)
-            child._normal_matrix_transform[:] = trans.inverse_matrix(self.normal_matrix_global)
+            child._model_matrix_transform[:] = np.linalg.inv(self.model_matrix_global)
+            child._normal_matrix_transform[:] = np.linalg.inv(self.normal_matrix_global)
 
     @property
     def position_global(self):
