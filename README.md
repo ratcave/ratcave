@@ -19,8 +19,8 @@ pip install ratcave
 
 ## Features
 
-ratcave was created to be an 3D graphics package for doing behavioral experiments with animals in a freely-moving virtual reality environment, and
-somewhere along the way became a pythonic wrapper for modern OpenGL workflows!
+ratcave was created to be an 3D graphics package for doing behavioral experiments with animals in a freely-moving virtual 
+reality environment, and somewhere along the way became a pythonic wrapper for modern OpenGL workflows!
 
 The goals of this project are:
 
