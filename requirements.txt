@@ -1,6 +1,7 @@
 
 sphinxcontrib-napoleon
 numpy
+scipy
 pyglet
 mock
 six
