@@ -11,6 +11,8 @@
 
 Full Documentation and Tutorials can be found at http://ratcave.readthedocs.io/
 
+**This package is abandonware**: All development on Ratcave has stopped, as the author has moved on to other things.  Good alternatives to ratcave are Vedo, Vispy, and ModernGL.
+
 
 ## Installation
 ```
