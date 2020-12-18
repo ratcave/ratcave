@@ -1,3 +1,4 @@
+image: nvidia/opengl
 tasks:
   - init: pip install -r requirements.txt
     command: echo "Hello, Ready to Go!"
