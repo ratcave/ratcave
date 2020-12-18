@@ -4,12 +4,15 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/ratcave/ratcave/badge.svg?branch=master)](https://coveralls.io/github/ratcave/ratcave?branch=master)
 
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/ratcave/ratcave?branch=dev)
 
 
 # ratcave
 3D Graphics Engine running off Python, Psychopy, and Pyglet using modern OpenGL conventions.
 
 Full Documentation and Tutorials can be found at http://ratcave.readthedocs.io/
+
+**This package is abandonware**: All development on Ratcave has stopped, as the author has moved on to other things.  Good alternatives to ratcave are Vedo, Vispy, and ModernGL.
 
 
 ## Installation
