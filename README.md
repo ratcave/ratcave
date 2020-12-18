@@ -4,7 +4,7 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/ratcave/ratcave/badge.svg?branch=master)](https://coveralls.io/github/ratcave/ratcave?branch=master)
 
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/ratcave/ratcave?branch=dev)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/ratcave/ratcave/-/tree/dev)
 
 
 # ratcave
