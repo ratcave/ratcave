@@ -28,7 +28,7 @@ class Physical(AutoRegisterObserver):
                 raise ValueError("Scale can not be set to 0")
             self.scale = coordinates.Scale(*scale)
         else:
-            if scale is 0:
+            if scale == 0:
                 raise ValueError("Scale can not be set to 0")
             self.scale = coordinates.Scale(scale)
 

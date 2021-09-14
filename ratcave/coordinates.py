@@ -92,7 +92,13 @@ class RotationEulerRadians(RotationEuler):
 
     def to_matrix(self):
         mat = np.eye(4)
-        mat[:3, :3] = R.from_euler(self.axes[1:],self._array,degrees=False).as_dcm() # scipy as_matrix() not available
+        res = R.from_euler(self.axes[1:],self._array,degrees=False)
+        try:
+            res=res.as_matrix()#Adjusted for the newest scipy version
+        except AttributeError:
+            res=res.as_dcm()#Older version
+
+        mat[:3, :3] = res 
         return mat
 
     def to_euler(self, units='rad'):
